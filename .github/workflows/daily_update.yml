@@ -2,19 +2,21 @@ name: Daily KOSPI Dashboard Update
 
 on:
   schedule:
-    # UTC 오전 7:00 = 한국 시간(KST) 오후 4:00 (월~금요일 실행)
+    # 매 평일(월~금) 오후 4:00 KST 실행 (UTC 오전 7:00 실행)
     - cron: '0 7 * * 1-5'
-  workflow_dispatch: # 사용자가 직접 버튼을 눌러 수동 실행도 가능하게 설정
+  workflow_dispatch: # 수동 즉시 실행 단추 활성화
 
 jobs:
   update-dashboard:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4 # 최신 노드 실행 환경 보장을 위해 v4로 업그레이드
+      uses: actions/checkout@v4 # 최신 Node v20/24 실행 호환 버전
 
     - name: Set up Python
-      uses: actions/setup-python@v5 # 최신 노드 환경 호환성 확보
+      uses: actions/setup-python@v5 # 최신 인프라 지원 및 경고 제거
+      with:
+        python-version: '3.10'
 
     - name: Install dependencies
       run: |
@@ -23,6 +25,7 @@ jobs:
 
     - name: Run Python Scraper and Update Dashboard
       env:
+        # 카카오톡 인증을 위한 가상환경 비밀번호 주입
         KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
         KAKAO_REFRESH_TOKEN: ${{ secrets.KAKAO_REFRESH_TOKEN }}
         GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
@@ -33,5 +36,6 @@ jobs:
         git config --global user.name "github-actions[bot]"
         git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
         git add index.html
+        # 파일 내용이 실제로 변경되었을 때만 커밋하여 불필요한 배포 에러 방지
         git diff-index --quiet HEAD || git commit -m "⚡️ Auto-Update KOSPI Market Data ($(date +'%Y-%m-%d'))"
         git push
