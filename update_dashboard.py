@@ -7,8 +7,8 @@ from datetime import datetime
 
 def fetch_market_data():
     """네이버 금융에서 실시간 코스피 종가, 등락률, 투자자별 수급 데이터를 파싱합니다."""
-    # 1. KOSPI 종합 정보 파싱
-    url_main = "[https://finance.naver.com/sise/sise_index.naver?code=KOSPI](https://finance.naver.com/sise/sise_index.naver?code=KOSPI)"
+    # 1. KOSPI 종합 정보 파싱 (오염되지 않은 순수 URL 사용)
+    url_main = "https://finance.naver.com/sise/sise_index.naver?code=KOSPI"
     req = urllib.request.Request(url_main, headers={'User-Agent': 'Mozilla/5.0'})
     html = urllib.request.urlopen(req).read().decode('cp949', errors='ignore')
     
@@ -17,7 +17,7 @@ def fetch_market_data():
     change_rate = re.search(r'id="change_rate_and_direction">.*?([-+]?\d+\.\d+%)', html, re.DOTALL).group(1)
     
     # 2. 투자자별 순매수 동향 파싱 (금액 단위: 억 원)
-    url_trend = "[https://finance.naver.com/sise/sise_trans.naver](https://finance.naver.com/sise/sise_trans.naver)"
+    url_trend = "https://finance.naver.com/sise/sise_trans.naver"
     req_trend = urllib.request.Request(url_trend, headers={'User-Agent': 'Mozilla/5.0'})
     html_trend = urllib.request.urlopen(req_trend).read().decode('cp949', errors='ignore')
     
@@ -45,9 +45,13 @@ def update_html_file(data):
     with open(file_path, "r", encoding="utf-8") as f:
         html_content = f.read()
 
-    # 데이터 주입용 치환 처리
+    # 데이터 주입용 치환 처리 (정확한 1:1 매칭 지원)
     html_content = re.sub(r'id="kospi-value">.*?<', f'id="kospi-value">{data["kospi_value"]}<', html_content)
+    html_content = re.sub(r'id="kospi-change-val">.*?<', f'id="kospi-change-val">{data["kospi_change"]}<', html_content)
+    html_content = re.sub(r'id="kospi-change-pct">.*?<', f'id="kospi-change-pct">{data["kospi_percent"]}<', html_content)
+    html_content = re.sub(r'id="market-date">.*?<', f'id="market-date">{data["date"]} 장 마감<', html_content)
     
+    # 차트용 데이터 치환
     json_data_regex = r'const netBuyingData = \{.*?\};'
     replacement_json = f"""const netBuyingData = {{
             personal: {data["personal"]:.4f},    
@@ -55,8 +59,6 @@ def update_html_file(data):
             institution: {data["institution"]:.4f}  
         }};"""
     html_content = re.sub(json_data_regex, replacement_json, html_content, flags=re.DOTALL)
-    
-    html_content = re.sub(r'id="market-date">.*?<', f'id="market-date">{data["date"]} 장 마감<', html_content)
 
     with open(file_path, "w", encoding="utf-8") as f:
         f.write(html_content)
@@ -71,7 +73,7 @@ def get_kakao_access_token():
         print("[오류] KAKAO_CLIENT_ID 또는 KAKAO_REFRESH_TOKEN 환경변수가 누락되었습니다.")
         return None
         
-    url = "[https://kauth.kakao.com/oauth/token](https://kauth.kakao.com/oauth/token)"
+    url = "https://kauth.kakao.com/oauth/token"
     payload = {
         "grant_type": "refresh_token",
         "client_id": client_id,
@@ -86,7 +88,6 @@ def get_kakao_access_token():
         response_data = response.json()
         access_token = response_data.get("access_token")
         
-        # 만약 카카오 정책에 따라 Refresh Token이 갱신되었다면 로그에 출력하여 업데이트를 유도합니다.
         new_refresh_token = response_data.get("refresh_token")
         if new_refresh_token:
             print(f"⚠️ [중요] 새로운 REFRESH_TOKEN이 발급되었습니다! 아래 토큰을 복사하여 GitHub Secrets를 꼭 업데이트해 주세요:\n{new_refresh_token}")
@@ -103,7 +104,6 @@ def send_kakao_notification(access_token, data):
         
     dashboard_url = f"https://{os.environ.get('GITHUB_REPOSITORY_OWNER', 'username')}.github.io/kospi-dashboard/"
     
-    # 카카오톡 템플릿 양식 정의
     template_object = {
         "object_type": "text",
         "text": (
@@ -120,7 +120,7 @@ def send_kakao_notification(access_token, data):
         "button_title": "실시간 대시보드 이동"
     }
     
-    url = "[https://kapi.kakao.com/v2/api/talk/memo/default/send](https://kapi.kakao.com/v2/api/talk/memo/default/send)"
+    url = "https://kapi.kakao.com/v2/api/talk/memo/default/send"
     headers = {
         "Authorization": f"Bearer {access_token}",
         "Content-Type": "application/x-www-form-urlencoded"
@@ -139,7 +139,6 @@ if __name__ == "__main__":
     market_data = fetch_market_data()
     update_html_file(market_data)
     
-    # 카카오 토큰 자동 갱신 후 발송 실행
     access_token = get_kakao_access_token()
     if access_token:
         send_kakao_notification(access_token, market_data)
