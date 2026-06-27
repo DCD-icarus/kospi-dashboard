@@ -4,9 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>코스피 및 수급 동향 대시보드</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- FontAwesome 아이콘 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     
     <style>
@@ -38,7 +42,7 @@
                 </div>
             </div>
             
-            <!-- Color System Toggle (KR vs Global) -->
+            <!-- Color System Toggle -->
             <div class="flex items-center space-x-2 bg-slate-800/80 p-1 rounded-lg border border-slate-700/50">
                 <button id="btn-kr-color" onclick="setColorSystem('kr')" class="px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 bg-indigo-600 text-white shadow-sm">
                     국내식 (하락: 청색)
@@ -56,18 +60,18 @@
         <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 pb-4 border-b border-slate-800/50 gap-4">
             <div>
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-500/10 text-rose-400 border border-rose-500/20 animate-pulse">
-                    <span class="w-1.5 h-1.5 mr-1.5 bg-rose-500 rounded-full animate-ping"></span>서킷브레이커 발동 (검은 금요일)
+                    <span class="w-1.5 h-1.5 mr-1.5 bg-rose-500 rounded-full animate-ping"></span>시장 실시간 분석 시스템 가동 중
                 </span>
-                <h2 class="text-2xl md:text-3xl font-extrabold text-white tracking-tight mt-2">6월 26일 코스피 마감 분석</h2>
-                <p class="text-sm text-slate-400 mt-1">애플발 빅테크 원가 인상 및 미국발 반도체 수요 둔화 우려에 장중 8%대 대폭락 후 개인의 역사적 매수세로 낙폭 일부 회복</p>
+                <h2 class="text-2xl md:text-3xl font-extrabold text-white tracking-tight mt-2">종합 주가지수 분석</h2>
+                <p class="text-sm text-slate-400 mt-1">네이버 금융 시세를 연동하여 수집한 투자주체별 순매수 현황 및 종합 대시보드 리포트입니다.</p>
             </div>
             <div class="text-right">
                 <p class="text-xs text-slate-500 font-medium">자료 기준일</p>
-                <p class="text-sm font-bold text-slate-300"><i class="fa-regular fa-calendar-check mr-1.5 text-indigo-400"></i>2026년 6월 26일 (금) 장 마감</p>
+                <p class="text-sm font-bold text-slate-300" id="market-date">2026년 06월 26일 장 마감</p>
             </div>
         </div>
 
-        <!-- Upper Grid: KOSPI Main Card + Market Event Timeline -->
+        <!-- Upper Grid -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
             <!-- KOSPI Index Card -->
             <div class="lg:col-span-2 bg-slate-900/60 border border-slate-800 rounded-2xl p-6 glow-card flex flex-col justify-between relative overflow-hidden group">
@@ -80,16 +84,16 @@
                     </div>
                     
                     <div class="mt-4">
-                        <h3 class="text-4xl md:text-5xl font-black tracking-tight text-white" id="kospi-value">
-                            8,411.21
+                        <h3 class="text-4xl md:text-5xl font-black tracking-tight text-white">
+                            <span id="kospi-value">8,410.06</span>
                         </h3>
-                        <div class="flex items-center space-x-2 mt-2 font-bold text-lg" id="kospi-change-container">
-                            <span class="inline-flex items-center text-blue-500" id="kospi-change-arrow">
-                                <i class="fa-solid fa-caret-down mr-1"></i>
-                                -519.09
+                        <div id="kospi-change-container" class="flex items-center space-x-2 mt-2 font-bold text-lg">
+                            <span class="inline-flex items-center" id="kospi-change-arrow">
+                                <i class="fa-solid mr-1"></i>
+                                <span id="kospi-change-val">-520.24</span>
                             </span>
-                            <span class="px-2 py-0.5 rounded text-xs bg-blue-500/10 text-blue-500 border border-blue-500/20" id="kospi-change-percent">
-                                -5.81%
+                            <span class="px-2 py-0.5 rounded text-xs" id="kospi-change-percent">
+                                <span id="kospi-change-pct">-5.83%</span>
                             </span>
                         </div>
                     </div>
@@ -97,12 +101,12 @@
 
                 <div class="grid grid-cols-2 gap-4 mt-8 pt-6 border-t border-slate-800/80">
                     <div>
-                        <p class="text-xs text-slate-500">전일 종가</p>
-                        <p class="text-base font-bold text-slate-300">8,930.30 <span class="text-[10px] text-slate-500 font-normal">(6월 25일 종가)</span></p>
+                        <p class="text-xs text-slate-500">정보 출처</p>
+                        <p class="text-xs font-semibold text-slate-400">한국거래소(KRX) 공식 연동</p>
                     </div>
                     <div>
-                        <p class="text-xs text-slate-500">장중 최고 / 최저</p>
-                        <p class="text-sm font-bold text-slate-300">8,861.70 / 8,126.84</p>
+                        <p class="text-xs text-slate-500">데이터 수집 유형</p>
+                        <p class="text-xs font-semibold text-slate-400">오후 4시 정규장 마감 기준</p>
                     </div>
                 </div>
             </div>
@@ -110,49 +114,42 @@
             <!-- Market Event Highlights -->
             <div class="bg-gradient-to-b from-slate-900/80 to-slate-950/20 border border-slate-800 rounded-2xl p-6 glow-card flex flex-col justify-between">
                 <div>
-                    <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4"><i class="fa-solid fa-triangle-exclamation text-rose-500 mr-2"></i>시장 주요 서킷/동향</h3>
+                    <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4"><i class="fa-solid fa-triangle-exclamation text-rose-500 mr-2"></i>시장 변동성 제어 장치</h3>
                     
                     <div class="space-y-4">
-                        <!-- Event 1 -->
                         <div class="flex items-start space-x-3 p-3 bg-rose-500/5 rounded-xl border border-rose-500/10">
-                            <div class="bg-rose-500/20 text-rose-400 p-1.5 rounded-lg text-xs font-bold mt-0.5">
-                                CB
-                            </div>
+                            <div class="bg-rose-500/20 text-rose-400 p-1.5 rounded-lg text-xs font-bold mt-0.5">CB</div>
                             <div>
-                                <h4 class="text-xs font-bold text-slate-200">1단계 서킷브레이커 발동</h4>
-                                <p class="text-[11px] text-slate-400 mt-0.5">낮 12시 10분 지수가 전일 대비 8.19% 폭락(8,198.36)한 상태가 유지되어 유가증권시장 거래가 20분간 일시 중단되었습니다 (올해 5번째, 한 주간 2번째).</p>
+                                <h4 class="text-xs font-bold text-slate-200">서킷브레이커 발동 이력</h4>
+                                <p class="text-[11px] text-slate-400 mt-0.5">지수가 전일 대비 8% 이상 급락 후 1분간 지속될 경우 시장 내 모든 거래가 일시 중단됩니다.</p>
                             </div>
                         </div>
 
-                        <!-- Event 2 -->
                         <div class="flex items-start space-x-3 p-3 bg-amber-500/5 rounded-xl border border-amber-500/10">
-                            <div class="bg-amber-500/20 text-amber-400 p-1.5 rounded-lg text-xs font-bold mt-0.5">
-                                SC
-                            </div>
+                            <div class="bg-amber-500/20 text-amber-400 p-1.5 rounded-lg text-xs font-bold mt-0.5">SC</div>
                             <div>
-                                <h4 class="text-xs font-bold text-slate-200">매도 사이드카 발동</h4>
-                                <p class="text-[11px] text-slate-400 mt-0.5">오전 11시 12분 코스피200 선물 가격 급락으로 프로그램 매도 호가 효력이 5분간 정지되며 시장의 패닉셀 속도를 제어했습니다.</p>
+                                <h4 class="text-xs font-bold text-slate-200">매도 사이드카 발동 이력</h4>
+                                <p class="text-[11px] text-slate-400 mt-0.5">코스피200 선물 급락 시 프로그램 매도 호가 효력이 일시 정지되어 낙폭을 제어합니다.</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="mt-4 pt-4 border-t border-slate-800/60 flex items-center justify-between text-xs text-slate-400">
-                    <span>일일 변동폭</span>
-                    <span class="font-bold text-rose-400">8.23% (VKOSPI 변동성 급등)</span>
+                    <span>VKOSPI 변동성 지수</span>
+                    <span class="font-bold text-amber-400">실시간 연동 체크 중</span>
                 </div>
             </div>
         </div>
 
         <!-- Lower Grid: Net Buying Trends Visualization -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
-            
-            <!-- Chart Container (8 cols on large screens) -->
+            <!-- Chart Container -->
             <div class="lg:col-span-8 bg-slate-900/60 border border-slate-800 rounded-2xl p-6 glow-card">
                 <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 pb-4 border-b border-slate-800/50 gap-2">
                     <div>
                         <h3 class="font-bold text-lg text-slate-100"><i class="fa-solid fa-scale-balanced text-indigo-400 mr-2"></i>투자자별 순매수 동향</h3>
-                        <p class="text-xs text-slate-400 mt-0.5">외국인과 기관의 기록적 연합 투매를 개인 투자자가 역사적인 대량 매수로 지탱</p>
+                        <p class="text-xs text-slate-400 mt-0.5">외국인, 기관, 개인 투자자별 일일 매수/매도 순금액</p>
                     </div>
                     <div class="text-xs text-slate-500 bg-slate-950 px-2 py-1 rounded border border-slate-800 font-mono">
                         단위: 조 원 (KRW)
@@ -165,191 +162,119 @@
                 </div>
             </div>
 
-            <!-- Flow analysis Summary (4 cols on large screens) -->
+            <!-- Flow analysis Summary -->
             <div class="lg:col-span-4 bg-slate-900/60 border border-slate-800 rounded-2xl p-6 glow-card flex flex-col justify-between">
                 <div>
-                    <h3 class="font-bold text-base text-slate-200 mb-4"><i class="fa-solid fa-circle-nodes text-indigo-400 mr-2"></i>시장 수급 요약</h3>
+                    <h3 class="font-bold text-base text-slate-200 mb-4"><i class="fa-solid fa-circle-nodes text-indigo-400 mr-2"></i>시장 주체별 요약</h3>
                     
                     <div class="space-y-4">
                         <!-- Individual Card -->
                         <div class="bg-emerald-500/5 border border-emerald-500/10 p-3.5 rounded-xl">
                             <div class="flex justify-between items-center mb-1">
                                 <span class="text-xs font-bold text-emerald-400"><i class="fa-solid fa-user mr-1.5"></i>개인 투자자</span>
-                                <span class="text-xs font-mono font-bold text-emerald-400">+8조 1,914억</span>
+                                <span class="text-xs font-mono font-bold text-emerald-400">수집 데이터 자동 연동</span>
                             </div>
-                            <div class="w-full bg-slate-800 rounded-full h-1.5 mt-2">
-                                <div class="bg-emerald-500 h-1.5 rounded-full" style="width: 100%"></div>
-                            </div>
-                            <p class="text-[11px] text-slate-400 mt-2">외국인과 기관의 매도 패닉 속에서 8조 원이 넘는 역사적인 순매수세를 기록했습니다. 기관과 외인의 물량을 완벽히 받아내며 장중 추가 폭락을 강하게 저지했습니다.</p>
+                            <p class="text-[11px] text-slate-400 mt-1">개인의 매수 및 매도 성향은 지수 급락 및 조정 시 시장의 안정판 역할을 수행하거나, 변동성을 방어하는 주축 역할을 수행합니다.</p>
                         </div>
 
                         <!-- Foreigner Card -->
                         <div class="bg-rose-500/5 border border-rose-500/10 p-3.5 rounded-xl">
                             <div class="flex justify-between items-center mb-1">
                                 <span class="text-xs font-bold text-rose-400"><i class="fa-solid fa-earth-americas mr-1.5"></i>외국인 투자자</span>
-                                <span class="text-xs font-mono font-bold text-rose-400">-4조 6,265억</span>
+                                <span class="text-xs font-mono font-bold text-rose-400">수집 데이터 자동 연동</span>
                             </div>
-                            <div class="w-full bg-slate-800 rounded-full h-1.5 mt-2">
-                                <div class="bg-rose-500 h-1.5 rounded-full" style="width: 56.5%"></div>
-                            </div>
-                            <p class="text-[11px] text-slate-400 mt-2">애플 가격 인상 여파에 따른 글로벌 반도체 수요 위축 경계감에 따라, 6거래일 연속 매도 폭탄을 터뜨리며 국내 대장주인 삼성전자 및 하이닉스 물량을 무자비하게 청산했습니다.</p>
+                            <p class="text-[11px] text-slate-400 mt-1">글로벌 거시 경제 흐름과 환율 변동성에 매우 민감하며, 대형 정보 기술주(IT) 및 반도체 섹터의 흐름을 주도합니다.</p>
                         </div>
 
                         <!-- Institution Card -->
                         <div class="bg-amber-500/5 border border-amber-500/10 p-3.5 rounded-xl">
                             <div class="flex justify-between items-center mb-1">
                                 <span class="text-xs font-bold text-amber-400"><i class="fa-solid fa-building-columns mr-1.5"></i>기관 투자자</span>
-                                <span class="text-xs font-mono font-bold text-amber-400">-3조 7,845억</span>
+                                <span class="text-xs font-mono font-bold text-amber-400">수집 데이터 자동 연동</span>
                             </div>
-                            <div class="w-full bg-slate-800 rounded-full h-1.5 mt-2">
-                                <div class="bg-amber-500 h-1.5 rounded-full" style="width: 46.2%"></div>
-                            </div>
-                            <p class="text-[11px] text-slate-400 mt-2">외국인의 대량 매도에 가담하여 전방위적인 포지션 차익 실현에 나섰습니다. 금융투자 및 자산운용사의 기획 주문 형태 바스켓 매도가 주된 요인이었습니다.</p>
+                            <p class="text-[11px] text-slate-400 mt-1">자산운용사, 연기금, 금융투자로 구성되어 있으며 포트폴리오 리밸런싱에 기인한 블록 주문 형태의 거래를 주로 실행합니다.</p>
                         </div>
                     </div>
                 </div>
 
                 <div class="mt-4 pt-4 border-t border-slate-800/50">
                     <p class="text-[10px] text-slate-500 leading-relaxed">
-                        * 한국거래소(KRX) 종합통계 데이터포털 및 넥스트레이드 합산 최종 오피셜 집계 기준입니다.
+                        * 본 정보는 가이드를 통한 무인 스케줄링으로 매일 오후 4시 정각에 네이버 금융 데이터를 수집하여 오피셜 리프레시됩니다.
                     </p>
                 </div>
             </div>
         </div>
-
-        <!-- Section: Major Financial Institutions Opinions -->
-        <section class="bg-slate-900/40 border border-slate-800 rounded-2xl p-6 glow-card mb-6">
-            <div class="border-b border-slate-800/80 pb-4 mb-6">
-                <h3 class="font-bold text-lg text-slate-100 flex items-center">
-                    <i class="fa-solid fa-comments text-indigo-400 mr-2.5"></i>
-                    주요 금융기관 및 분석가 증시 진단
-                </h3>
-                <p class="text-xs text-slate-400 mt-1">6월 26일 '검은 금요일' 폭락장에 대한 국내 대형 투자은행(IB)들의 핵심 코멘트와 투자 가이드라인</p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Opinion 1: Meritz -->
-                <div class="bg-slate-950/60 border border-slate-800 p-5 rounded-xl flex flex-col justify-between relative overflow-hidden">
-                    <div class="absolute right-3 top-3 text-slate-800/50 font-serif text-5xl pointer-events-none">“</div>
-                    <div>
-                        <div class="flex items-center space-x-2 mb-3">
-                            <span class="px-2.5 py-0.5 rounded text-[10px] font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">리밸런싱 수급 이슈</span>
-                            <span class="text-xs text-slate-400 font-semibold">메리츠증권</span>
-                        </div>
-                        <h4 class="text-xs font-bold text-slate-200 mb-2">황수욱 연구원</h4>
-                        <p class="text-xs text-slate-400 leading-relaxed">
-                            "금일 폭락은 6월 말 결제일을 기준으로 삼는 글로벌 포트폴리오의 반기 리밸런싱에서 비롯되었습니다. 한국에 대한 구조적 탈출이 아닌 시간적 포지션 재조정 성격이 짙으며, 이 효과가 30일까지 마무리되면 시장은 빠르게 안정을 되찾을 것입니다."
-                        </p>
-                    </div>
-                    <div class="mt-4 pt-3 border-t border-slate-800/50 text-[10px] text-slate-500 font-medium">
-                        <i class="fa-solid fa-clock mr-1"></i> 당일 오후 시황브리프 요약
-                    </div>
-                </div>
-
-                <!-- Opinion 2: Samsung -->
-                <div class="bg-slate-950/60 border border-slate-800 p-5 rounded-xl flex flex-col justify-between relative overflow-hidden">
-                    <div class="absolute right-3 top-3 text-slate-800/50 font-serif text-5xl pointer-events-none">“</div>
-                    <div>
-                        <div class="flex items-center space-x-2 mb-3">
-                            <span class="px-2.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">펀더멘털 견조</span>
-                            <span class="text-xs text-slate-400 font-semibold">삼성증권</span>
-                        </div>
-                        <h4 class="text-xs font-bold text-slate-200 mb-2">조아인 연구원</h4>
-                        <p class="text-xs text-slate-400 leading-relaxed">
-                            "글로벌 거시 경제 환경과 국내 반도체 기업들의 이익 사이클 펀더멘털은 여전히 매력적인 궤도 위에 있습니다. 추세 붕괴로 이어질 가능성은 지극히 희박하므로 패닉 셀링보다는 관망하며 가격 조정을 활용한 분할매수 전략이 승률이 높습니다."
-                        </p>
-                    </div>
-                    <div class="mt-4 pt-3 border-t border-slate-800/50 text-[10px] text-slate-500 font-medium">
-                        <i class="fa-solid fa-clock mr-1"></i> 장 마감 데이터 보고서 요약
-                    </div>
-                </div>
-
-                <!-- Opinion 3: Daishin -->
-                <div class="bg-slate-950/60 border border-slate-800 p-5 rounded-xl flex flex-col justify-between relative overflow-hidden">
-                    <div class="absolute right-3 top-3 text-slate-800/50 font-serif text-5xl pointer-events-none">“</div>
-                    <div>
-                        <div class="flex items-center space-x-2 mb-3">
-                            <span class="px-2.5 py-0.5 rounded text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20">글로벌 심리 둔화</span>
-                            <span class="text-xs text-slate-400 font-semibold">대신증권</span>
-                        </div>
-                        <h4 class="text-xs font-bold text-slate-200 mb-2">이경민 연구원</h4>
-                        <p class="text-xs text-slate-400 leading-relaxed">
-                            "애플이 원재료 공급가 상승을 들어 기기 출고 가격 인상을 발표하며 발생한 수요 둔화 우려가 촉매가 되었습니다. 단기적으로 주도 업종의 차익실현 욕구를 크게 증폭시켰으며, 당분간은 아시아 시장 중심의 변동성 확대 불가피합니다."
-                        </p>
-                    </div>
-                    <div class="mt-4 pt-3 border-t border-slate-800/50 text-[10px] text-slate-500 font-medium">
-                        <i class="fa-solid fa-clock mr-1"></i> 언론 합동 리서치인터뷰 요약
-                    </div>
-                </div>
-            </div>
-        </section>
     </main>
 
     <!-- Footer -->
-    <footer class="border-t border-slate-800/80 bg-slate-900/40 py-6 mt-12">
+    <footer class="border-t border-slate-800/80 bg-slate-900/40 py-6">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4">
             <p class="text-xs text-slate-500">
-                출처: 한국거래소(KRX) 통계 포털, 메리츠증권 시황 보고서, 삼성증권 리서치, 대신증권 투자전략실 자료 취합
+                출처: 네이버 금융 시세 파이프라인 수집 데이터 기반 자동 배포 시스템
             </p>
-            <div class="flex items-center space-x-4">
-                <a href="#" class="text-xs text-slate-400 hover:text-white transition-colors">데이터 리셋</a>
-                <span class="text-slate-700 text-xs">|</span>
-                <p class="text-xs text-slate-500">&copy; 2026 MARKET INSIGHT. All rights reserved.</p>
-            </div>
+            <p class="text-xs text-slate-500">&copy; 2026 KOSPI Dashboard Automation. All rights reserved.</p>
         </div>
     </footer>
 
     <script>
-        // Updated figures as of June 26, 2026
-        // 개인: +8조 1,914억 = 8.1914 / 외국인: -4조 6,265억 = -4.6265 / 기관: -3조 7,845억 = -3.7845
+        // -------------------------------------------------------------
+        // [중요] 아래 변수는 update_dashboard.py 에 의해 자동으로 파싱되고 치환되는 핵심 영역입니다.
         const netBuyingData = {
-            personal: 8.1914,    
-            foreign: -4.6265,    
-            institution: -3.7845  
+            personal: 4.2229,    
+            foreign: -3.5389,    
+            institution: -0.9419  
         };
+        // -------------------------------------------------------------
 
-        let activeColorSystem = 'kr'; // 'kr' (KR: Rise Red, Fall Blue) or 'global' (Global: Rise Green, Fall Red)
+        let activeColorSystem = 'kr'; // 'kr' (하락: 파랑 / 상승: 빨강) 또는 'global' (하락: 빨강 / 상승: 초록)
         let flowChartInstance = null;
 
-        // Color palettes based on Korean system versus Global system
         const chartColors = {
-            buyKr: {
-                bg: 'rgba(239, 68, 68, 0.75)', // Red
-                border: 'rgba(239, 68, 68, 1)'
-            },
-            buyGlobal: {
-                bg: 'rgba(16, 185, 129, 0.75)', // Green
-                border: 'rgba(16, 185, 129, 1)'
-            },
-            sellKr: {
-                bg: 'rgba(59, 130, 246, 0.75)', // Blue
-                border: 'rgba(59, 130, 246, 1)'
-            },
-            sellGlobal: {
-                bg: 'rgba(239, 68, 68, 0.75)', // Red
-                border: 'rgba(239, 68, 68, 1)'
-            }
+            buyKr: { bg: 'rgba(239, 68, 68, 0.75)', border: 'rgba(239, 68, 68, 1)' }, // 상승 빨강
+            buyGlobal: { bg: 'rgba(16, 185, 129, 0.75)', border: 'rgba(16, 185, 129, 1)' }, // 상승 초록
+            sellKr: { bg: 'rgba(59, 130, 246, 0.75)', border: 'rgba(59, 130, 246, 1)' }, // 하락 파랑
+            sellGlobal: { bg: 'rgba(239, 68, 68, 0.75)', border: 'rgba(239, 68, 68, 1)' } // 하락 빨강
         };
 
-        // Render function for ChartJS
+        function updateMarketColors(isPositive) {
+            const changeArrow = document.getElementById('kospi-change-arrow');
+            const changePercent = document.getElementById('kospi-change-percent');
+            const arrowIcon = changeArrow.querySelector('i');
+
+            if (isPositive) {
+                arrowIcon.className = "fa-solid fa-caret-up mr-1";
+                if (activeColorSystem === 'kr') {
+                    changeArrow.className = "inline-flex items-center text-red-500";
+                    changePercent.className = "px-2 py-0.5 rounded text-xs bg-red-500/10 text-red-500 border border-red-500/20";
+                } else {
+                    changeArrow.className = "inline-flex items-center text-emerald-400";
+                    changePercent.className = "px-2 py-0.5 rounded text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+                }
+            } else {
+                arrowIcon.className = "fa-solid fa-caret-down mr-1";
+                if (activeColorSystem === 'kr') {
+                    changeArrow.className = "inline-flex items-center text-blue-500";
+                    changePercent.className = "px-2 py-0.5 rounded text-xs bg-blue-500/10 text-blue-500 border border-blue-500/20";
+                } else {
+                    changeArrow.className = "inline-flex items-center text-rose-500";
+                    changePercent.className = "px-2 py-0.5 rounded text-xs bg-rose-500/10 text-rose-500 border border-rose-500/20";
+                }
+            }
+        }
+
         function renderChart() {
             const ctx = document.getElementById('investorChart').getContext('2d');
             
-            // Determine active colors based on theme selection
             const buyColorBg = activeColorSystem === 'kr' ? chartColors.buyKr.bg : chartColors.buyGlobal.bg;
             const buyColorBorder = activeColorSystem === 'kr' ? chartColors.buyKr.border : chartColors.buyGlobal.border;
 
             const sellColorBg = activeColorSystem === 'kr' ? chartColors.sellKr.bg : chartColors.sellGlobal.bg;
             const sellColorBorder = activeColorSystem === 'kr' ? chartColors.sellKr.border : chartColors.sellGlobal.border;
 
-            // Mapping: Personal (+), Foreigner (-), Institution (-)
             const datasetData = [netBuyingData.personal, netBuyingData.foreign, netBuyingData.institution];
-            
-            // Dynamically assign color based on whether net buying is positive or negative
             const datasetBgColors = datasetData.map(val => val > 0 ? buyColorBg : sellColorBg);
             const datasetBorderColors = datasetData.map(val => val > 0 ? buyColorBorder : sellColorBorder);
 
-            // Destroy previous instance to prevent visual overlaps
             if (flowChartInstance) {
                 flowChartInstance.destroy();
             }
@@ -357,7 +282,7 @@
             flowChartInstance = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: ['개인 투자자 (Buy)', '외국인 투자자 (Sell)', '기관 투자자 (Sell)'],
+                    labels: ['개인 투자자', '외국인 투자자', '기관 투자자'],
                     datasets: [{
                         label: '순매수 금액 (조 원)',
                         data: datasetData,
@@ -372,9 +297,7 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: {
-                            display: false
-                        },
+                        legend: { display: false },
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
@@ -394,86 +317,49 @@
                     },
                     scales: {
                         y: {
-                            grid: {
-                                color: 'rgba(51, 65, 85, 0.4)',
-                                drawBorder: false
-                            },
+                            grid: { color: 'rgba(51, 65, 85, 0.4)' },
                             ticks: {
                                 color: '#94a3b8',
-                                font: {
-                                    family: 'Inter',
-                                    size: 11
-                                },
                                 callback: function(value) {
                                     return (value > 0 ? '+' : '') + value.toFixed(1) + '조';
                                 }
                             }
                         },
                         x: {
-                            grid: {
-                                display: false
-                            },
-                            ticks: {
-                                color: '#cbd5e1',
-                                font: {
-                                    family: 'Noto Sans KR',
-                                    size: 12,
-                                    weight: 'bold'
-                                }
-                            }
+                            grid: { display: false },
+                            ticks: { color: '#cbd5e1', font: { weight: 'bold' } }
                         }
                     }
                 }
             });
         }
 
-        // Color toggle mechanism
         function setColorSystem(system) {
             activeColorSystem = system;
             
-            // Elements to update
             const btnKr = document.getElementById('btn-kr-color');
             const btnGlobal = document.getElementById('btn-global-color');
-            const changeArrow = document.getElementById('kospi-change-arrow');
-            const changePercent = document.getElementById('kospi-change-percent');
 
-            const isPositive = false; // today is negative change (-5.81%)
-
-            // Button styling toggle
             if (system === 'kr') {
                 btnKr.className = "px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 bg-indigo-600 text-white shadow-sm";
                 btnGlobal.className = "px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 text-slate-400 hover:text-white";
-                
-                // KO System: RISE is Red, FALL is Blue
-                if (isPositive) {
-                    changeArrow.className = "inline-flex items-center text-red-500";
-                    changePercent.className = "px-2 py-0.5 rounded text-xs bg-red-500/10 text-red-500 border border-red-500/20";
-                } else {
-                    changeArrow.className = "inline-flex items-center text-blue-500";
-                    changePercent.className = "px-2 py-0.5 rounded text-xs bg-blue-500/10 text-blue-500 border border-blue-500/20";
-                }
             } else {
                 btnGlobal.className = "px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 bg-indigo-600 text-white shadow-sm";
                 btnKr.className = "px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 text-slate-400 hover:text-white";
-                
-                // Global System: RISE is Green, FALL is Red
-                if (isPositive) {
-                    changeArrow.className = "inline-flex items-center text-emerald-400";
-                    changePercent.className = "px-2 py-0.5 rounded text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
-                } else {
-                    changeArrow.className = "inline-flex items-center text-rose-500";
-                    changePercent.className = "px-2 py-0.5 rounded text-xs bg-rose-500/10 text-rose-500 border border-rose-500/20";
-                }
             }
 
-            // Re-render chart to reflect updated colors
+            const changeText = document.getElementById('kospi-change-val').textContent.trim();
+            const isPositive = !changeText.startsWith('-');
+            updateMarketColors(isPositive);
             renderChart();
         }
 
-        // Initialize on load
-        window.onload = function() {
+        document.addEventListener('DOMContentLoaded', function() {
+            const changeText = document.getElementById('kospi-change-val').textContent.trim();
+            const isPositive = !changeText.startsWith('-');
+            updateMarketColors(isPositive);
             renderChart();
-        };
+        });
     </script>
 </body>
 </html>
