@@ -8,7 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- FontAwesome 아이콘 -->
+    <!-- FontAwesome 아이콘 라이브러리 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
@@ -67,7 +67,7 @@
             </div>
             <div class="text-right">
                 <p class="text-xs text-slate-500 font-medium">자료 기준일</p>
-                <p class="text-sm font-bold text-slate-300" id="market-date">2026년 06월 26일 장 마감</p>
+                <p class="text-sm font-bold text-slate-300" id="market-date">데이터 수집 대기 중</p>
             </div>
         </div>
 
@@ -85,15 +85,15 @@
                     
                     <div class="mt-4">
                         <h3 class="text-4xl md:text-5xl font-black tracking-tight text-white">
-                            <span id="kospi-value">8,410.06</span>
+                            <span id="kospi-value">0,000.00</span>
                         </h3>
                         <div id="kospi-change-container" class="flex items-center space-x-2 mt-2 font-bold text-lg">
                             <span class="inline-flex items-center" id="kospi-change-arrow">
                                 <i class="fa-solid mr-1"></i>
-                                <span id="kospi-change-val">-520.24</span>
+                                <span id="kospi-change-val">0.00</span>
                             </span>
                             <span class="px-2 py-0.5 rounded text-xs" id="kospi-change-percent">
-                                <span id="kospi-change-pct">-5.83%</span>
+                                <span id="kospi-change-pct">0.00%</span>
                             </span>
                         </div>
                     </div>
@@ -220,9 +220,9 @@
         // -------------------------------------------------------------
         // [중요] 아래 변수는 update_dashboard.py 에 의해 자동으로 파싱되고 치환되는 핵심 영역입니다.
         const netBuyingData = {
-            personal: 4.2229,    
-            foreign: -3.5389,    
-            institution: -0.9419  
+            personal: 0.0000,    
+            foreign: 0.0000,    
+            institution: 0.0000  
         };
         // -------------------------------------------------------------
 
@@ -354,12 +354,12 @@
             renderChart();
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
+        window.onload = function() {
             const changeText = document.getElementById('kospi-change-val').textContent.trim();
             const isPositive = !changeText.startsWith('-');
             updateMarketColors(isPositive);
             renderChart();
-        });
+        }
     </script>
 </body>
 </html>
