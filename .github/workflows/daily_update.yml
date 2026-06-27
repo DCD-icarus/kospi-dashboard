@@ -1,0 +1,42 @@
+name: Daily KOSPI Dashboard Update
+
+on:
+  schedule:
+    # UTC 기준 오전 7:00 = 한국 시간(KST) 오후 4:00 (월~금요일 장 마감 후 실행)
+    - cron: '0 7 * * 1-5'
+  workflow_dispatch: # 사용자가 직접 깃허브Actions에서 버튼을 눌러 수동 실행도 가능하게 설정
+
+jobs:
+  update-dashboard:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4 # 최신 Node v20/24 호환 버전으로 업그레이드하여 경고 제거
+
+    - name: Set up Python
+      uses: actions/setup-python@v5 # 최신 인프라 지원 및 경고 제거
+      with:
+        python-version: '3.10' # 명확하게 파이썬 버전을 지정하여 가상환경 빌드 속도 개선
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests beautifulsoup4
+
+    - name: Run Python Scraper and Update Dashboard
+      env:
+        # 카카오톡 API 영구 자동 연장을 위해 깃허브 Secrets 보안 정보 매핑
+        KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
+        KAKAO_REFRESH_TOKEN: ${{ secrets.KAKAO_REFRESH_TOKEN }}
+        # 구버전 방식 호환용 임시 토큰 전달 백업
+        KAKAO_ACCESS_TOKEN: ${{ secrets.KAKAO_ACCESS_TOKEN }}
+        GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
+      run: python update_dashboard.py
+
+    - name: Commit and Push changes
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git add index.html # 추적할 대시보드 파일명을 index.html로 단일 통일
+        git diff-index --quiet HEAD || git commit -m "⚡️ Auto-Update KOSPI Market Data ($(date +'%Y-%m-%d'))"
+        git push
