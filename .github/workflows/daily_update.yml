@@ -35,7 +35,7 @@ jobs:
       run: |
         git config --global user.name "github-actions[bot]"
         git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-        git add kospi_dashboard.html
+        git add index.html
         # 파일 내용이 실제로 변경되었을 때만 커밋하여 불필요한 배포 에러 방지
         git diff-index --quiet HEAD || git commit -m "⚡️ Auto-Update KOSPI Market Data ($(date +'%Y-%m-%d'))"
         git push
