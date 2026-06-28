@@ -227,12 +227,15 @@ def get_kakao_access_token():
         return None
 
 def send_kakao_notification(access_token, data):
-    """카카오톡 '나에게 보내기' API로 당일 마감 시황 메시지를 최종 전송합니다."""
+    """카카오톡 '나에게 보내기' API로 당일 마감 시황 메시지 및 터치 가능한 대시보드 링크를 최종 전송합니다."""
     if not access_token:
         return
         
-    dashboard_url = f"https://{os.environ.get('GITHUB_REPOSITORY_OWNER', 'username')}.github.io/kospi-dashboard/"
+    # 나의 깃허브 Pages 대시보드 주소 자동 생성
+    owner_name = os.environ.get('GITHUB_REPOSITORY_OWNER', 'username').lower()
+    dashboard_url = f"https://{owner_name}.github.io/kospi-dashboard/"
     
+    # 텍스트 영역 내에도 직접 주소 링크가 파랗게 활성화되도록 추가하고, 카톡 전용 하단 터치 버튼도 함께 매핑합니다.
     template_object = {
         "object_type": "text",
         "text": (
@@ -240,13 +243,22 @@ def send_kakao_notification(access_token, data):
             f"■ 코스피: {data['kospi_value']} ({data['kospi_percent']})\n"
             f"■ 개인 수급: {data['personal']:.2f}조 원\n"
             f"■ 외국인 수급: {data['foreign']:.2f}조 원\n"
-            f"■ 기관 수급: {data['institution']:.2f}조 원"
+            f"■ 기관 수급: {data['institution']:.2f}조 원\n\n"
+            f"🔗 실시간 대시보드 주소:\n{dashboard_url}"
         ),
         "link": {
             "web_url": dashboard_url,
             "mobile_web_url": dashboard_url
         },
-        "button_title": "실시간 대시보드 이동"
+        "buttons": [
+            {
+                "title": "📊 실시간 대시보드 보기",
+                "link": {
+                    "web_url": dashboard_url,
+                    "mobile_web_url": dashboard_url
+                }
+            }
+        ]
     }
     
     url = "https://kapi.kakao.com/v2/api/talk/memo/default/send"
@@ -260,7 +272,7 @@ def send_kakao_notification(access_token, data):
     
     response = requests.post(url, data=payload, headers=headers)
     if response.status_code == 200:
-        print("[3/3] 카카오톡 보고서가 본인 톡방으로 성공적으로 배달되었습니다!")
+        print("[3/3] 카카오톡 보고서 및 주소 링크가 성공적으로 전송되었습니다!")
     else:
         print(f"[오류] 카카오톡 전송 실패: {response.text}")
 
