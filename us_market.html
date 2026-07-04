@@ -66,7 +66,7 @@
             <!-- JS Dynamic Injection -->
         </div>
 
-        <!-- 2. 핵심 선별 30대 메가캡 주식 시황 (시가총액 크기순 정렬) -->
+        <!-- 2. 핵심 선별 30대 주식 시황 (시가총액 크기순 정렬) -->
         <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 glow-card">
             <h3 class="font-bold text-lg text-slate-100 mb-4"><i class="fa-solid fa-list-ol text-indigo-400 mr-2.5"></i>미국 증시 10대 핵심 메가캡 종목 (시가총액 순 정렬)</h3>
             <div class="overflow-x-auto">
@@ -144,134 +144,26 @@
         // --- US_DATA_START ---
         const marketData = {
             "macro": [
-                        {
-                                    "name": "S&P 500",
-                                    "val": "5,432.10",
-                                    "change": "+12.40",
-                                    "pct": "+0.23%",
-                                    "trend": "up",
-                                    "high": "5,620.12",
-                                    "low": "4,820.44"
-                        },
-                        {
-                                    "name": "나스닥 종합",
-                                    "val": "17,820.50",
-                                    "change": "+56.80",
-                                    "pct": "+0.32%",
-                                    "trend": "up",
-                                    "high": "18,650.10",
-                                    "low": "14,510.20"
-                        },
-                        {
-                                    "name": "다우존스 지수",
-                                    "val": "39,120.40",
-                                    "change": "-15.20",
-                                    "pct": "-0.04%",
-                                    "trend": "down",
-                                    "high": "40,110.80",
-                                    "low": "36,810.15"
-                        },
-                        {
-                                    "name": "미국채 10년 금리",
-                                    "val": "4.215%",
-                                    "change": "-0.012",
-                                    "pct": "-0.28%",
-                                    "trend": "down",
-                                    "high": "4.730%",
-                                    "low": "3.820%"
-                        },
-                        {
-                                    "name": "미국채 30년 금리",
-                                    "val": "4.385%",
-                                    "change": "-0.008",
-                                    "pct": "-0.18%",
-                                    "trend": "down",
-                                    "high": "4.890%",
-                                    "low": "3.950%"
-                        },
-                        {
-                                    "name": "WTI 선물 유가",
-                                    "val": "81.45",
-                                    "change": "+0.45",
-                                    "pct": "+0.56%",
-                                    "trend": "up",
-                                    "high": "88.20",
-                                    "low": "68.50"
-                        }
+                {"name": "S&P 500", "val": "5,432.10", "change": "+12.40", "pct": "+0.23%", "trend": "up", "high": "5,620.12", "low": "4,820.44"},
+                {"name": "나스닥 종합", "val": "17,820.50", "change": "+56.80", "pct": "+0.32%", "trend": "up", "high": "18,650.10", "low": "14,510.20"},
+                {"name": "다우존스 지수", "val": "39,120.40", "change": "-15.20", "pct": "-0.04%", "trend": "down", "high": "40,110.80", "low": "36,810.15"},
+                {"name": "미국채 10년 금리", "val": "4.215%", "change": "-0.012", "pct": "-0.28%", "trend": "down", "high": "4.730%", "low": "3.820%"},
+                {"name": "미국채 30년 금리", "val": "4.385%", "change": "-0.008", "pct": "-0.18%", "trend": "down", "high": "4.890%", "low": "3.950%"},
+                {"name": "WTI 선물 유가", "val": "81.45", "change": "+0.45", "pct": "+0.56%", "trend": "up", "high": "88.20", "low": "68.50"}
             ],
             "top30": [
-                        {
-                                    "ticker": "MSFT",
-                                    "price": "$428.15",
-                                    "change": "+$1.85",
-                                    "pct": "+0.43%",
-                                    "cap": "3.18조달러"
-                        },
-                        {
-                                    "ticker": "AAPL",
-                                    "price": "$210.45",
-                                    "change": "+$1.20",
-                                    "pct": "+0.57%",
-                                    "cap": "3.12조달러"
-                        },
-                        {
-                                    "ticker": "NVDA",
-                                    "price": "$125.80",
-                                    "change": "+$2.45",
-                                    "pct": "+1.99%",
-                                    "cap": "3.09조달러"
-                        },
-                        {
-                                    "ticker": "GOOGL",
-                                    "price": "$175.60",
-                                    "change": "-$0.80",
-                                    "pct": "-0.45%",
-                                    "cap": "2.18조달러"
-                        },
-                        {
-                                    "ticker": "AMZN",
-                                    "price": "$189.40",
-                                    "change": "+$1.10",
-                                    "pct": "+0.58%",
-                                    "cap": "1.97조달러"
-                        },
-                        {
-                                    "ticker": "META",
-                                    "price": "$495.20",
-                                    "change": "-$3.15",
-                                    "pct": "-0.63%",
-                                    "cap": "1.25조달러"
-                        },
-                        {
-                                    "ticker": "TSLA",
-                                    "price": "$198.50",
-                                    "change": "+$4.20",
-                                    "pct": "+2.16%",
-                                    "cap": "6,330억달러"
-                        },
-                        {
-                                    "ticker": "AVGO",
-                                    "price": "$1,410.20",
-                                    "change": "+$15.40",
-                                    "pct": "+1.10%",
-                                    "cap": "6,540억달러"
-                        },
-                        {
-                                    "ticker": "LLY",
-                                    "price": "$895.40",
-                                    "change": "-$5.10",
-                                    "pct": "-0.57%",
-                                    "cap": "8,490억달러"
-                        },
-                        {
-                                    "ticker": "V",
-                                    "price": "$272.30",
-                                    "change": "+$0.85",
-                                    "pct": "+0.31%",
-                                    "cap": "5,580억달러"
-                        }
+                {"ticker": "MSFT", "price": "$428.15", "change": "+$1.85", "pct": "+0.43%", "cap": "3.18조달러"},
+                {"ticker": "AAPL", "price": "$210.45", "change": "+$1.20", "pct": "+0.57%", "cap": "3.12조달러"},
+                {"ticker": "NVDA", "price": "$125.80", "change": "+$2.45", "pct": "+1.99%", "cap": "3.09조달러"},
+                {"ticker": "GOOGL", "price": "$175.60", "change": "-$0.80", "pct": "-0.45%", "cap": "2.18조달러"},
+                {"ticker": "AMZN", "price": "$189.40", "change": "+$1.10", "pct": "+0.58%", "cap": "1.97조달러"},
+                {"ticker": "META", "price": "$495.20", "change": "-$3.15", "pct": "-0.63%", "cap": "1.25조달러"},
+                {"ticker": "TSLA", "price": "$198.50", "change": "+$4.20", "pct": "+2.16%", "cap": "6,330억달러"},
+                {"ticker": "AVGO", "price": "$1,410.20", "change": "+$15.40", "pct": "+1.10%", "cap": "6,540억달러"},
+                {"ticker": "LLY", "price": "$895.40", "change": "-$5.10", "pct": "-0.57%", "cap": "8,490억달러"},
+                {"ticker": "V", "price": "$272.30", "change": "+$0.85", "pct": "+0.31%", "cap": "5,580억달러"}
             ]
-};
+        };
         // --- US_DATA_END ---
 
         const macroSparklines = {};
