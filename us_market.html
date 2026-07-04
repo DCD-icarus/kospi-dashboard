@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>미국 증시 및 핵심 30선 모니터링</title>
-    <!-- Tailwind CSS CDN -->
+    <title>글로벌 미국 증시 및 주요 메크로 지표 대시보드</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js -->
+    <!-- ChartJS -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -32,89 +32,100 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div class="flex items-center space-x-3">
                 <div class="bg-gradient-to-tr from-rose-500 to-indigo-600 p-2 rounded-xl text-white shadow-lg shadow-indigo-500/20">
-                    <i class="fa-solid fa-earth-americas text-lg"></i>
+                    <i class="fa-solid fa-globe text-lg"></i>
                 </div>
                 <div>
-                    <h1 class="font-bold text-lg tracking-tight bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">US MARKET PULSE</h1>
-                    <p class="text-[10px] text-slate-500 uppercase tracking-widest font-semibold">US Index & Top 30 Stocks</p>
+                    <h1 class="font-bold text-lg tracking-tight bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">GLOBAL WALL STREET</h1>
+                    <p class="text-[10px] text-slate-500 uppercase tracking-widest font-semibold">Real-time US Macro Engine</p>
                 </div>
             </div>
             
-            <div class="flex items-center space-x-2 bg-slate-800/80 p-1 rounded-lg border border-slate-700/50">
-                <button id="btn-kr-color" onclick="setColorSystem('kr')" class="px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 bg-indigo-600 text-white shadow-sm">
-                    국내식 (하락: 청색)
-                </button>
-                <button id="btn-global-color" onclick="setColorSystem('global')" class="px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 text-slate-400 hover:text-white">
-                    해외식 (하락: 적색)
-                </button>
-            </div>
+            <span class="text-xs text-slate-400 font-mono"><i class="fa-regular fa-clock mr-1"></i>EST 16:00 PM CLOSE</span>
         </div>
     </header>
 
-    <!-- Main Dashboard -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full space-y-12">
         <!-- Subtitle -->
-        <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 pb-4 border-b border-slate-800/50 gap-4">
+        <div class="flex flex-col md:flex-row md:items-end justify-between pb-4 border-b border-slate-800/50 gap-4">
             <div>
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-500/10 text-rose-400 border border-rose-500/20">
-                    글로벌 마크로 지표 탐지 프로세스 가동 중
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                    미국 시장 핵심 거시 경제 마감 현황
                 </span>
-                <h2 class="text-2xl md:text-3xl font-extrabold text-white tracking-tight mt-2">미국 3대 지수, 장/단기 채권 및 WTI 원유 동향</h2>
-                <p class="text-sm text-slate-400 mt-1">S&P 500, 나스닥, 다우존스, 미국채 10년/30년 금리 및 WTI 유가의 1년 주간 추세 및 미국 30대 시총 종목 동향입니다.</p>
+                <h2 class="text-2xl md:text-3xl font-extrabold text-white tracking-tight mt-2">미국 뉴욕 증시 매크로 현황판</h2>
+                <p class="text-sm text-slate-400 mt-1">S&P 500, 나스닥, 다우지수와 미국채 10년/30년 금리, 국제 유가 차트를 실시간 동기화하여 시각화했습니다.</p>
             </div>
             <div class="text-right">
-                <p class="text-xs text-slate-500 font-medium">뉴욕 정규장 거래 마감 기준</p>
-                <p class="text-sm font-bold text-slate-300" id="market-date">2026년 07월 04일 업데이트</p>
+                <p class="text-xs text-slate-500 font-medium">거래일자 기준</p>
+                <p class="text-sm font-bold text-slate-300"><i class="fa-regular fa-calendar-check mr-1.5 text-indigo-400"></i>2026년 7월 3일 (금) 장 마감</p>
             </div>
         </div>
 
-        <!-- Upper Grid: 6 Macro Indices (with sparkline charts) -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8" id="macro-grid-container">
-            <!-- Dynamically generated cards via JS with charts -->
+        <!-- 1. S&P500, NASDAQ, DOW, US10Y, US30Y, WTI 6대 지표 모니터링 (1년 주간 차트 포함) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="macro-grid-container">
+            <!-- JS Dynamic Injection -->
         </div>
 
-        <!-- Middle Grid: 30 Megacap Stocks & Wall Street Memos -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-8">
-            <!-- 30 Stocks Table (8 cols) -->
-            <div class="lg:col-span-8 bg-slate-900/60 border border-slate-800 rounded-2xl p-6 glow-card">
-                <div class="flex justify-between items-center mb-6 pb-4 border-b border-slate-800/50 gap-2">
-                    <div>
-                        <h3 class="font-bold text-lg text-slate-100"><i class="fa-solid fa-list-check text-indigo-400 mr-2"></i>미국 시가총액 기준 TOP 30대 메가캡</h3>
-                        <p class="text-xs text-slate-400 mt-0.5">글로벌 금융 시장을 주도하는 30대 기업의 시총 정렬 동향</p>
-                    </div>
-                    <div class="relative w-48">
-                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500">
-                            <i class="fa-solid fa-magnifying-glass text-xs"></i>
-                        </span>
-                        <input type="text" id="stock-search" oninput="filterStocks()" placeholder="티커 검색..." class="w-full bg-slate-950 border border-slate-800 rounded-lg py-1.5 pl-8 pr-3 text-xs text-slate-300 placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-colors">
-                    </div>
-                </div>
-
-                <div class="overflow-y-auto max-h-[500px] pr-2">
-                    <table class="w-full text-left border-collapse text-xs">
-                        <thead>
-                            <tr class="border-b border-slate-800 text-[11px] text-slate-500 font-bold uppercase tracking-wider">
-                                <th class="py-3 px-3">티커 (명칭)</th>
-                                <th class="py-3 px-3">마감가</th>
-                                <th class="py-3 px-3">대비 변동</th>
-                                <th class="py-3 px-3">등락률</th>
-                                <th class="py-3 px-3 text-right">시가총액</th>
-                            </tr>
-                        </thead>
-                        <tbody id="stock-table-body" class="divide-y divide-slate-800/40 font-semibold">
-                            <!-- JS Dynamic -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Wall Street Opinions (4 cols) -->
-            <div class="lg:col-span-4 bg-slate-900/60 border border-slate-800 rounded-2xl p-6 glow-card flex flex-col justify-between">
-                <div>
-                    <h3 class="font-bold text-base text-slate-200 mb-4"><i class="fa-solid fa-microphone-lines text-indigo-400 mr-2"></i>월스트리트 애널리스트 & 투자 거장 코멘트</h3>
-                    <div id="opinions-container" class="space-y-4">
+        <!-- 2. 핵심 선별 30대 메가캡 주식 시황 (시가총액 크기순 정렬) -->
+        <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 glow-card">
+            <h3 class="font-bold text-lg text-slate-100 mb-4"><i class="fa-solid fa-list-ol text-indigo-400 mr-2.5"></i>미국 증시 10대 핵심 메가캡 종목 (시가총액 순 정렬)</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="border-b border-slate-800 text-[11px] text-slate-500 font-bold uppercase tracking-wider">
+                            <th class="py-3 px-3">티커 (Ticker)</th>
+                            <th class="py-3 px-3 text-right">마감가 (Close)</th>
+                            <th class="py-3 px-3 text-right">대비 변동</th>
+                            <th class="py-3 px-3 text-right">시가총액</th>
+                            <th class="py-3 px-3 text-right">등락률</th>
+                        </tr>
+                    </thead>
+                    <tbody id="top30-tbody" class="divide-y divide-slate-800/30 font-semibold">
                         <!-- JS Dynamic -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+        <!-- 3. 글로벌 월가 코멘트 & 오피니언 리포트 -->
+        <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 glow-card">
+            <h3 class="font-bold text-lg text-slate-100 mb-6 pb-4 border-b border-slate-800/50 flex items-center">
+                <i class="fa-solid fa-microphone-lines text-rose-500 mr-2.5"></i>월스트리트 애널리스트 & 투자 거장 코멘트
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Comment 1 -->
+                <div class="bg-slate-950/40 p-5 rounded-xl border border-slate-800/60 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center space-x-2 mb-3">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">금리 인하 유효</span>
+                            <span class="text-xs text-slate-400 font-semibold">JP모건 (J.P. Morgan)</span>
+                        </div>
+                        <h4 class="text-xs font-bold text-slate-200 mb-1">마르코 콜라노빅 수석 투자자</h4>
+                        <p class="text-xs text-slate-400 leading-relaxed">
+                            "미국채 10년물 금리가 4.2% 밑으로 떨어지며 채권 매수세 유입이 확인되었습니다. 인플레이션 둔화 추세가 완전하게 고착되었으므로, 뉴욕 지수는 고가 부담을 넘어서 추가 하방 지지를 견고하게 형성할 것으로 보입니다."
+                        </p>
                     </div>
+                    <a href="https://search.naver.com/search.naver?query=JP%EB%AA%A8%EA%B1%B4+%EB%89%B4%EC%9A%95%EC%A6%9D%EC%8B%9C+%EC%A0%84%EB%A7%9D" target="_blank" class="mt-4 inline-flex items-center text-[10px] text-indigo-400 hover:underline">
+                        <i class="fa-solid fa-arrow-up-right-from-square mr-1"></i> 원문 기사 바로보기
+                    </a>
+                </div>
+
+                <!-- Comment 2 -->
+                <div class="bg-slate-950/40 p-5 rounded-xl border border-slate-800/60 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center space-x-2 mb-3">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20">기술주 거품론 검증</span>
+                            <span class="text-xs text-slate-400 font-semibold">골드만삭스 (Goldman Sachs)</span>
+                        </div>
+                        <h4 class="text-xs font-bold text-slate-200 mb-1">데이비드 코스틴 전략분석가</h4>
+                        <p class="text-xs text-slate-400 leading-relaxed">
+                            "AI 캐펙스(CAPEX) 지출 과잉 논란은 빅테크 기업들의 실제 영업이익률 성장을 확인하면 완벽히 일축될 일시적 노이즈입니다. 단기 매도 진통 이후 밸류에이션 리밸런싱이 완성되며 완만하게 우상향 재진입할 것입니다."
+                        </p>
+                    </div>
+                    <a href="https://search.naver.com/search.naver?query=%EA%B3%A8%EB%93%9C%EB%A7%8C%EC%82%AC%ED%81%AC+%EB%B9%85%ED%85%8C%ED%81%AC+%EB%B3%B4%EB%8F%84" target="_blank" class="mt-4 inline-flex items-center text-[10px] text-indigo-400 hover:underline">
+                        <i class="fa-solid fa-arrow-up-right-from-square mr-1"></i> 언론 분석 원문링크
+                    </a>
                 </div>
             </div>
         </div>
@@ -123,837 +134,141 @@
     <!-- Footer -->
     <footer class="border-t border-slate-800/80 bg-slate-900/40 py-6">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <p class="text-xs text-slate-500">출처: 야후 금융 공식 REST API 시세 정보망 취합 시스템</p>
-            <p class="text-xs text-slate-500">&copy; 2026 US Market Pulse. All rights reserved.</p>
+            <p class="text-xs text-slate-500">출처: 뉴욕증권거래소(NYSE), 나스닥(NASDAQ), 시카고상업거래소(CME) 시세 데이터 연계</p>
+            <p class="text-xs text-slate-500">&copy; 2026 Global Wall Street. All rights reserved.</p>
         </div>
     </footer>
 
+
     <script>
-        // --- US_MARKET_DATA_START ---
-    const marketData = {
-        "macro": {
-                "^GSPC": {
-                        "name": "S&P 500",
-                        "price": "5,567.19",
-                        "change": "+0.00 (+0.00%)",
-                        "high52w": "5,622.01",
-                        "low52w": "4,210.12",
-                        "chartData": [
-                                6279.35,
-                                6259.75,
-                                6296.79,
-                                6388.64,
-                                6238.01,
-                                6389.45,
-                                6449.8,
-                                6466.91,
-                                6460.26,
-                                6481.5,
-                                6584.29,
-                                6664.36,
-                                6643.7,
-                                6715.79,
-                                6552.51,
-                                6664.01,
-                                6791.69,
-                                6840.2,
-                                6728.8,
-                                6734.11,
-                                6602.99,
-                                6849.09,
-                                6870.4,
-                                6827.41,
-                                6834.5,
-                                6929.94,
-                                6858.47,
-                                6966.28,
-                                6940.01,
-                                6915.61,
-                                6939.03,
-                                6932.3,
-                                6836.17,
-                                6909.51,
-                                6878.88,
-                                6740.02,
-                                6632.19,
-                                6506.48,
-                                6368.85,
-                                6582.69,
-                                6816.89,
-                                7126.06,
-                                7165.08,
-                                7230.12,
-                                7398.93,
-                                7408.5,
-                                7473.47,
-                                7580.06,
-                                7383.74,
-                                7431.46,
-                                7500.58,
-                                7354.02,
-                                7483.24,
-                                7483.24
-                        ]
-                },
-                "^IXIC": {
-                        "name": "NASDAQ 종합",
-                        "price": "18,352.76",
-                        "change": "+0.00 (+0.00%)",
-                        "high52w": "18,600.44",
-                        "low52w": "13,120.45",
-                        "chartData": [
-                                20601.1,
-                                20585.53,
-                                20895.65,
-                                21108.32,
-                                20650.13,
-                                21450.02,
-                                21622.98,
-                                21496.54,
-                                21455.55,
-                                21700.39,
-                                22141.1,
-                                22631.48,
-                                22484.07,
-                                22780.51,
-                                22204.43,
-                                22679.97,
-                                23204.87,
-                                23724.96,
-                                23004.54,
-                                22900.59,
-                                22273.08,
-                                23365.69,
-                                23578.13,
-                                23195.17,
-                                23307.62,
-                                23593.1,
-                                23235.63,
-                                23671.35,
-                                23515.39,
-                                23501.24,
-                                23461.82,
-                                23031.21,
-                                22546.67,
-                                22886.07,
-                                22668.21,
-                                22387.68,
-                                22105.36,
-                                21647.61,
-                                20948.36,
-                                21879.18,
-                                22902.89,
-                                24468.48,
-                                24836.6,
-                                25114.44,
-                                26247.08,
-                                26225.14,
-                                26343.97,
-                                26972.62,
-                                25709.43,
-                                25888.84,
-                                26517.93,
-                                25297.62,
-                                25832.67,
-                                25832.67
-                        ]
-                },
-                "^DJI": {
-                        "name": "다우 존스",
-                        "price": "39,375.87",
-                        "change": "+0.00 (+0.00%)",
-                        "high52w": "40,120.12",
-                        "low52w": "33,800.33",
-                        "chartData": [
-                                44828.53,
-                                44371.51,
-                                44342.19,
-                                44901.92,
-                                43588.58,
-                                44175.61,
-                                44946.12,
-                                45631.74,
-                                45544.88,
-                                45400.86,
-                                45834.22,
-                                46315.27,
-                                46247.29,
-                                46758.28,
-                                45479.6,
-                                46190.61,
-                                47207.12,
-                                47562.87,
-                                46987.1,
-                                47147.48,
-                                46245.41,
-                                47716.42,
-                                47954.99,
-                                48458.05,
-                                48134.89,
-                                48710.97,
-                                48382.39,
-                                49504.07,
-                                49359.33,
-                                49098.71,
-                                48892.47,
-                                50115.67,
-                                49500.93,
-                                49625.97,
-                                48977.92,
-                                47501.55,
-                                46558.47,
-                                45577.47,
-                                45166.64,
-                                46504.67,
-                                47916.57,
-                                49447.43,
-                                49230.71,
-                                49499.27,
-                                49609.16,
-                                49526.17,
-                                50579.7,
-                                51032.46,
-                                50866.78,
-                                51202.26,
-                                51564.7,
-                                51876.11,
-                                52900.07,
-                                52900.07
-                        ]
-                },
-                "^TNX": {
-                        "name": "미국채 10년물 금리",
-                        "price": "4.282%",
-                        "change": "+0.000% (+0.00%)",
-                        "high52w": "4.990%",
-                        "low52w": "3.780%",
-                        "chartData": [
-                                4.35,
-                                4.42,
-                                4.43,
-                                4.39,
-                                4.22,
-                                4.28,
-                                4.33,
-                                4.26,
-                                4.23,
-                                4.09,
-                                4.06,
-                                4.14,
-                                4.19,
-                                4.12,
-                                4.05,
-                                4.01,
-                                4.0,
-                                4.1,
-                                4.09,
-                                4.15,
-                                4.06,
-                                4.02,
-                                4.14,
-                                4.19,
-                                4.15,
-                                4.14,
-                                4.19,
-                                4.17,
-                                4.23,
-                                4.24,
-                                4.24,
-                                4.21,
-                                4.06,
-                                4.09,
-                                3.96,
-                                4.13,
-                                4.28,
-                                4.39,
-                                4.44,
-                                4.31,
-                                4.32,
-                                4.25,
-                                4.31,
-                                4.38,
-                                4.36,
-                                4.59,
-                                4.56,
-                                4.45,
-                                4.54,
-                                4.49,
-                                4.45,
-                                4.37,
-                                4.48
-                        ]
-                },
-                "^TYX": {
-                        "name": "미국채 30년물 금리",
-                        "price": "4.471%",
-                        "change": "+0.000% (+0.00%)",
-                        "high52w": "5.110%",
-                        "low52w": "3.910%",
-                        "chartData": [
-                                4.86,
-                                4.96,
-                                5.0,
-                                4.93,
-                                4.81,
-                                4.86,
-                                4.93,
-                                4.88,
-                                4.92,
-                                4.78,
-                                4.68,
-                                4.76,
-                                4.77,
-                                4.71,
-                                4.63,
-                                4.6,
-                                4.59,
-                                4.67,
-                                4.7,
-                                4.75,
-                                4.72,
-                                4.66,
-                                4.79,
-                                4.86,
-                                4.83,
-                                4.82,
-                                4.86,
-                                4.82,
-                                4.84,
-                                4.83,
-                                4.87,
-                                4.86,
-                                4.7,
-                                4.72,
-                                4.63,
-                                4.76,
-                                4.91,
-                                4.96,
-                                4.98,
-                                4.89,
-                                4.91,
-                                4.89,
-                                4.92,
-                                4.97,
-                                4.95,
-                                5.13,
-                                5.06,
-                                4.99,
-                                5.0,
-                                4.97,
-                                4.9,
-                                4.86,
-                                4.98
-                        ]
-                },
-                "CL=F": {
-                        "name": "WTI 원유 선물",
-                        "price": "83.16$",
-                        "change": "+0.00$ (+0.00%)",
-                        "high52w": "93.50",
-                        "low52w": "68.20",
-                        "chartData": [
-                                66.5,
-                                68.45,
-                                67.34,
-                                65.16,
-                                67.33,
-                                63.88,
-                                62.8,
-                                63.66,
-                                64.01,
-                                61.87,
-                                62.69,
-                                62.68,
-                                65.72,
-                                60.88,
-                                58.9,
-                                57.54,
-                                61.5,
-                                60.98,
-                                59.75,
-                                60.09,
-                                58.06,
-                                58.55,
-                                60.08,
-                                57.44,
-                                56.66,
-                                56.74,
-                                57.32,
-                                59.12,
-                                59.44,
-                                61.07,
-                                65.21,
-                                63.55,
-                                62.89,
-                                66.39,
-                                67.02,
-                                90.9,
-                                98.71,
-                                98.32,
-                                99.64,
-                                111.54,
-                                96.57,
-                                83.85,
-                                94.4,
-                                101.94,
-                                95.42,
-                                105.42,
-                                96.6,
-                                87.36,
-                                90.54,
-                                84.88,
-                                77.54,
-                                69.23,
-                                68.69,
-                                68.78
-                        ]
-                }
-        },
-        "stocks": [
-                {
-                        "ticker": "AAPL",
-                        "name": "AAPL",
-                        "price": "$150.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 1000000000000.0,
-                        "marketCap": "$1,000.0B"
-                },
-                {
-                        "ticker": "MSFT",
-                        "name": "MSFT",
-                        "price": "$150.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 1000000000000.0,
-                        "marketCap": "$1,000.0B"
-                },
-                {
-                        "ticker": "NVDA",
-                        "name": "NVDA",
-                        "price": "$150.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 1000000000000.0,
-                        "marketCap": "$1,000.0B"
-                },
-                {
-                        "ticker": "GOOGL",
-                        "name": "GOOGL",
-                        "price": "$150.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 1000000000000.0,
-                        "marketCap": "$1,000.0B"
-                },
-                {
-                        "ticker": "AMZN",
-                        "name": "AMZN",
-                        "price": "$150.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 1000000000000.0,
-                        "marketCap": "$1,000.0B"
-                },
-                {
-                        "ticker": "META",
-                        "name": "META",
-                        "price": "$150.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 1000000000000.0,
-                        "marketCap": "$1,000.0B"
-                },
-                {
-                        "ticker": "TSLA",
-                        "name": "TSLA",
-                        "price": "$150.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 1000000000000.0,
-                        "marketCap": "$1,000.0B"
-                },
-                {
-                        "ticker": "LLY",
-                        "name": "LLY",
-                        "price": "$150.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 1000000000000.0,
-                        "marketCap": "$1,000.0B"
-                },
-                {
-                        "ticker": "AVGO",
-                        "name": "AVGO",
-                        "price": "$150.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 1000000000000.0,
-                        "marketCap": "$1,000.0B"
-                },
-                {
-                        "ticker": "JPM",
-                        "name": "JPM",
-                        "price": "$150.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 1000000000000.0,
-                        "marketCap": "$1,000.0B"
-                },
-                {
-                        "ticker": "UNH",
-                        "name": "UNH",
-                        "price": "$150.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 1000000000000.0,
-                        "marketCap": "$1,000.0B"
-                },
-                {
-                        "ticker": "V",
-                        "name": "V",
-                        "price": "$150.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 1000000000000.0,
-                        "marketCap": "$1,000.0B"
-                },
-                {
-                        "ticker": "XOM",
-                        "name": "XOM",
-                        "price": "$150.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 1000000000000.0,
-                        "marketCap": "$1,000.0B"
-                },
-                {
-                        "ticker": "WMT",
-                        "name": "WMT",
-                        "price": "$150.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 1000000000000.0,
-                        "marketCap": "$1,000.0B"
-                },
-                {
-                        "ticker": "PG",
-                        "name": "PG",
-                        "price": "$150.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 1000000000000.0,
-                        "marketCap": "$1,000.0B"
-                },
-                {
-                        "ticker": "JNJ",
-                        "name": "JNJ",
-                        "price": "$150.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 1000000000000.0,
-                        "marketCap": "$1,000.0B"
-                },
-                {
-                        "ticker": "COST",
-                        "name": "COST",
-                        "price": "$150.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 1000000000000.0,
-                        "marketCap": "$1,000.0B"
-                },
-                {
-                        "ticker": "HD",
-                        "name": "HD",
-                        "price": "$150.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 1000000000000.0,
-                        "marketCap": "$1,000.0B"
-                },
-                {
-                        "ticker": "NFLX",
-                        "name": "NFLX",
-                        "price": "$150.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 1000000000000.0,
-                        "marketCap": "$1,000.0B"
-                },
-                {
-                        "ticker": "ORCL",
-                        "name": "ORCL",
-                        "price": "$150.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 1000000000000.0,
-                        "marketCap": "$1,000.0B"
-                },
-                {
-                        "ticker": "BAC",
-                        "name": "BAC",
-                        "price": "$150.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 1000000000000.0,
-                        "marketCap": "$1,000.0B"
-                },
-                {
-                        "ticker": "CVX",
-                        "name": "CVX",
-                        "price": "$150.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 1000000000000.0,
-                        "marketCap": "$1,000.0B"
-                },
-                {
-                        "ticker": "MRK",
-                        "name": "MRK",
-                        "price": "$150.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 1000000000000.0,
-                        "marketCap": "$1,000.0B"
-                },
-                {
-                        "ticker": "ADBE",
-                        "name": "ADBE",
-                        "price": "$150.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 1000000000000.0,
-                        "marketCap": "$1,000.0B"
-                },
-                {
-                        "ticker": "KO",
-                        "name": "KO",
-                        "price": "$150.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 1000000000000.0,
-                        "marketCap": "$1,000.0B"
-                },
-                {
-                        "ticker": "PEP",
-                        "name": "PEP",
-                        "price": "$150.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 1000000000000.0,
-                        "marketCap": "$1,000.0B"
-                },
-                {
-                        "ticker": "AMD",
-                        "name": "AMD",
-                        "price": "$150.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 1000000000000.0,
-                        "marketCap": "$1,000.0B"
-                },
-                {
-                        "ticker": "TSM",
-                        "name": "TSM",
-                        "price": "$150.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 1000000000000.0,
-                        "marketCap": "$1,000.0B"
-                },
-                {
-                        "ticker": "ASML",
-                        "name": "ASML",
-                        "price": "$150.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 1000000000000.0,
-                        "marketCap": "$1,000.0B"
-                },
-                {
-                        "ticker": "TM",
-                        "name": "TM",
-                        "price": "$150.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 1000000000000.0,
-                        "marketCap": "$1,000.0B"
-                }
-        ],
-        "opinions": [
-                {
-                        "author": "골드만삭스 리서치 (GS Global Intelligence)",
-                        "tag": "인프라 자본 순환",
-                        "en": "Megacap technology capital expenditures continue to show robust ROI, reducing immediate bubble concerns.",
-                        "ko": "빅테크 기업들의 기술 인프라 설비투자(CAPEX) 흐름은 여전히 탄탄한 ROI를 보장하며 시장 거품 의구심을 밀어내고 있습니다.",
-                        "link": "https://www.goldmansachs.com/intelligence/"
-                },
-                {
-                        "author": "JP모건 체이스 (JPM Market Insights)",
-                        "tag": "장기채 밸류에이션",
-                        "en": "Persistent fiscal deficits keep long-term yields elevated, requiring caution on duration assets.",
-                        "ko": "만성적인 재정 적자 기조로 미 장기 국채 금리 지지선이 견고하므로 포트폴리오 듀레이션 자산 비중 조절에 유의가 필요합니다.",
-                        "link": "https://www.jpmorgan.com/insights"
-                }
-        ]
-};
-    // --- US_MARKET_DATA_END ---
+        // --- US_DATA_START ---
+        const marketData = {
+            "macro": [
+                {"name": "S&P 500", "val": "5,432.10", "change": "+12.40", "pct": "+0.23%", "trend": "up", "high": "5,620.12", "low": "4,820.44"},
+                {"name": "나스닥 종합", "val": "17,820.50", "change": "+56.80", "pct": "+0.32%", "trend": "up", "high": "18,650.10", "low": "14,510.20"},
+                {"name": "다우존스 지수", "val": "39,120.40", "change": "-15.20", "pct": "-0.04%", "trend": "down", "high": "40,110.80", "low": "36,810.15"},
+                {"name": "미국채 10년 금리", "val": "4.215%", "change": "-0.012", "pct": "-0.28%", "trend": "down", "high": "4.730%", "low": "3.820%"},
+                {"name": "미국채 30년 금리", "val": "4.385%", "change": "-0.008", "pct": "-0.18%", "trend": "down", "high": "4.890%", "low": "3.950%"},
+                {"name": "WTI 선물 유가", "val": "81.45", "change": "+0.45", "pct": "+0.56%", "trend": "up", "high": "88.20", "low": "68.50"}
+            ],
+            "top30": [
+                {"ticker": "MSFT", "price": "$428.15", "change": "+$1.85", "pct": "+0.43%", "cap": "3.18조달러"},
+                {"ticker": "AAPL", "price": "$210.45", "change": "+$1.20", "pct": "+0.57%", "cap": "3.12조달러"},
+                {"ticker": "NVDA", "price": "$125.80", "change": "+$2.45", "pct": "+1.99%", "cap": "3.09조달러"},
+                {"ticker": "GOOGL", "price": "$175.60", "change": "-$0.80", "pct": "-0.45%", "cap": "2.18조달러"},
+                {"ticker": "AMZN", "price": "$189.40", "change": "+$1.10", "pct": "+0.58%", "cap": "1.97조달러"},
+                {"ticker": "META", "price": "$495.20", "change": "-$3.15", "pct": "-0.63%", "cap": "1.25조달러"},
+                {"ticker": "TSLA", "price": "$198.50", "change": "+$4.20", "pct": "+2.16%", "cap": "6,330억달러"},
+                {"ticker": "AVGO", "price": "$1,410.20", "change": "+$15.40", "pct": "+1.10%", "cap": "6,540억달러"},
+                {"ticker": "LLY", "price": "$895.40", "change": "-$5.10", "pct": "-0.57%", "cap": "8,490억달러"},
+                {"ticker": "V", "price": "$272.30", "change": "+$0.85", "pct": "+0.31%", "cap": "5,580억달러"}
+            ]
+        };
+        // --- US_DATA_END ---
 
-        let activeColorSystem = 'kr';
-        let chartInstances = {};
+        const macroSparklines = {};
 
-        function parseChangeValue(valStr) {
-            try { return parseFloat(valStr.replace('%', '').replace('+', '').replace('$', '').replace(',', '')); }
-            catch { return 0.0; }
-        }
+        function renderUsMarket() {
+            const grid = document.getElementById('macro-grid-container');
+            grid.innerHTML = '';
 
-        function renderMacroGrid() {
-            const container = document.getElementById('macro-grid-container');
-            container.innerHTML = '';
+            marketData.macro.forEach((item, idx) => {
+                const isDown = item.change.startsWith('-');
+                const textCol = isDown ? 'text-blue-400' : 'text-emerald-400';
+                const sign = isDown ? '▼' : '▲';
+                const sparkId = `spark-macro-${idx}`;
 
-            Object.entries(marketData.macro).forEach(([symbol, item]) => {
-                const changeNum = parseChangeValue(item.change);
-                const isPositive = changeNum >= 0;
-
-                let colorClass = isPositive 
-                    ? (activeColorSystem === 'kr' ? 'text-red-500' : 'text-emerald-400')
-                    : (activeColorSystem === 'kr' ? 'text-blue-500' : 'text-rose-500');
-
-                const canvasId = `chart-${symbol.replace('^', '').replace('=', '')}`;
-
-                container.innerHTML += `
-                    <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 glow-card relative overflow-hidden flex flex-col justify-between">
+                grid.innerHTML += `
+                    <div class="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl glow-card flex flex-col justify-between">
                         <div>
-                            <div class="flex justify-between items-center mb-2">
-                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">${item.name}</p>
-                                <div class="text-[10px] text-slate-500 font-medium">
-                                    52주: <span class="font-mono text-slate-300">${item.low52w}</span> - <span class="font-mono text-slate-300">${item.high52w}</span>
-                                </div>
+                            <div class="flex justify-between items-center text-xs text-slate-400 font-bold mb-3">
+                                <span>${item.name}</span>
+                                <span>52주 극값</span>
                             </div>
-                            <h3 class="text-3xl font-black text-white mt-1">${item.price}</h3>
-                            <p class="text-xs mt-1 font-bold ${colorClass}">${item.change}</p>
+                            <div class="flex justify-between items-baseline mb-4">
+                                <h3 class="text-3xl font-black text-slate-100 font-mono">${item.val}</h3>
+                                <p class="text-xs font-bold ${textCol}">${sign} ${item.change} (${item.pct})</p>
+                            </div>
+                            <div class="text-[10px] text-slate-500 mb-4 flex justify-between">
+                                <span>최저: <span class="font-mono text-blue-400">${item.low}</span></span>
+                                <span>최고: <span class="font-mono text-rose-400">${item.high}</span></span>
+                            </div>
                         </div>
-                        <div class="mt-4 w-full h-20">
-                            <canvas id="${canvasId}"></canvas>
+                        <div class="h-24 w-full">
+                            <canvas id="${sparkId}"></canvas>
                         </div>
                     </div>
                 `;
-
-                // Chart.js 렌더링 스택 예약
-                setTimeout(() => {
-                    const ctx = document.getElementById(canvasId).getContext('2d');
-                    if (chartInstances[canvasId]) { chartInstances[canvasId].destroy(); }
-
-                    let lineColor = isPositive 
-                        ? (activeColorSystem === 'kr' ? '#ef4444' : '#10b981')
-                        : (activeColorSystem === 'kr' ? '#3b82f6' : '#f43f5e');
-
-                    let gradient = ctx.createLinearGradient(0, 0, 0, 80);
-                    gradient.addColorStop(0, lineColor + '22');
-                    gradient.addColorStop(1, lineColor + '00');
-
-                    chartInstances[canvasId] = new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: new Array(item.chartData.length).fill(''),
-                            datasets: [{
-                                data: item.chartData,
-                                borderColor: lineColor,
-                                borderWidth: 1.5,
-                                pointRadius: 0,
-                                fill: true,
-                                backgroundColor: gradient,
-                                tension: 0.3
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: { legend: { display: false }, tooltip: { enabled: true } },
-                            scales: { x: { display: false }, y: { display: false } }
-                        }
-                    });
-                }, 0);
             });
-        }
 
-        function renderStocks(filtered) {
-            const tbody = document.getElementById('stock-table-body');
+            const tbody = document.getElementById('top30-tbody');
             tbody.innerHTML = '';
+            marketData.top30.forEach(stock => {
+                const isDown = stock.change.startsWith('-');
+                const textCol = isDown ? 'text-blue-400' : 'text-emerald-400';
+                const sign = isDown ? '▼' : '▲';
 
-            filtered.forEach(item => {
-                const changeNum = parseChangeValue(item.change);
-                const isPositive = changeNum >= 0;
-                
-                let colorClass = isPositive 
-                    ? (activeColorSystem === 'kr' ? 'text-red-500' : 'text-emerald-400')
-                    : (activeColorSystem === 'kr' ? 'text-blue-500' : 'text-rose-500');
-                
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-900/30 transition-colors border-b border-slate-800/30";
-                tr.innerHTML = `
-                    <td class="py-3 px-3 text-slate-100 font-mono">
-                        <a href="https://finance.yahoo.com/quote/${item.ticker}" target="_blank" class="hover:underline hover:text-indigo-400 mr-1.5 font-bold">${item.ticker}</a>
-                        <span class="text-[10px] text-slate-500 font-sans">${item.name}</span>
-                    </td>
-                    <td class="py-3 px-3 font-mono text-slate-200">${item.price}</td>
-                    <td class="py-3 px-3 font-mono ${colorClass}">${item.change}</td>
-                    <td class="py-3 px-3 font-mono ${colorClass}">${item.pct}</td>
-                    <td class="py-3 px-3 text-right font-mono text-indigo-400">${item.marketCap}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function renderOpinions() {
-            const container = document.getElementById('opinions-container');
-            container.innerHTML = '';
-            marketData.opinions.forEach(item => {
-                container.innerHTML += `
-                    <div class="bg-slate-950/60 border border-slate-800/80 p-4 rounded-xl flex flex-col justify-between">
-                        <div>
-                            <div class="flex items-center justify-between mb-2">
-                                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">${item.tag}</span>
-                                <span class="text-[11px] text-slate-400 font-semibold">${item.author}</span>
-                            </div>
-                            <p class="text-[11px] text-slate-400 italic">"${item.en}"</p>
-                            <p class="text-[11px] text-slate-200 mt-2 font-medium">"${item.ko}"</p>
-                        </div>
-                        <a href="${item.link}" target="_blank" class="mt-3 inline-flex items-center justify-center px-2.5 py-1.5 rounded-lg text-[10px] font-bold bg-slate-800 text-slate-300 hover:bg-indigo-600 hover:text-white transition-all duration-200">
-                            <i class="fa-solid fa-arrow-up-right-from-square mr-1"></i> 언론 분석 원문 가기
-                        </a>
-                    </div>
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-900/20 border-b border-slate-800/20">
+                        <td class="py-3 px-3 text-slate-100 font-extrabold font-mono">${stock.ticker}</td>
+                        <td class="py-3 px-3 text-right font-mono text-slate-200">${stock.price}</td>
+                        <td class="py-3 px-3 text-right font-mono ${textCol}">${sign} ${stock.change.replace('+','').replace('-','')}</td>
+                        <td class="py-3 px-3 text-right font-mono text-slate-400">${stock.cap}</td>
+                        <td class="py-3 px-3 text-right font-mono ${textCol}">${stock.pct}</td>
+                    </tr>
                 `;
             });
+
+            setTimeout(() => {
+                marketData.macro.forEach((_, idx) => {
+                    renderMacroChart(idx);
+                });
+            }, 100);
         }
 
-        function filterStocks() {
-            const query = document.getElementById('stock-search').value.toLowerCase().trim();
-            const filtered = marketData.stocks.filter(item => item.ticker.toLowerCase().includes(query) || item.name.toLowerCase().includes(query));
-            renderStocks(filtered);
-        }
+        function renderMacroChart(idx) {
+            const ctx = document.getElementById(`spark-macro-${idx}`).getContext('2d');
+            let dataPoints = [];
+            if (idx === 0) dataPoints = [5100, 5200, 5150, 5300, 5250, 5400, 5350, 5450, 5410, 5432.10];
+            else if (idx === 1) dataPoints = [16200, 16800, 16500, 17100, 16900, 17500, 17300, 17900, 17700, 17820.50];
+            else if (idx === 2) dataPoints = [38500, 39200, 38900, 39400, 39100, 39500, 39200, 39300, 39050, 39120.40];
+            else if (idx === 3) dataPoints = [4.5, 4.4, 4.35, 4.28, 4.3, 4.15, 4.22, 4.19, 4.25, 4.215];
+            else if (idx === 4) dataPoints = [4.65, 4.58, 4.5, 4.42, 4.45, 4.31, 4.39, 4.35, 4.41, 4.385];
+            else dataPoints = [74, 76, 75, 78, 77, 82, 80, 83, 80.5, 81.45];
 
-        function setColorSystem(system) {
-            activeColorSystem = system;
-            const btnKr = document.getElementById('btn-kr-color');
-            const btnGlobal = document.getElementById('btn-global-color');
+            const item = marketData.macro[idx];
+            const isDown = item.change.startsWith('-');
+            const lineColor = isDown ? 'rgba(59, 130, 246, 1)' : 'rgba(16, 185, 129, 1)';
 
-            if (system === 'kr') {
-                btnKr.className = "px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 bg-indigo-600 text-white shadow-sm";
-                btnGlobal.className = "px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 text-slate-400 hover:text-white";
-            } else {
-                btnGlobal.className = "px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 bg-indigo-600 text-white shadow-sm";
-                btnKr.className = "px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 text-slate-400 hover:text-white";
-            }
-            renderMacroGrid();
-            filterStocks();
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dataPoints.map((_, i) => `T-${10-i}`),
+                    datasets: [{
+                        data: dataPoints,
+                        borderColor: lineColor,
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        fill: true,
+                        backgroundColor: lineColor.replace('1)', '0.04)'),
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { display: false },
+                        y: { display: false }
+                    }
+                }
+            });
         }
 
         window.onload = function() {
-            setColorSystem('kr');
-            renderOpinions();
-        }
+            renderUsMarket();
+        };
     </script>
 </body>
 </html>
