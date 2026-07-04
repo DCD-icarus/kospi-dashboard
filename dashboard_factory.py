@@ -245,10 +245,34 @@ def run_seoul_estate_mode():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Multi-Profile Dashboard Scraper Factory")
-    parser.add_argument("--mode", type=str, required=True, choices=["kospi", "reits", "us_market", "seoul_estate"], help="수집 및 업데이트 대상 프로필 모드")
+    parser.add_argument("--mode", type=str, required=True, choices=["kospi", "reits", "us_market", "seoul_estate", "auto"], help="수집 및 업데이트 대상 프로필 모드")
     args = parser.parse_args()
 
-    if args.mode == "kospi":
+    if args.mode == "auto":
+        # 실행 국가 표준 시간(UTC)을 분석하여 알맞은 대상 모드를 자동 실행합니다.
+        now = datetime.utcnow()
+        hour = now.hour
+        minute = now.minute
+        print(f"[자동 감지 모드 가동] 현재 UTC 가상 서버 서버 시각: {now.strftime('%Y-%m-%d %H:%M:%S')}")
+        
+        if hour == 7:
+            print("➔ [한국 오후 4시 정규장 마감] 코스피 & 상장 리츠 동시 갱신을 진행합니다.")
+            run_kospi_mode()
+            run_reits_mode()
+        elif hour == 22 and minute <= 5:
+            print("➔ [한국 오전 7시 미국장 마감] 미국 종합 시황 갱신을 진행합니다.")
+            run_us_market_mode()
+        elif hour == 22 and minute >= 6:
+            print("➔ [한국 오전 7시 10분 부동산 전산망 반영] 서울 부동산 실거래 갱신을 진행합니다.")
+            run_seoul_estate_mode()
+        else:
+            print("➔ [수동/외부 액션 실행] 모든 데이터베이스를 순차적으로 일괄 수집/갱신합니다.")
+            run_kospi_mode()
+            run_reits_mode()
+            run_us_market_mode()
+            run_seoul_estate_mode()
+            
+    elif args.mode == "kospi":
         run_kospi_mode()
     elif args.mode == "reits":
         run_reits_mode()
