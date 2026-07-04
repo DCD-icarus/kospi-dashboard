@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>서울 핵심 아파트 실거래가 및 단지 분석</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome 아이콘 라이브러리 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Inter', 'Noto Sans KR', sans-serif; }
+        .glow-card {
+            box-shadow: 0 10px 30px -15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+        .glow-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.4);
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+
+    <!-- Header -->
+    <header class="border-b border-slate-800/80 bg-slate-900/50 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-gradient-to-tr from-rose-500 to-indigo-600 p-2 rounded-xl text-white shadow-lg shadow-indigo-500/20">
+                    <i class="fa-solid fa-house-chimney text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg tracking-tight bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">SEOUL ESTATE FACTORY</h1>
+                    <p class="text-[10px] text-slate-500 uppercase tracking-widest font-semibold">Real Transaction Navigator</p>
+                </div>
+            </div>
+            
+            <span class="text-xs text-slate-400 font-mono"><i class="fa-regular fa-clock mr-1"></i>KST 07:10 AM DAILY</span>
+        </div>
+    </header>
+
+    <!-- Main Dashboard Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
+        <!-- Subtitle -->
+        <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 pb-4 border-b border-slate-800/50 gap-4">
+            <div>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                    실거래 전산망 원격 연동 중
+                </span>
+                <h2 class="text-2xl md:text-3xl font-extrabold text-white tracking-tight mt-2">서울 핵심 아파트 실거래가 브리핑</h2>
+                <p class="text-sm text-slate-400 mt-1">국토교통부 실제 거래 계약일을 기준으로 취합된 가격순 정렬 실거래 데이터 및 랜드마크 분석 요약판입니다.</p>
+            </div>
+            <div class="text-right">
+                <p class="text-xs text-slate-500 font-medium">영업일 실거래 기준</p>
+                <p class="text-sm font-bold text-slate-300" id="market-date">데이터 수집 대기 중</p>
+            </div>
+        </div>
+
+        <!-- Upper Grid: Jamsil & Olympic Complexes News -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- Card 1 -->
+            <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl glow-card">
+                <span class="text-[10px] bg-indigo-500/10 text-indigo-400 px-2 py-0.5 rounded border border-indigo-500/20 font-bold">잠실 주공5단지</span>
+                <p class="text-xs text-slate-300 leading-relaxed mt-2" id="news-jamsil-5">업데이트 대기 중...</p>
+            </div>
+            <!-- Card 2 -->
+            <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl glow-card">
+                <span class="text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/20 font-bold">잠실 장미</span>
+                <p class="text-xs text-slate-300 leading-relaxed mt-2" id="news-rose">업데이트 대기 중...</p>
+            </div>
+            <!-- Card 3 -->
+            <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl glow-card">
+                <span class="text-[10px] bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded border border-amber-500/20 font-bold">올림픽선수촌</span>
+                <p class="text-xs text-slate-300 leading-relaxed mt-2" id="news-seonsu">업데이트 대기 중...</p>
+            </div>
+            <!-- Card 4 -->
+            <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl glow-card">
+                <span class="text-[10px] bg-rose-500/10 text-rose-400 px-2 py-0.5 rounded border border-rose-500/20 font-bold">올림픽파크포레온</span>
+                <p class="text-xs text-slate-300 leading-relaxed mt-2" id="news-foreon">업데이트 대기 중...</p>
+            </div>
+        </div>
+
+        <!-- Middle Grid: Transactions Tables -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <!-- Left: Top 30 Transactions (7 cols) -->
+            <div class="lg:col-span-7 bg-slate-900/60 border border-slate-800 rounded-2xl p-6 glow-card">
+                <div class="flex justify-between items-center mb-6 pb-4 border-b border-slate-800/50">
+                    <div>
+                        <h3 class="font-bold text-base text-slate-100"><i class="fa-solid fa-trophy text-amber-400 mr-2"></i>서울 전체 아파트 실거래가 TOP 30</h3>
+                        <p class="text-[11px] text-slate-400 mt-0.5">금주 신고 완료된 계약가 내림차순(최고가순) 목록</p>
+                    </div>
+                </div>
+                
+                <div class="overflow-y-auto max-h-[600px] pr-2">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="border-b border-slate-800 text-[11px] text-slate-500 font-bold uppercase tracking-wider">
+                                <th class="py-2.5 px-2">지역/법정동</th>
+                                <th class="py-2.5 px-2">아파트명</th>
+                                <th class="py-2.5 px-2">전용면적</th>
+                                <th class="py-2.5 px-2 text-right">거래가격</th>
+                            </tr>
+                        </thead>
+                        <tbody id="top-table-body" class="divide-y divide-slate-800/30">
+                            <!-- JS Dynamic Generation -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Right: Core 7 Neighborhoods (5 cols) -->
+            <div class="lg:col-span-5 bg-slate-900/60 border border-slate-800 rounded-2xl p-6 glow-card">
+                <div class="flex justify-between items-center mb-6 pb-4 border-b border-slate-800/50">
+                    <div>
+                        <h3 class="font-bold text-base text-slate-100"><i class="fa-solid fa-location-crosshairs text-indigo-400 mr-2"></i>관심 7개동 실거래 현황</h3>
+                        <p class="text-[11px] text-slate-400 mt-0.5">반포·잠원·도곡·개포·잠실·신천·둔촌동 수집분</p>
+                    </div>
+                </div>
+
+                <div class="overflow-y-auto max-h-[600px] pr-2">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="border-b border-slate-800 text-[11px] text-slate-500 font-bold uppercase tracking-wider">
+                                <th class="py-2.5 px-2">법정동</th>
+                                <th class="py-2.5 px-2">아파트명</th>
+                                <th class="py-2.5 px-2">전용면적</th>
+                                <th class="py-2.5 px-2 text-right">거래가격</th>
+                            </tr>
+                        </thead>
+                        <tbody id="core-table-body" class="divide-y divide-slate-800/30">
+                            <!-- JS Dynamic Generation -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800/80 bg-slate-900/40 py-6 mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <p class="text-xs text-slate-500">출처: 국토교통부 실거래 공개 시스템 수집 및 갱신 프로세스</p>
+            <p class="text-xs text-slate-500">&copy; 2026 Seoul Estate Factory. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // -------------------------------------------------------------
+        // [중요] 아래 변수는 dashboard_factory.py 에 의해 자동 치환되는 영역입니다.
+        const seoulTopTransactions = [];
+        const coreDistrictTransactions = [];
+        const complexNews = {
+            "jamsil_jugong5": "데이터 로딩 중...",
+            "jamsil_rose": "데이터 로딩 중...",
+            "olympic_seonsu": "데이터 로딩 중...",
+            "olympic_park_foreon": "데이터 로딩 중..."
+        };
+        // -------------------------------------------------------------
+
+        function renderTransactions() {
+            // 1. 서울 전체 탑 30 그리기
+            const topBody = document.getElementById('top-table-body');
+            topBody.innerHTML = '';
+            
+            if (seoulTopTransactions.length === 0) {
+                topBody.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-slate-500">실거래 데이터가 존재하지 않습니다.</td></tr>`;
+            } else {
+                seoulTopTransactions.forEach(item => {
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-slate-900/30 transition-colors border-b border-slate-800/20";
+                    const isNewRecord = item.record === "신고가";
+                    tr.innerHTML = `
+                        <td class="py-3 px-2 text-slate-300 font-semibold">${item.gu} ${item.dong}</td>
+                        <td class="py-3 px-2 text-slate-100 font-bold flex items-center">
+                            ${item.apt}
+                            ${isNewRecord ? '<span class="ml-1.5 px-1 bg-rose-500/10 text-rose-500 border border-rose-500/20 text-[9px] rounded font-extrabold shrink-0">신고가</span>' : ''}
+                        </td>
+                        <td class="py-3 px-2 text-slate-400 font-mono">${item.size}</td>
+                        <td class="py-3 px-2 text-right text-emerald-400 font-extrabold font-mono">${item.price}</td>
+                    `;
+                    topBody.appendChild(tr);
+                });
+            }
+
+            // 2. 관심 7개동 실거래 현황 그리기
+            const coreBody = document.getElementById('core-table-body');
+            coreBody.innerHTML = '';
+            
+            if (coreDistrictTransactions.length === 0) {
+                coreBody.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-slate-500">해당 구역의 실거래 정보가 없습니다.</td></tr>`;
+            } else {
+                coreDistrictTransactions.forEach(item => {
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-slate-900/30 transition-colors border-b border-slate-800/20";
+                    const isNewRecord = item.record === "신고가";
+                    tr.innerHTML = `
+                        <td class="py-3 px-2 text-slate-300 font-semibold">${item.dong}</td>
+                        <td class="py-3 px-2 text-slate-100 font-bold flex items-center">
+                            <span class="truncate max-w-[120px] sm:max-w-none">${item.apt}</span>
+                            ${isNewRecord ? '<span class="ml-1.5 px-1 bg-rose-500/10 text-rose-500 border border-rose-500/20 text-[9px] rounded font-extrabold shrink-0">신고가</span>' : ''}
+                        </td>
+                        <td class="py-3 px-2 text-slate-400 font-mono">${item.size}</td>
+                        <td class="py-3 px-2 text-right text-emerald-400 font-extrabold font-mono">${item.price}</td>
+                    `;
+                    coreBody.appendChild(tr);
+                });
+            }
+
+            // 3. 주요 단지 뉴스 주입
+            document.getElementById('news-jamsil-5').innerText = complexNews.jamsil_jugong5;
+            document.getElementById('news-rose').innerText = complexNews.jamsil_rose;
+            document.getElementById('news-seonsu').innerText = complexNews.olympic_seonsu;
+            document.getElementById('news-foreon').innerText = complexNews.olympic_park_foreon;
+        }
+
+        window.onload = function() {
+            renderTransactions();
+        }
+    </script>
+</body>
+</html>
