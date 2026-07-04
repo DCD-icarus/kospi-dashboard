@@ -67,10 +67,23 @@ jobs:
             python dashboard_factory.py --mode seoul_estate
           fi
 
-      - name: Commit and Push changes
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add *.html || true
-          git diff-index --quiet HEAD || git commit -m "⚡️ Factory Auto-Update Dashboard Database ($(date +'%Y-%m-%d'))"
-          git push
+  # STREAMING_CHUNK: Committing updated html files to GitHub repository securely...
+  - name: Commit and Push changes safely
+    run: |
+      git config --global user.name "github-actions[bot]"
+      git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+      
+      # 파일 매칭 에러 방지를 위해 존재하는 대시보드 파일만 안전하게 추가
+      for file in index.html kospi_dashboard.html reits.html us_market.html seoul_estate.html; do
+        if [ -f "$file" ]; then
+          git add "$file"
+        fi
+      done
+      
+      # 변경사항이 실제로 존재할 때만 자동 커밋 및 명시적 HEAD 브랜치 푸시 진행
+      if ! git diff --cached --quiet; then
+        git commit -m "⚡️ Factory Auto-Update Dashboard Database ($(date +'%Y-%m-%d %H:%M:%S'))"
+        git push origin HEAD:${{ github.ref_name }}
+      else
+        echo "업데이트된 금융/부동산 데이터 변동사항이 없습니다."
+      fi
