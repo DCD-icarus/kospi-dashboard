@@ -19,7 +19,7 @@ BACKUP_KOSPI_DATA = {
     "market_date": "2026년 7월 3일 (금) 장 마감",
     "etfs": [
         {"name": "KODEX 200", "price": "36,515원", "change": "-410원", "pct": "-1.11%", "trend": "down"},
-        {"name": "TIGER 코리안TOP10", "price": "12,450원", "change": "-120원", "pct": "-0.95%", "trend": "down"},
+        {"name": "TIGER 코리아TOP10", "price": "12,450원", "change": "-120원", "pct": "-0.95%", "trend": "down"},
         {"name": "KODEX 반도체", "price": "28,340원", "change": "-450원", "pct": "-1.56%", "trend": "down"},
         {"name": "TIGER 반도체TOP10", "price": "14,250원", "change": "-210원", "pct": "-1.45%", "trend": "down"},
         {"name": "KODEX 증권", "price": "7,230원", "change": "-40원", "pct": "-0.55%", "trend": "down"}
@@ -75,7 +75,6 @@ BACKUP_REITS_DATA = {
         {"name": "신한알파리츠", "title": "용산 더프라임 타워 지분 추가 취득 및 자금 차입 신고", "date": "2026-07-03 11:30", "link": "https://dart.fss.or.kr/dsbid001/main.do?query=%EC%8B%A0%ED%95%9C%EC%95%8C%ED%8C%8C%EB%A6%AC%EC%B8%A0"}
     ]
 }
-
 
 BACKUP_US_DATA = {
     "macro": [
@@ -150,7 +149,9 @@ BACKUP_SEOUL_DATA = {
     }
 }
 
-
+# ==========================================
+# 2. 통합 공장 빌드 함수 구현
+# ==========================================
 def run_kospi_mode():
     print("[공장 가동] KOSPI 대시보드 데이터 수집 및 HTML 교체 시작...")
     file_path = "kospi_dashboard.html"
@@ -168,7 +169,7 @@ def run_kospi_mode():
     
     if re.search(pattern_kospi, content, re.DOTALL):
         content = re.sub(pattern_kospi, replacement_data, content, flags=re.DOTALL)
-    else:
+    elif re.search(r"const marketData = \{.*?\};", content, re.DOTALL):
         content = re.sub(r"const marketData = \{.*?\};", f"const marketData = {json.dumps(BACKUP_KOSPI_DATA, ensure_ascii=False, indent=12)};", content, count=1, flags=re.DOTALL)
 
     with open(file_path, "w", encoding="utf-8") as f:
