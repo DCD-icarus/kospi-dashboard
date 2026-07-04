@@ -6,7 +6,9 @@
     <title>미국 증시 및 핵심 30선 모니터링</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome 아이콘 라이브러리 -->
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
@@ -51,59 +53,36 @@
 
     <!-- Main Dashboard -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
-        <!-- Dashboard Subtitle & Date -->
+        <!-- Subtitle -->
         <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 pb-4 border-b border-slate-800/50 gap-4">
             <div>
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-500/10 text-rose-400 border border-rose-500/20 animate-pulse">
-                    <span class="w-1.5 h-1.5 mr-1.5 bg-rose-500 rounded-full animate-ping"></span>미국 마감 시황 리포트 가동 중
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                    글로벌 마크로 지표 탐지 프로세스 가동 중
                 </span>
-                <h2 class="text-2xl md:text-3xl font-extrabold text-white tracking-tight mt-2">미국 3대 지수 및 금리 동향</h2>
-                <p class="text-sm text-slate-400 mt-1">S&P 500, 나스닥, 다우존스 지수 및 미국채 10년물 금리와 주요 M7, 반도체 선별 30개 종목의 마감 종가판입니다.</p>
+                <h2 class="text-2xl md:text-3xl font-extrabold text-white tracking-tight mt-2">미국 3대 지수, 장/단기 채권 및 원유 동향</h2>
+                <p class="text-sm text-slate-400 mt-1">S&P 500, 나스닥, 다우존스, 미국채 10년/30년 금리 및 WTI 유가의 1년 주간 추세 및 미국 30대 시총 종목 동향입니다.</p>
             </div>
             <div class="text-right">
-                <p class="text-xs text-slate-500 font-medium">뉴욕 증시 마감 기준</p>
-                <p class="text-sm font-bold text-slate-300" id="market-date">2026년 07월 04일 업데이트</p>
+                <p class="text-xs text-slate-500 font-medium">뉴욕 정규장 거래 마감 기준</p>
+                <p class="text-sm font-bold text-slate-300" id="market-date">데이터 수집 대기 중</p>
             </div>
         </div>
 
-        <!-- Upper Grid: Macro Indices -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <!-- S&P 500 -->
-            <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 glow-card relative overflow-hidden group">
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">S&P 500</p>
-                <h3 class="text-3xl font-black text-white mt-2" id="sp-value">5,120.30</h3>
-                <p class="text-xs mt-1 font-bold text-emerald-400" id="sp-change">+42.10 (+0.83%)</p>
-            </div>
-            <!-- Nasdaq -->
-            <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 glow-card relative overflow-hidden group">
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">NASDAQ COMPOSITE</p>
-                <h3 class="text-3xl font-black text-white mt-2" id="nas-value">16,110.50</h3>
-                <p class="text-xs mt-1 font-bold text-emerald-400" id="nas-change">+195.80 (+1.23%)</p>
-            </div>
-            <!-- Dow Jones -->
-            <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 glow-card relative overflow-hidden group">
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">DOW JONES</p>
-                <h3 class="text-3xl font-black text-white mt-2" id="dow-value">38,980.20</h3>
-                <p class="text-xs mt-1 font-bold text-emerald-400" id="dow-change">+125.40 (+0.32%)</p>
-            </div>
-            <!-- US10Y -->
-            <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 glow-card relative overflow-hidden group">
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">US 10-YEAR TREASURY</p>
-                <h3 class="text-3xl font-black text-indigo-400 mt-2" id="us10y-value">4.215%</h3>
-                <p class="text-xs mt-1 font-bold text-rose-500" id="us10y-change">+0.035% (+0.84%)</p>
-            </div>
+        <!-- Upper Grid: 6 Macro Indices (with sparkline charts) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8" id="macro-grid-container">
+            <!-- Dynamically generated cards via JS with charts -->
         </div>
 
-        <!-- Middle Grid: Main Stocks + Comments -->
+        <!-- Middle Grid: 30 Megacap Stocks & Wall Street Memos -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-8">
-            <!-- 30 Stocks Grid (8 cols) -->
+            <!-- 30 Stocks Table (8 cols) -->
             <div class="lg:col-span-8 bg-slate-900/60 border border-slate-800 rounded-2xl p-6 glow-card">
-                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 pb-4 border-b border-slate-800/50 gap-2">
+                <div class="flex justify-between items-center mb-6 pb-4 border-b border-slate-800/50 gap-2">
                     <div>
-                        <h3 class="font-bold text-lg text-slate-100"><i class="fa-solid fa-list-check text-indigo-400 mr-2"></i>핵심 선별 30대 주식 시황</h3>
-                        <p class="text-xs text-slate-400 mt-0.5">M7 및 메모리 반도체 밸류체인 핵심 종목군 마감 동향</p>
+                        <h3 class="font-bold text-lg text-slate-100"><i class="fa-solid fa-list-check text-indigo-400 mr-2"></i>미국 시가총액 기준 TOP 30대 메가캡</h3>
+                        <p class="text-xs text-slate-400 mt-0.5">글로벌 금융 시장을 주도하는 30대 기업의 시총 정렬 동향</p>
                     </div>
-                    <div class="relative w-full sm:w-48">
+                    <div class="relative w-48">
                         <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500">
                             <i class="fa-solid fa-magnifying-glass text-xs"></i>
                         </span>
@@ -111,30 +90,30 @@
                     </div>
                 </div>
 
-                <!-- Table Content -->
-                <div class="overflow-y-auto max-h-[500px]">
-                    <table class="w-full text-left border-collapse">
+                <div class="overflow-y-auto max-h-[500px] pr-2">
+                    <table class="w-full text-left border-collapse text-xs">
                         <thead>
                             <tr class="border-b border-slate-800 text-[11px] text-slate-500 font-bold uppercase tracking-wider">
-                                <th class="py-3 px-3">티커</th>
+                                <th class="py-3 px-3">티커 (명칭)</th>
                                 <th class="py-3 px-3">마감가</th>
-                                <th class="py-3 px-3">대비</th>
-                                <th class="py-3 px-3 text-right">등락률</th>
+                                <th class="py-3 px-3">대비 변동</th>
+                                <th class="py-3 px-3">등락률</th>
+                                <th class="py-3 px-3 text-right">시가총액</th>
                             </tr>
                         </thead>
-                        <tbody id="stock-table-body" class="divide-y divide-slate-800/40 text-xs">
-                            <!-- 로드 시 Javascript에서 동적으로 생성 -->
+                        <tbody id="stock-table-body" class="divide-y divide-slate-800/40 font-semibold">
+                            <!-- JS Dynamic -->
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- Opinions (4 cols) -->
+            <!-- Wall Street Opinions (4 cols) -->
             <div class="lg:col-span-4 bg-slate-900/60 border border-slate-800 rounded-2xl p-6 glow-card flex flex-col justify-between">
                 <div>
-                    <h3 class="font-bold text-base text-slate-200 mb-4"><i class="fa-solid fa-quote-left text-indigo-400 mr-2"></i>글로벌 애널리스트 코멘트</h3>
+                    <h3 class="font-bold text-base text-slate-200 mb-4"><i class="fa-solid fa-microphone-lines text-indigo-400 mr-2"></i>월스트리트 애널리스트 & 투자 거장 코멘트</h3>
                     <div id="opinions-container" class="space-y-4">
-                        <!-- 동적 주입 -->
+                        <!-- JS Dynamic -->
                     </div>
                 </div>
             </div>
@@ -144,39 +123,152 @@
     <!-- Footer -->
     <footer class="border-t border-slate-800/80 bg-slate-900/40 py-6">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <p class="text-xs text-slate-500">출처: Yahoo Finance Open API 수집 엔진</p>
-            <p class="text-xs text-slate-500">&copy; 2026 US Market Dashboard. All rights reserved.</p>
+            <p class="text-xs text-slate-500">출처: 야후 금융 공식 REST API 시세 정보망 취합 시스템</p>
+            <p class="text-xs text-slate-500">&copy; 2026 US Market Pulse. All rights reserved.</p>
         </div>
     </footer>
 
     <script>
-        // -------------------------------------------------------------
-        // [중요] 아래 변수는 dashboard_factory.py 에 의해 자동 치환되는 영역입니다.
-        const marketDataList = [{"name": "S&P 500", "price": "7,483.24", "change": "+0.01 (+0.00%)"}, {"name": "나스닥 종합", "price": "25,832.67", "change": "-207.36 (-0.80%)"}, {"name": "다우 존스", "price": "52,900.07", "change": "+594.83 (+1.14%)"}];
-        const usOpinionsList = [
-            {
-                "author": "Goldman Sachs",
-                "en": "Strong productivity gains in corporate sector continue to support expansionary multiples for megacap tech.",
-                "ko": "기업 부문의 강력한 생산성 향상이 초대형 기술주들의 확장적 멀티플을 계속해서 지지하고 있습니다."
+        // --- US_MARKET_DATA_START ---
+        const marketData = {
+            "macro": {
+                "^GSPC": {
+                    "name": "S&P 500",
+                    "price": "5,120.30",
+                    "change": "+42.10 (+0.83%)",
+                    "high52w": "5,340.20",
+                    "low52w": "4,410.10",
+                    "chartData": [4950, 4980, 5020, 5100, 5080, 5120, 5150, 5110, 5120]
+                },
+                "^IXIC": {
+                    "name": "NASDAQ 종합",
+                    "price": "16,110.50",
+                    "change": "+195.80 (+1.23%)",
+                    "high52w": "16,800.40",
+                    "low52w": "13,980.20",
+                    "chartData": [15400, 15600, 15900, 16100, 15950, 16110, 16200, 16050, 16110]
+                },
+                "^DJI": {
+                    "name": "다우 존스",
+                    "price": "38,980.20",
+                    "change": "+125.40 (+0.32%)",
+                    "high52w": "40,120.50",
+                    "low52w": "34,800.10",
+                    "chartData": [37800, 38100, 38400, 38900, 38800, 38980, 39100, 38850, 38980]
+                },
+                "^TNX": {
+                    "name": "미국채 10년물 금리",
+                    "price": "4.215%",
+                    "change": "+0.035% (+0.84%)",
+                    "high52w": "4.990%",
+                    "low52w": "3.780%",
+                    "chartData": [3.9, 4.0, 4.1, 4.15, 4.25, 4.215, 4.3, 4.18, 4.215]
+                },
+                "^TYX": {
+                    "name": "미국채 30년물 금리",
+                    "price": "4.352%",
+                    "change": "+0.041% (+0.95%)",
+                    "high52w": "5.110%",
+                    "low52w": "3.910%",
+                    "chartData": [4.1, 4.2, 4.28, 4.31, 4.4, 4.352, 4.45, 4.31, 4.352]
+                },
+                "CL=F": {
+                    "name": "WTI 원유 선물",
+                    "price": "$78.45",
+                    "change": "+$1.15 (+1.49%)",
+                    "high52w": "$93.50",
+                    "low52w": "$68.20",
+                    "chartData": [72, 74, 75, 77, 76, 78.45, 79, 77.5, 78.45]
+                }
             },
-            {
-                "author": "Morgan Stanley",
-                "en": "Semiconductor inventory correction is structurally behind us, setting high floor for memory supply chain.",
-                "ko": "반도체 재고 조정은 구조적으로 마무리 단계에 있으며, 메모리 공급망의 탄탄한 지지선을 구축하고 있습니다."
-            },
-            {
-                "author": "JPMorgan Chase",
-                "en": "Inflation path remains sticky, which might delay federal rate cuts, prompting high yields consolidation.",
-                "ko": "인플레이션 둔화 경로가 여전히 지연되고 있어 연준의 금리 인하가 늦춰질 가능성이 크며, 고금리 고착화 현상이 진행 중입니다."
-            }
-        ];
-        // -------------------------------------------------------------
+            "stocks": [
+                {"ticker": "AAPL", "name": "Apple", "price": "$185.20", "change": "+$2.30", "pct": "+1.26%", "marketCap": "$2.85T"},
+                {"ticker": "MSFT", "name": "Microsoft", "price": "$420.50", "change": "-$1.20", "pct": "-0.28%", "marketCap": "$3.12T"},
+                {"ticker": "NVDA", "name": "NVIDIA", "price": "$875.00", "change": "+$15.50", "pct": "+1.80%", "marketCap": "$2.18T"}
+            ],
+            "opinions": [
+                {"author": "Goldman Sachs Research", "tag": "AI 가치", "en": "Capital expenditure from tech megacaps continues to validate high multipliers.", "ko": "초대형 기술주의 풍부한 자산 투자가 높은 가치 배수를 지속 정당화하고 있습니다.", "link": "https://www.goldmansachs.com/insights/"}
+            ]
+        };
+        // --- US_MARKET_DATA_END ---
 
         let activeColorSystem = 'kr';
+        let chartInstances = {};
 
         function parseChangeValue(valStr) {
             try { return parseFloat(valStr.replace('%', '').replace('+', '').replace('$', '').replace(',', '')); }
             catch { return 0.0; }
+        }
+
+        function renderMacroGrid() {
+            const container = document.getElementById('macro-grid-container');
+            container.innerHTML = '';
+
+            Object.entries(marketData.macro).forEach(([symbol, item]) => {
+                const changeNum = parseChangeValue(item.change);
+                const isPositive = changeNum >= 0;
+
+                let colorClass = isPositive 
+                    ? (activeColorSystem === 'kr' ? 'text-red-500' : 'text-emerald-400')
+                    : (activeColorSystem === 'kr' ? 'text-blue-500' : 'text-rose-500');
+
+                const cardId = `macro-card-${symbol.replace('^', '').replace('=', '')}`;
+                const canvasId = `chart-${symbol.replace('^', '').replace('=', '')}`;
+
+                container.innerHTML += `
+                    <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 glow-card relative overflow-hidden flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">${item.name}</p>
+                                <div class="text-[10px] text-slate-500 font-medium">
+                                    52주: <span class="font-mono text-slate-300">${item.low52w}</span> - <span class="font-mono text-slate-300">${item.high52w}</span>
+                                </div>
+                            </div>
+                            <h3 class="text-3xl font-black text-white mt-1">${item.price}</h3>
+                            <p class="text-xs mt-1 font-bold ${colorClass}">${item.change}</p>
+                        </div>
+                        <div class="mt-4 w-full h-20">
+                            <canvas id="${canvasId}"></canvas>
+                        </div>
+                    </div>
+                `;
+
+                // Chart.js 비동기 렌더링 스택 예약
+                setTimeout(() => {
+                    const ctx = document.getElementById(canvasId).getContext('2d');
+                    if (chartInstances[canvasId]) { chartInstances[canvasId].destroy(); }
+
+                    let lineColor = isPositive 
+                        ? (activeColorSystem === 'kr' ? '#ef4444' : '#10b981')
+                        : (activeColorSystem === 'kr' ? '#3b82f6' : '#f43f5e');
+
+                    let gradient = ctx.createLinearGradient(0, 0, 0, 80);
+                    gradient.addColorStop(0, lineColor + '22');
+                    gradient.addColorStop(1, lineColor + '00');
+
+                    chartInstances[canvasId] = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: new Array(item.chartData.length).fill(''),
+                            datasets: [{
+                                data: item.chartData,
+                                borderColor: lineColor,
+                                borderWidth: 1.5,
+                                pointRadius: 0,
+                                fill: true,
+                                backgroundColor: gradient,
+                                tension: 0.3
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false }, tooltip: { enabled: true } },
+                            scales: { x: { display: false }, y: { display: false } }
+                        }
+                    });
+                }, 0);
+            });
         }
 
         function renderStocks(filtered) {
@@ -188,16 +280,20 @@
                 const isPositive = changeNum >= 0;
                 
                 let colorClass = isPositive 
-                    ? (activeColorSystem === 'kr' ? 'text-red-500 font-bold' : 'text-emerald-400 font-bold')
-                    : (activeColorSystem === 'kr' ? 'text-blue-500 font-bold' : 'text-rose-500 font-bold');
+                    ? (activeColorSystem === 'kr' ? 'text-red-500' : 'text-emerald-400')
+                    : (activeColorSystem === 'kr' ? 'text-blue-500' : 'text-rose-500');
                 
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-900/30 transition-colors border-b border-slate-800/30";
                 tr.innerHTML = `
-                    <td class="py-3 px-3 font-mono font-bold text-slate-100">${item.ticker}</td>
+                    <td class="py-3 px-3 text-slate-100 font-mono">
+                        <a href="https://finance.yahoo.com/quote/${item.ticker}" target="_blank" class="hover:underline hover:text-indigo-400 mr-1.5 font-bold">${item.ticker}</a>
+                        <span class="text-[10px] text-slate-500 font-sans">${item.name}</span>
+                    </td>
                     <td class="py-3 px-3 font-mono text-slate-200">${item.price}</td>
                     <td class="py-3 px-3 font-mono ${colorClass}">${item.change}</td>
-                    <td class="py-3 px-3 text-right font-mono ${colorClass}">${item.pct || ''}</td>
+                    <td class="py-3 px-3 font-mono ${colorClass}">${item.pct}</td>
+                    <td class="py-3 px-3 text-right font-mono text-indigo-400">${item.marketCap}</td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -206,21 +302,28 @@
         function renderOpinions() {
             const container = document.getElementById('opinions-container');
             container.innerHTML = '';
-            usOpinionsList.forEach(item => {
-                const card = document.createElement('div');
-                card.className = "bg-slate-950/60 border border-slate-800/80 p-4 rounded-xl flex flex-col justify-between";
-                card.innerHTML = `
-                    <span class="text-[11px] font-bold text-indigo-400 mb-1">${item.author}</span>
-                    <p class="text-[11px] text-slate-400 italic">"${item.en}"</p>
-                    <p class="text-[11px] text-slate-200 mt-2 font-medium">"${item.ko}"</p>
+            marketData.opinions.forEach(item => {
+                container.innerHTML += `
+                    <div class="bg-slate-950/60 border border-slate-800/80 p-4 rounded-xl flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">${item.tag}</span>
+                                <span class="text-[11px] text-slate-400 font-semibold">${item.author}</span>
+                            </div>
+                            <p class="text-[11px] text-slate-400 italic">"${item.en}"</p>
+                            <p class="text-[11px] text-slate-200 mt-2 font-medium">"${item.ko}"</p>
+                        </div>
+                        <a href="${item.link}" target="_blank" class="mt-3 inline-flex items-center justify-center px-2.5 py-1.5 rounded-lg text-[10px] font-bold bg-slate-800 text-slate-300 hover:bg-indigo-600 hover:text-white transition-all duration-200">
+                            <i class="fa-solid fa-arrow-up-right-from-square mr-1"></i> 언론 분석 원문 가기
+                        </a>
+                    </div>
                 `;
-                container.appendChild(card);
             });
         }
 
         function filterStocks() {
             const query = document.getElementById('stock-search').value.toLowerCase().trim();
-            const filtered = marketDataList.filter(item => item.ticker.toLowerCase().includes(query));
+            const filtered = marketData.stocks.filter(item => item.ticker.toLowerCase().includes(query) || item.name.toLowerCase().includes(query));
             renderStocks(filtered);
         }
 
@@ -236,6 +339,7 @@
                 btnGlobal.className = "px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 bg-indigo-600 text-white shadow-sm";
                 btnKr.className = "px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 text-slate-400 hover:text-white";
             }
+            renderMacroGrid();
             filterStocks();
         }
 
