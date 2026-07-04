@@ -55,7 +55,7 @@
             </div>
             <div class="text-right">
                 <p class="text-xs text-slate-500 font-medium">영업일 실거래 기준</p>
-                <p class="text-sm font-bold text-slate-300" id="market-date">데이터 수집 대기 중</p>
+                <p class="text-sm font-bold text-slate-300" id="market-date">2026년 07월 04일 업데이트</p>
             </div>
         </div>
 
@@ -192,42 +192,410 @@
 
     <script>
         // --- SEOUL_ESTATE_DATA_START ---
-        const marketData = {
-            "seoulTopTransactions": [
-                {"gu": "강남구", "dong": "삼성동", "apt": "아이파크삼성", "size": "195.38㎡", "price": "97억 7,000만원", "record": "신고가"},
-                {"gu": "용산구", "dong": "한남동", "apt": "나인원한남", "size": "206.89㎡", "price": "97억 0,000만원", "record": "신고가"},
-                {"gu": "강남구", "dong": "압구정동", "apt": "현대7차", "size": "157.36㎡", "price": "67억 5,000만원", "record": "보통"},
-                {"gu": "성동구", "dong": "성수동1가", "apt": "아크로서울포레스트", "size": "159.60㎡", "price": "64억 3,000만원", "record": "보통"},
-                {"gu": "강남구", "dong": "압구정동", "apt": "신현대12차", "size": "112.05㎡", "price": "59억 9,000만원", "record": "신고가"}
-            ],
-            "coreDistrictTransactions": [
-                {"dong": "반포동", "apt": "래미안원베일리", "size": "84.97㎡", "price": "49억 8,000만원", "record": "신고가"},
-                {"dong": "도곡동", "apt": "타워팰리스3차", "size": "185.62㎡", "price": "48억 0,000만원", "record": "신고가"},
-                {"dong": "반포동", "apt": "아크로리버파크", "size": "84.95㎡", "price": "43억 5,000만원", "record": "보통"}
-            ],
-            "complexNews": {
+    const marketData = {
+        "seoulTopTransactions": [
+                {
+                        "gu": "강남구",
+                        "dong": "삼성동",
+                        "apt": "아이파크삼성",
+                        "size": "195.38㎡",
+                        "price": "97억 7,000만원",
+                        "record": "신고가"
+                },
+                {
+                        "gu": "용산구",
+                        "dong": "한남동",
+                        "apt": "나인원한남",
+                        "size": "206.89㎡",
+                        "price": "97억 0,000만원",
+                        "record": "신고가"
+                },
+                {
+                        "gu": "강남구",
+                        "dong": "압구정동",
+                        "apt": "현대7차",
+                        "size": "157.36㎡",
+                        "price": "67억 5,000만원",
+                        "record": "보통"
+                },
+                {
+                        "gu": "성동구",
+                        "dong": "성수동1가",
+                        "apt": "아크로서울포레스트",
+                        "size": "159.60㎡",
+                        "price": "64억 3,000만원",
+                        "record": "보통"
+                },
+                {
+                        "gu": "강남구",
+                        "dong": "압구정동",
+                        "apt": "신현대12차",
+                        "size": "112.05㎡",
+                        "price": "59억 9,000만원",
+                        "record": "신고가"
+                },
+                {
+                        "gu": "강남구",
+                        "dong": "대치동",
+                        "apt": "개포우성2",
+                        "size": "127.78㎡",
+                        "price": "50억 0,000만원",
+                        "record": "보통"
+                },
+                {
+                        "gu": "서초구",
+                        "dong": "잠원동",
+                        "apt": "메이플자이",
+                        "size": "84.84㎡",
+                        "price": "50억 0,000만원",
+                        "record": "신고가"
+                },
+                {
+                        "gu": "서초구",
+                        "dong": "반포동",
+                        "apt": "래미안원베일리",
+                        "size": "84.97㎡",
+                        "price": "49억 8,000만원",
+                        "record": "신고가"
+                },
+                {
+                        "gu": "강남구",
+                        "dong": "도곡동",
+                        "apt": "타워팰리스3차",
+                        "size": "185.62㎡",
+                        "price": "48억 0,000만원",
+                        "record": "신고가"
+                },
+                {
+                        "gu": "서초구",
+                        "dong": "반포동",
+                        "apt": "아크로리버파크",
+                        "size": "84.95㎡",
+                        "price": "43억 5,000만원",
+                        "record": "보통"
+                },
+                {
+                        "gu": "용산구",
+                        "dong": "이촌동",
+                        "apt": "한강맨션",
+                        "size": "120.35㎡",
+                        "price": "43억 5,000만원",
+                        "record": "보통"
+                },
+                {
+                        "gu": "서초구",
+                        "dong": "잠원동",
+                        "apt": "아크로리버뷰신반포",
+                        "size": "84.79㎡",
+                        "price": "41억 0,000만원",
+                        "record": "신고가"
+                },
+                {
+                        "gu": "서초구",
+                        "dong": "잠원동",
+                        "apt": "신반포4차",
+                        "size": "137.10㎡",
+                        "price": "39억 2,000만원",
+                        "record": "보통"
+                },
+                {
+                        "gu": "서초구",
+                        "dong": "반포동",
+                        "apt": "반포자이",
+                        "size": "84.94㎡",
+                        "price": "38억 9,000만원",
+                        "record": "보통"
+                },
+                {
+                        "gu": "강남구",
+                        "dong": "개포동",
+                        "apt": "디에이치퍼스티어아이파크",
+                        "size": "112.99㎡",
+                        "price": "38억 5,000만원",
+                        "record": "신고가"
+                },
+                {
+                        "gu": "강남구",
+                        "dong": "도곡동",
+                        "apt": "도곡렉슬",
+                        "size": "114.99㎡",
+                        "price": "33억 5,000만원",
+                        "record": "보통"
+                },
+                {
+                        "gu": "송파구",
+                        "dong": "잠실동",
+                        "apt": "엘스",
+                        "size": "119.93㎡",
+                        "price": "31억 5,000만원",
+                        "record": "보통"
+                },
+                {
+                        "gu": "송파구",
+                        "dong": "잠실동",
+                        "apt": "주공5단지",
+                        "size": "82.51㎡",
+                        "price": "29억 5,000만원",
+                        "record": "보통"
+                },
+                {
+                        "gu": "영등포구",
+                        "dong": "여의도동",
+                        "apt": "시범",
+                        "size": "118.12㎡",
+                        "price": "27억 9,000만원",
+                        "record": "신고가"
+                },
+                {
+                        "gu": "강남구",
+                        "dong": "개포동",
+                        "apt": "개포래미안포레스트",
+                        "size": "84.83㎡",
+                        "price": "26억 5,000만원",
+                        "record": "보통"
+                },
+                {
+                        "gu": "영등포구",
+                        "dong": "여의도동",
+                        "apt": "광장",
+                        "size": "136.63㎡",
+                        "price": "26억 5,000만원",
+                        "record": "보통"
+                },
+                {
+                        "gu": "송파구",
+                        "dong": "잠실동",
+                        "apt": "레이크팰리스",
+                        "size": "116.19㎡",
+                        "price": "25억 9,000만원",
+                        "record": "보통"
+                },
+                {
+                        "gu": "동작구",
+                        "dong": "흑석동",
+                        "apt": "아크로리버하임",
+                        "size": "84.91㎡",
+                        "price": "25억 4,000만원",
+                        "record": "보통"
+                },
+                {
+                        "gu": "양천구",
+                        "dong": "목동",
+                        "apt": "목동신시가지7단지",
+                        "size": "101.20㎡",
+                        "price": "24억 5,000만원",
+                        "record": "보통"
+                },
+                {
+                        "gu": "강동구",
+                        "dong": "둔촌동",
+                        "apt": "올림픽파크포레온",
+                        "size": "84.98㎡",
+                        "price": "23억 8,000만원",
+                        "record": "신고가"
+                },
+                {
+                        "gu": "송파구",
+                        "dong": "신천동",
+                        "apt": "파크리오",
+                        "size": "84.90㎡",
+                        "price": "23억 7,000만원",
+                        "record": "보통"
+                },
+                {
+                        "gu": "송파구",
+                        "dong": "가락동",
+                        "apt": "헬리오시티",
+                        "size": "84.98㎡",
+                        "price": "20억 8,000만원",
+                        "record": "보통"
+                },
+                {
+                        "gu": "송파구",
+                        "dong": "가락동",
+                        "apt": "가락금호",
+                        "size": "84.91㎡",
+                        "price": "18억 4,000만원",
+                        "record": "보통"
+                },
+                {
+                        "gu": "마포구",
+                        "dong": "아현동",
+                        "apt": "마포래미안푸르지오",
+                        "size": "84.59㎡",
+                        "price": "18억 7,000만원",
+                        "record": "보통"
+                },
+                {
+                        "gu": "성동구",
+                        "dong": "옥수동",
+                        "apt": "래미안옥수리버젠",
+                        "size": "84.81㎡",
+                        "price": "17억 5,000만원",
+                        "record": "보통"
+                }
+        ],
+        "coreDistrictTransactions": [
+                {
+                        "dong": "반포동",
+                        "apt": "래미안원베일리",
+                        "size": "84.97㎡",
+                        "price": "49억 8,000만원",
+                        "record": "신고가"
+                },
+                {
+                        "dong": "도곡동",
+                        "apt": "타워팰리스3차",
+                        "size": "185.62㎡",
+                        "price": "48억 0,000만원",
+                        "record": "신고가"
+                },
+                {
+                        "dong": "반포동",
+                        "apt": "아크로리버파크",
+                        "size": "84.95㎡",
+                        "price": "43억 5,000만원",
+                        "record": "보통"
+                },
+                {
+                        "dong": "잠원동",
+                        "apt": "신반포4차",
+                        "size": "137.10㎡",
+                        "price": "39억 2,000만원",
+                        "record": "보통"
+                },
+                {
+                        "dong": "개포동",
+                        "apt": "디에이치퍼스티어아이파크",
+                        "size": "112.99㎡",
+                        "price": "38억 5,000만원",
+                        "record": "신고가"
+                },
+                {
+                        "dong": "잠실동",
+                        "apt": "엘스",
+                        "size": "119.93㎡",
+                        "price": "31억 5,000만원",
+                        "record": "보통"
+                },
+                {
+                        "dong": "잠실동",
+                        "apt": "주공5단지",
+                        "size": "82.51㎡",
+                        "price": "29억 5,000만원",
+                        "record": "보통"
+                },
+                {
+                        "dong": "둔촌동",
+                        "apt": "올림픽파크포레온",
+                        "size": "84.98㎡",
+                        "price": "23억 8,000만원",
+                        "record": "신고가"
+                },
+                {
+                        "dong": "신천동",
+                        "apt": "파크리오",
+                        "size": "84.90㎡",
+                        "price": "23억 7,000만원",
+                        "record": "보통"
+                },
+                {
+                        "dong": "가락동",
+                        "apt": "헬리오시티",
+                        "size": "84.98㎡",
+                        "price": "20억 8,000만원",
+                        "record": "보통"
+                },
+                {
+                        "dong": "가락동",
+                        "apt": "가락금호",
+                        "size": "84.91㎡",
+                        "price": "18억 4,000만원",
+                        "record": "보통"
+                }
+        ],
+        "complexNews": {
                 "jamsil_jugong5": {
-                    "text": "조합원 정비사업 분담금 확정 예산 승인 완료 및 시공사 설계 변경 계약 돌입",
-                    "link": "https://search.naver.com/search.naver?query=%EC%9E%A0%EC%8B%A4%EC%A3%BC%EA%B3%B55%EB%8B%A8%EC%A7%80+%EC%9E%AC%EA%B1%B1%EC%B6%95+%EB%89%B4%EC%8A%A4"
+                        "text": "조합원 정비사업 분담금 확정 예산 승인 완료 및 시공사 설계 변경 계약 돌입",
+                        "link": "https://search.naver.com/search.naver?query=%EC%9E%A0%EC%8B%A4%EC%A3%BC%EA%B3%B55%EB%8B%A8%EC%A7%80+%EC%9E%AC%EA%B1%B1%EC%B6%95+%EB%89%B4%EC%8A%A4"
                 },
                 "jamsil_rose": {
-                    "text": "교육환경평가 심의 준비를 위한 용역 계약 정식 체결 완료",
-                    "link": "https://search.naver.com/search.naver?query=%EC%9E%A0%EC%8B%A4%EC%9E%A5%EB%AF%B8%EC%95%84%ED%8C%8C%ED%8A%B8+%EC%9E%AC%EA%B1%B1%EC%B6%95+%EB%89%B4%EC%8A%A4"
+                        "text": "교육환경평가 심의 준비를 위한 용역 계약 정식 체결 완료",
+                        "link": "https://search.naver.com/search.naver?query=%EC%9E%A0%EC%8B%A4%EC%9E%A5%EB%AF%B8%EC%95%84%ED%8C%8C%ED%8A%B8+%EC%9E%AC%EA%B1%B1%EC%B6%95+%EB%89%B4%EC%8A%A4"
                 },
                 "olympic_seonsu": {
-                    "text": "송파구청 정비계획안 상정 및 종 상향을 위한 주민 자문단 공식 발족",
-                    "link": "https://search.naver.com/search.naver?query=%EC%98%AC%EB%A6%BC%ED%94%BD%EC%84%A0%EC%88%98%EC%B4%8C+%EC%9E%AC%EA%B1%B1%EC%B6%95+%EB%89%B4%EC%8A%A4"
+                        "text": "송파구청 정비계획안 상정 및 종 상향을 위한 주민 자문단 공식 발족",
+                        "link": "https://search.naver.com/search.naver?query=%EC%98%AC%EB%A6%BC%ED%94%BD%EC%84%A0%EC%88%98%EC%B4%8C+%EC%9E%AC%EA%B1%B1%EC%B6%95+%EB%89%B4%EC%8A%A4"
                 },
                 "olympic_park_foreon": {
-                    "text": "국토부 실거래 전용 84㎡ 기준 24억원 대 완벽한 안착 완료",
-                    "link": "https://search.naver.com/search.naver?query=%EC%98%AC%EB%A6%BC%ED%94%BD%ED%8C%AC%ED%81%AC%ED%8F%AC%EB%A0%88%EC%98%A8+%EC%8B%A0%EA%B3%A0%EA%B0%80+%EB%89%B4%EC%8A%A4"
+                        "text": "국토부 실거래 전용 84㎡ 기준 24억원 대 완벽한 안착 완료",
+                        "link": "https://search.naver.com/search.naver?query=%EC%98%AC%EB%A6%BC%ED%94%BD%ED%8C%8C%ED%81%AC%ED%8F%AC%EB%A0%88%EC%98%A8+%EC%8B%A0%EA%B3%A0%EA%B0%80+%EB%89%B4%EC%8A%A4"
                 }
-            },
-            "roseShoppingListings": [
-                {"floor": "지하 1층", "size": "12.30㎡", "price": "2억 5,000만원", "link": "https://m.land.naver.com/"}
-            ]
-        };
-        // --- SEOUL_ESTATE_DATA_END ---
+        },
+        "roseShoppingListings": [
+                {
+                        "floor": "지하 1층",
+                        "size": "12.30㎡",
+                        "price": "2억 5,000만원",
+                        "link": "https://m.land.naver.com/search/result/%EC%9E%A0%EC%8B%A4%EB%8F%99%20%EC%9E%A5%EB%AF%B8%EC%83%81%EA%B0%80"
+                },
+                {
+                        "floor": "지하 1층",
+                        "size": "34.50㎡",
+                        "price": "4억 5,000만원",
+                        "link": "https://m.land.naver.com/search/result/%EC%9E%A0%EC%8B%A4%EB%8F%99%20%EC%9E%A5%EB%AF%B8%EC%83%81%EA%B0%80"
+                },
+                {
+                        "floor": "3층",
+                        "size": "41.20㎡",
+                        "price": "5억 8,000만원",
+                        "link": "https://m.land.naver.com/search/result/%EC%9E%A0%EC%8B%A4%EB%8F%99%20%EC%9E%A5%EB%AF%B8%EC%83%81%EA%B0%80"
+                },
+                {
+                        "floor": "3층",
+                        "size": "58.30㎡",
+                        "price": "6억 9,000만원",
+                        "link": "https://m.land.naver.com/search/result/%EC%9E%A0%EC%8B%A4%EB%8F%99%20%EC%9E%A5%EB%AF%B8%EC%83%81%EA%B0%80"
+                },
+                {
+                        "floor": "2층",
+                        "size": "45.10㎡",
+                        "price": "8억 2,000만원",
+                        "link": "https://m.land.naver.com/search/result/%EC%9E%A0%EC%8B%A4%EB%8F%99%20%EC%9E%A5%EB%AF%B8%EC%83%81%EA%B0%80"
+                },
+                {
+                        "floor": "2층",
+                        "size": "38.60㎡",
+                        "price": "8억 5,000만원",
+                        "link": "https://m.land.naver.com/search/result/%EC%9E%A0%EC%8B%A4%EB%8F%99%20%EC%9E%A5%EB%AF%B8%EC%83%81%EA%B0%80"
+                },
+                {
+                        "floor": "1층",
+                        "size": "15.40㎡",
+                        "price": "11억 0,000만원",
+                        "link": "https://m.land.naver.com/search/result/%EC%9E%A0%EC%8B%A4%EB%8F%99%20%EC%9E%A5%EB%AF%B8%EC%83%81%EA%B0%80"
+                },
+                {
+                        "floor": "1층",
+                        "size": "18.20㎡",
+                        "price": "12억 8,000만원",
+                        "link": "https://m.land.naver.com/search/result/%EC%9E%A0%EC%8B%A4%EB%8F%99%20%EC%9E%A5%EB%AF%B8%EC%83%81%EA%B0%80"
+                },
+                {
+                        "floor": "1층",
+                        "size": "24.60㎡",
+                        "price": "14억 5,000만원",
+                        "link": "https://m.land.naver.com/search/result/%EC%9E%A0%EC%8B%A4%EB%8F%99%20%EC%9E%A5%EB%AF%B8%EC%83%81%EA%B0%80"
+                },
+                {
+                        "floor": "1층",
+                        "size": "29.80㎡",
+                        "price": "17억 0,000만원",
+                        "link": "https://m.land.naver.com/search/result/%EC%9E%A0%EC%8B%A4%EB%8F%99%20%EC%9E%A5%EB%AF%B8%EC%83%81%EA%B0%80"
+                }
+        ]
+};
+    // --- SEOUL_ESTATE_DATA_END ---
 
         function renderTransactions() {
             // 1. 서울 전체 탑 30 그리기
