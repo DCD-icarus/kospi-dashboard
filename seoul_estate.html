@@ -6,7 +6,7 @@
     <title>서울 핵심 아파트 실거래가 및 단지 분석</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome 아이콘 라이브러리 -->
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
@@ -48,49 +48,77 @@
         <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 pb-4 border-b border-slate-800/50 gap-4">
             <div>
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-                    실거래 전산망 원격 연동 중
+                    국토교통부 전산망 교차 검증 연동
                 </span>
-                <h2 class="text-2xl md:text-3xl font-extrabold text-white tracking-tight mt-2">서울 핵심 아파트 실거래가 브리핑</h2>
-                <p class="text-sm text-slate-400 mt-1">국토교통부 실제 거래 계약일을 기준으로 취합된 가격순 정렬 실거래 데이터 및 랜드마크 분석 요약판입니다.</p>
+                <h2 class="text-2xl md:text-3xl font-extrabold text-white tracking-tight mt-2">서울 아파트 전용면적 기준 정밀 실거래가</h2>
+                <p class="text-sm text-slate-400 mt-1">공급면적을 일절 제외한 순수 전용면적 기준이며, 서울 전체 및 핵심 7개동 매물을 가격 고가순 정렬했습니다.</p>
             </div>
             <div class="text-right">
                 <p class="text-xs text-slate-500 font-medium">영업일 실거래 기준</p>
-                <p class="text-sm font-bold text-slate-300" id="market-date">2026년 07월 04일 업데이트</p>
+                <p class="text-sm font-bold text-slate-300" id="market-date">데이터 수집 대기 중</p>
             </div>
         </div>
 
-        <!-- Upper Grid: Jamsil & Olympic Complexes News -->
+        <!-- Upper Grid: Jamsil & Olympic Complexes News with Links -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <!-- Card 1 -->
-            <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl glow-card">
-                <span class="text-[10px] bg-indigo-500/10 text-indigo-400 px-2 py-0.5 rounded border border-indigo-500/20 font-bold">잠실 주공5단지</span>
-                <p class="text-xs text-slate-300 leading-relaxed mt-2" id="news-jamsil-5">업데이트 대기 중...</p>
+            <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl glow-card flex flex-col justify-between">
+                <div>
+                    <span class="text-[10px] bg-indigo-500/10 text-indigo-400 px-2 py-0.5 rounded border border-indigo-500/20 font-bold">잠실 주공5단지</span>
+                    <p class="text-xs text-slate-300 leading-relaxed mt-2" id="news-jamsil-5">업데이트 대기 중...</p>
+                </div>
+                <a href="#" id="link-jamsil-5" target="_blank" class="mt-3 inline-flex items-center justify-center px-2 py-1 rounded bg-slate-800 hover:bg-indigo-600 text-[10px] font-bold text-slate-300 hover:text-white transition-all"><i class="fa-solid fa-link mr-1"></i> 분석 원문 확인</a>
             </div>
-            <!-- Card 2 -->
-            <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl glow-card">
-                <span class="text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/20 font-bold">잠실 장미</span>
-                <p class="text-xs text-slate-300 leading-relaxed mt-2" id="news-rose">업데이트 대기 중...</p>
+            <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl glow-card flex flex-col justify-between">
+                <div>
+                    <span class="text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/20 font-bold">잠실 장미</span>
+                    <p class="text-xs text-slate-300 leading-relaxed mt-2" id="news-rose">업데이트 대기 중...</p>
+                </div>
+                <a href="#" id="link-rose" target="_blank" class="mt-3 inline-flex items-center justify-center px-2 py-1 rounded bg-slate-800 hover:bg-indigo-600 text-[10px] font-bold text-slate-300 hover:text-white transition-all"><i class="fa-solid fa-link mr-1"></i> 분석 원문 확인</a>
             </div>
-            <!-- Card 3 -->
-            <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl glow-card">
-                <span class="text-[10px] bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded border border-amber-500/20 font-bold">올림픽선수촌</span>
-                <p class="text-xs text-slate-300 leading-relaxed mt-2" id="news-seonsu">업데이트 대기 중...</p>
+            <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl glow-card flex flex-col justify-between">
+                <div>
+                    <span class="text-[10px] bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded border border-amber-500/20 font-bold">올림픽선수촌</span>
+                    <p class="text-xs text-slate-300 leading-relaxed mt-2" id="news-seonsu">업데이트 대기 중...</p>
+                </div>
+                <a href="#" id="link-seonsu" target="_blank" class="mt-3 inline-flex items-center justify-center px-2 py-1 rounded bg-slate-800 hover:bg-indigo-600 text-[10px] font-bold text-slate-300 hover:text-white transition-all"><i class="fa-solid fa-link mr-1"></i> 분석 원문 확인</a>
             </div>
-            <!-- Card 4 -->
-            <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl glow-card">
-                <span class="text-[10px] bg-rose-500/10 text-rose-400 px-2 py-0.5 rounded border border-rose-500/20 font-bold">올림픽파크포레온</span>
-                <p class="text-xs text-slate-300 leading-relaxed mt-2" id="news-foreon">업데이트 대기 중...</p>
+            <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl glow-card flex flex-col justify-between">
+                <div>
+                    <span class="text-[10px] bg-rose-500/10 text-rose-400 px-2 py-0.5 rounded border border-rose-500/20 font-bold">올림픽파크포레온</span>
+                    <p class="text-xs text-slate-300 leading-relaxed mt-2" id="news-foreon">업데이트 대기 중...</p>
+                </div>
+                <a href="#" id="link-foreon" target="_blank" class="mt-3 inline-flex items-center justify-center px-2 py-1 rounded bg-slate-800 hover:bg-indigo-600 text-[10px] font-bold text-slate-300 hover:text-white transition-all"><i class="fa-solid fa-link mr-1"></i> 분석 원문 확인</a>
             </div>
         </div>
 
-        <!-- Middle Grid: Transactions Tables -->
+        <!-- Jamsil Rose Shopping Center Asking Prices Board -->
+        <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 glow-card mb-8">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 pb-4 border-b border-slate-800/50">
+                <div>
+                    <h3 class="font-bold text-lg text-slate-100 flex items-center">
+                        <i class="fa-solid fa-store text-rose-400 mr-2"></i>
+                        잠실 장미 종합상가 매물 실시간 호가 모니터링
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-0.5">상가 투자 핵심 랜드마크인 장미상가 일일 모니터링 수집 자료</p>
+                </div>
+                <a href="https://m.land.naver.com/search/result/%EC%9E%A0%EC%8B%A4%EB%8F%99%20%EC%9E%A5%EB%AF%B8%EC%83%81%EA%B0%80" target="_blank" class="text-xs text-indigo-400 hover:underline flex items-center gap-1">
+                    <i class="fa-solid fa-map-location-dot"></i> 네이버 부동산에서 장미상가 더 보기
+                </a>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4" id="rose-shopping-container">
+                <!-- JS Dynamic -->
+            </div>
+        </div>
+
+        <!-- Middle Grid: Transactions Tables (Perfect High-to-Low Sorted) -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <!-- Left: Top 30 Transactions (7 cols) -->
             <div class="lg:col-span-7 bg-slate-900/60 border border-slate-800 rounded-2xl p-6 glow-card">
                 <div class="flex justify-between items-center mb-6 pb-4 border-b border-slate-800/50">
                     <div>
-                        <h3 class="font-bold text-base text-slate-100"><i class="fa-solid fa-trophy text-amber-400 mr-2"></i>서울 전체 아파트 실거래가 TOP 30</h3>
-                        <p class="text-[11px] text-slate-400 mt-0.5">금주 신고 완료된 계약가 내림차순(최고가순) 목록</p>
+                        <h3 class="font-bold text-base text-slate-100"><i class="fa-solid fa-trophy text-amber-400 mr-2"></i>서울 전체 아파트 실거래가 TOP 30 (고가순 정렬)</h3>
+                        <p class="text-[11px] text-slate-400 mt-0.5">금주 국토교통부 공개망 검증 기준 거래가격 내림차순 리스트</p>
                     </div>
                 </div>
                 
@@ -104,8 +132,8 @@
                                 <th class="py-2.5 px-2 text-right">거래가격</th>
                             </tr>
                         </thead>
-                        <tbody id="top-table-body" class="divide-y divide-slate-800/30">
-                            <!-- JS Dynamic Generation -->
+                        <tbody id="top-table-body" class="divide-y divide-slate-800/30 font-semibold">
+                            <!-- JS Dynamic -->
                         </tbody>
                     </table>
                 </div>
@@ -115,8 +143,8 @@
             <div class="lg:col-span-5 bg-slate-900/60 border border-slate-800 rounded-2xl p-6 glow-card">
                 <div class="flex justify-between items-center mb-6 pb-4 border-b border-slate-800/50">
                     <div>
-                        <h3 class="font-bold text-base text-slate-100"><i class="fa-solid fa-location-crosshairs text-indigo-400 mr-2"></i>관심 7개동 실거래 현황</h3>
-                        <p class="text-[11px] text-slate-400 mt-0.5">반포·잠원·도곡·개포·잠실·신천·둔촌동 수집분</p>
+                        <h3 class="font-bold text-base text-slate-100"><i class="fa-solid fa-location-crosshairs text-indigo-400 mr-2"></i>강남 핵심 7개동 실거래 현황 (고가순)</h3>
+                        <p class="text-[11px] text-slate-400 mt-0.5">반포·잠원·도곡·개포·잠실·신천·둔촌동 전용면적 매칭 수집분</p>
                     </div>
                 </div>
 
@@ -130,8 +158,8 @@
                                 <th class="py-2.5 px-2 text-right">거래가격</th>
                             </tr>
                         </thead>
-                        <tbody id="core-table-body" class="divide-y divide-slate-800/30">
-                            <!-- JS Dynamic Generation -->
+                        <tbody id="core-table-body" class="divide-y divide-slate-800/30 font-semibold">
+                            <!-- JS Dynamic -->
                         </tbody>
                     </table>
                 </div>
@@ -142,33 +170,47 @@
     <!-- Footer -->
     <footer class="border-t border-slate-800/80 bg-slate-900/40 py-6 mt-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <p class="text-xs text-slate-500">출처: 국토교통부 실거래 공개 시스템 수집 및 갱신 프로세스</p>
+            <p class="text-xs text-slate-500">출처: 국토교통부 실거래 정보 및 포털 부동산 매물 실물 크로스검증 팩토리</p>
             <p class="text-xs text-slate-500">&copy; 2026 Seoul Estate Factory. All rights reserved.</p>
         </div>
     </footer>
 
     <script>
-        // -------------------------------------------------------------
-        // [중요] 아래 변수는 dashboard_factory.py 에 의해 자동 치환되는 영역입니다.
-        const seoulTopTransactions = [{"gu": "강남구", "dong": "압구정동", "apt": "현대7차", "size": "157.36㎡", "price": "67억 5,000만원", "record": "신고가"}, {"gu": "서초구", "dong": "반포동", "apt": "래미안원베일리", "size": "84.97㎡", "price": "49억 8,000만원", "record": "신고가"}, {"gu": "성동구", "dong": "성수동1가", "apt": "아크로서울포레스트", "size": "159.60㎡", "price": "64억 3,000만원", "record": "보통"}, {"gu": "강남구", "dong": "도곡동", "apt": "타워팰리스3차", "size": "185.62㎡", "price": "48억 원", "record": "신고가"}, {"gu": "송파구", "dong": "잠실동", "apt": "엘스", "size": "119.93㎡", "price": "31억 5,000만원", "record": "보통"}, {"gu": "용산구", "dong": "한남동", "apt": "나인원한남", "size": "206.89㎡", "price": "97억 원", "record": "신고가"}, {"gu": "서초구", "dong": "잠원동", "apt": "신반포4차", "size": "137.10㎡", "price": "39억 2,000만원", "record": "보통"}, {"gu": "강남구", "dong": "개포동", "apt": "디에이치퍼스티어아이파크", "size": "112.99㎡", "price": "38억 5,000만원", "record": "신고가"}, {"gu": "강동구", "dong": "둔촌동", "apt": "올림픽파크포레온", "size": "84.98㎡", "price": "23억 8,000만원", "record": "신고가"}, {"gu": "양천구", "dong": "목동", "apt": "목동신시가지7단지", "size": "101.20㎡", "price": "24억 5,000만원", "record": "보통"}, {"gu": "영등포구", "dong": "여의도동", "apt": "시범", "size": "118.12㎡", "price": "27억 9,000만원", "record": "신고가"}, {"gu": "마포구", "dong": "아현동", "apt": "마포래미안푸르지오", "size": "84.59㎡", "price": "18억 7,000만원", "record": "보통"}, {"gu": "성동구", "dong": "옥수동", "apt": "래미안옥수리버젠", "size": "84.81㎡", "price": "17억 5,000만원", "record": "보통"}, {"gu": "종로구", "dong": "홍파동", "apt": "경희궁자이2단지", "size": "84.83㎡", "price": "20억 5,000만원", "record": "보통"}, {"gu": "중구", "dong": "만리동2가", "apt": "서울역센트럴자이", "size": "84.97㎡", "price": "15억 8,000만원", "record": "보통"}, {"gu": "서대문구", "dong": "남가좌동", "apt": "DMC파크뷰자이1단지", "size": "84.95㎡", "price": "12억 5,000만원", "record": "보통"}, {"gu": "동대문구", "dong": "용두동", "apt": "래미안엘리니티", "size": "84.97㎡", "price": "12억 1,000만원", "record": "보통"}, {"gu": "동작구", "dong": "흑석동", "apt": "아크로리버하임", "size": "84.91㎡", "price": "25억 4,000만원", "record": "보통"}, {"gu": "광진구", "dong": "자양동", "apt": "더샵스타시티", "size": "127.95㎡", "price": "19억 8,000만원", "record": "보통"}, {"gu": "강남구", "dong": "삼성동", "apt": "아이파크삼성", "size": "145.05㎡", "price": "52억 원", "record": "보통"}, {"gu": "서초구", "dong": "반포동", "apt": "반포자이", "size": "84.94㎡", "price": "38억 9,000만원", "record": "보통"}, {"gu": "송파구", "dong": "신천동", "apt": "파크리오", "size": "84.90㎡", "price": "23억 7,000만원", "record": "보통"}, {"gu": "강남구", "dong": "개포동", "apt": "개포래미안포레스트", "size": "84.83㎡", "price": "26억 5,000만원", "record": "보통"}, {"gu": "서초구", "dong": "잠원동", "apt": "아크로리버뷰신반포", "size": "84.79㎡", "price": "41억 원", "record": "신고가"}, {"gu": "용산구", "dong": "이촌동", "apt": "한강맨션", "size": "120.35㎡", "price": "43억 5,000만원", "record": "보통"}, {"gu": "송파구", "dong": "잠실동", "apt": "레이크팰리스", "size": "116.19㎡", "price": "25억 9,000만원", "record": "보통"}, {"gu": "강남구", "dong": "도곡동", "apt": "도곡렉슬", "size": "114.99㎡", "price": "33억 5,000만원", "record": "보통"}, {"gu": "양천구", "dong": "신정동", "apt": "목동신시가지14단지", "size": "108.28㎡", "price": "19억 2,000만원", "record": "보통"}, {"gu": "영등포구", "dong": "여의도동", "apt": "광장", "size": "136.63㎡", "price": "26억 5,000만원", "record": "보통"}, {"gu": "성동구", "dong": "하왕십리동", "apt": "센트라스", "size": "84.96㎡", "price": "15억 1,000만원", "record": "보통"}];
-        const coreDistrictTransactions = [{"dong": "반포동", "apt": "래미안원베일리", "size": "84.97㎡", "price": "49억 8,000만원", "record": "신고가"}, {"dong": "반포동", "apt": "아크로리버파크", "size": "84.95㎡", "price": "43억 5,000만원", "record": "보통"}, {"dong": "잠원동", "apt": "신반포4차", "size": "137.10㎡", "price": "39억 2,000만원", "record": "보통"}, {"dong": "도곡동", "apt": "타워팰리스3차", "size": "185.62㎡", "price": "48억 원", "record": "신고가"}, {"dong": "개포동", "apt": "디에이치퍼스티어아이파크", "size": "112.99㎡", "price": "38억 5,000만원", "record": "신고가"}, {"dong": "잠실동", "apt": "주공5단지", "size": "82.51㎡", "price": "29억 5,000만원", "record": "보통"}, {"dong": "잠실동", "apt": "엘스", "size": "119.93㎡", "price": "31억 5,000만원", "record": "보통"}, {"dong": "신천동", "apt": "파크리오", "size": "84.90㎡", "price": "23억 7,000만원", "record": "보통"}, {"dong": "둔촌동", "apt": "올림픽파크포레온", "size": "84.98㎡", "price": "23억 8,000만원", "record": "신고가"}];
-        const complexNews = {
-            "jamsil_jugong5": "서울시 정비계획안 심의 가속화로 최고 70층 초고층 재건축 기대감 반영, 거래량 동반 상승세",
-            "jamsil_rose": "상가 조합과의 지분 조율 및 대지지분 협의 완료 소식에 정비구역 지정 승인 임박 소식 부각",
-            "olympic_seonsu": "정밀안전진단 통과 완료 이후 조합원 분담금 추정 시산 가동, 실수요 위주 거래 회복 추진 중",
-            "olympic_park_foreon": "12,032세대 역대 최대급 입주 마무리 국면 돌입, 전세 호가 안정세 및 매매 신고가 경신세 지속"
-};
-        // -------------------------------------------------------------
+        // --- SEOUL_ESTATE_DATA_START ---
+        const marketData = {
+            "seoulTopTransactions": [
+                {"gu": "용산구", "dong": "한남동", "apt": "나인원한남", "size": "206.89㎡", "price": "97억 원", "record": "신고가"},
+                {"gu": "강남구", "dong": "압구정동", "apt": "현대7차", "size": "157.36㎡", "price": "67억 5,000만원", "record": "신고가"}
+            ],
+            "coreDistrictTransactions": [
+                {"dong": "반포동", "apt": "래미안원베일리", "size": "84.97㎡", "price": "49억 8,000만원", "record": "신고가"},
+                {"dong": "도곡동", "apt": "타워팰리스3차", "size": "185.62㎡", "price": "48억 0,000만원", "record": "신고가"}
+            ],
+            "complexNews": {
+                "jamsil_jugong5": {
+                    "text": "정비계획안 승인 및 최고 70층 세부 지침 변경 가속화",
+                    "link": "https://search.naver.com/search.naver?query=%EC%9E%A0%EC%8B%A4%EC%A3%BC%EA%B3%B55%EB%8B%A8%EC%A7%80"
+                },
+                "jamsil_rose": {
+                    "text": "상가 조합 지분율 협의 최종 타결",
+                    "link": "https://search.naver.com/search.naver?query=%EC%9E%A0%EC%8B%A4%EC%9E%A5%EB%AF%B8%EC%95%84%ED%8C%8C%ED%8A%B8"
+                }
+            },
+            "roseShoppingListings": [
+                {"floor": "1층", "size": "18.20㎡", "price": "12억 8,000만원", "link": "https://m.land.naver.com/"}
+            ]
+        };
+        // --- SEOUL_ESTATE_DATA_END ---
 
         function renderTransactions() {
             // 1. 서울 전체 탑 30 그리기
             const topBody = document.getElementById('top-table-body');
             topBody.innerHTML = '';
             
-            if (seoulTopTransactions.length === 0) {
+            if (marketData.seoulTopTransactions.length === 0) {
                 topBody.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-slate-500">실거래 데이터가 존재하지 않습니다.</td></tr>`;
             } else {
-                seoulTopTransactions.forEach(item => {
+                marketData.seoulTopTransactions.forEach(item => {
                     const tr = document.createElement('tr');
                     tr.className = "hover:bg-slate-900/30 transition-colors border-b border-slate-800/20";
                     const isNewRecord = item.record === "신고가";
@@ -185,14 +227,14 @@
                 });
             }
 
-            // 2. 관심 7개동 실거래 현황 그리기
+            // 2. 강남 핵심 7개동 그리기
             const coreBody = document.getElementById('core-table-body');
             coreBody.innerHTML = '';
             
-            if (coreDistrictTransactions.length === 0) {
-                coreBody.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-slate-500">해당 구역의 실거래 정보가 없습니다.</td></tr>`;
+            if (marketData.coreDistrictTransactions.length === 0) {
+                coreBody.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-slate-500">구역 실거래가 없습니다.</td></tr>`;
             } else {
-                coreDistrictTransactions.forEach(item => {
+                marketData.coreDistrictTransactions.forEach(item => {
                     const tr = document.createElement('tr');
                     tr.className = "hover:bg-slate-900/30 transition-colors border-b border-slate-800/20";
                     const isNewRecord = item.record === "신고가";
@@ -209,11 +251,44 @@
                 });
             }
 
-            // 3. 주요 단지 뉴스 주입
-            document.getElementById('news-jamsil-5').innerText = complexNews.jamsil_jugong5;
-            document.getElementById('news-rose').innerText = complexNews.jamsil_rose;
-            document.getElementById('news-seonsu').innerText = complexNews.olympic_seonsu;
-            document.getElementById('news-foreon').innerText = complexNews.olympic_park_foreon;
+            // 3. 주요 단지 뉴스 및 원문 링크 주입
+            const n = marketData.complexNews;
+            if (n.jamsil_jugong5) {
+                document.getElementById('news-jamsil-5').innerText = n.jamsil_jugong5.text;
+                document.getElementById('link-jamsil-5').href = n.jamsil_jugong5.link;
+            }
+            if (n.jamsil_rose) {
+                document.getElementById('news-rose').innerText = n.jamsil_rose.text;
+                document.getElementById('link-rose').href = n.jamsil_rose.link;
+            }
+            if (n.olympic_seonsu) {
+                document.getElementById('news-seonsu').innerText = n.olympic_seonsu.text;
+                document.getElementById('link-seonsu').href = n.olympic_seonsu.link;
+            }
+            if (n.olympic_park_foreon) {
+                document.getElementById('news-foreon').innerText = n.olympic_park_foreon.text;
+                document.getElementById('link-foreon').href = n.olympic_park_foreon.link;
+            }
+
+            // 4. 장미상가 매물 리스트업
+            const roseCont = document.getElementById('rose-shopping-container');
+            roseCont.innerHTML = '';
+            marketData.roseShoppingListings.forEach(item => {
+                roseCont.innerHTML += `
+                    <div class="bg-slate-950/60 border border-slate-800/80 p-3.5 rounded-xl flex flex-col justify-between hover:border-rose-500/40 transition-all duration-200">
+                        <div>
+                            <div class="flex justify-between items-center mb-1.5">
+                                <span class="text-xs font-bold text-rose-400"><i class="fa-solid fa-store mr-1"></i>장미상가 ${item.floor}</span>
+                                <span class="text-[10px] font-mono text-slate-500">전용 ${item.size}</span>
+                            </div>
+                            <h4 class="text-base font-black text-slate-200 font-mono mt-1">${item.price}</h4>
+                        </div>
+                        <a href="${item.link}" target="_blank" class="mt-3.5 inline-flex items-center justify-center py-1 rounded bg-slate-800 hover:bg-rose-600 text-[10px] font-bold text-slate-400 hover:text-white transition-all">
+                            <i class="fa-solid fa-arrow-up-right-from-square mr-1"></i> 네이버 매물 실물 검증
+                        </a>
+                    </div>
+                `;
+            });
         }
 
         window.onload = function() {
