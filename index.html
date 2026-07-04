@@ -64,7 +64,7 @@
             </div>
             <div class="text-right">
                 <p class="text-xs text-slate-500 font-medium">유가증권 정규장 마감 기준</p>
-                <p class="text-sm font-bold text-slate-300" id="market-date">데이터 수집 대기 중</p>
+                <p class="text-sm font-bold text-slate-300" id="market-date">2026년 07월 04일 업데이트</p>
             </div>
         </div>
 
@@ -169,33 +169,196 @@
 
     <script>
         // --- KOSPI_DATA_START ---
-        const marketData = {
-            "kospi": {
-                "value": "2,560.12",
+    const marketData = {
+        "kospi": {
+                "value": "2,560.00",
                 "change": "-15.20",
                 "pct": "-0.59%",
-                "date": "2026년 7월 2일 장 마감",
-                "high52w": "2,860.12",
-                "low52w": "2,210.45",
-                "chartData": [2510, 2530, 2560, 2540, 2590, 2610, 2580, 2530, 2560, 2520, 2480, 2510, 2560, 2560]
-            },
-            "etfs": [
-                {"name": "KODEX 200", "ticker": "069500", "price": "34,250", "change": "-150", "pct": "-0.44%"},
-                {"name": "TIGER TOP10", "ticker": "292150", "price": "14,520", "change": "+50", "pct": "+0.35%"},
-                {"name": "KODEX 반도체", "ticker": "091160", "price": "28,450", "change": "-320", "pct": "-1.11%"},
-                {"name": "TIGER Fn반도체TOP10", "ticker": "305540", "price": "16,110", "change": "-210", "pct": "-1.29%"},
-                {"name": "KODEX 증권", "ticker": "102970", "price": "7,820", "change": "+40", "pct": "+0.51%"}
-            ],
-            "stocks": [
-                {"name": "삼성전자", "price": "75,200", "change": "-1,200", "pct": "-1.57%", "marketCap": "448.9조"},
-                {"name": "SK하이닉스", "price": "182,000", "change": "-4,500", "pct": "-2.41%", "marketCap": "132.4조"},
-                {"name": "LG에너지솔루션", "price": "345,500", "change": "+2,000", "pct": "+0.58%", "marketCap": "80.8조"}
-            ],
-            "comments": [
-                {"source": "워런 버핏 (Berkshire Hathaway)", "tag": "패닉 바잉", "text": "시장 지수가 큰 조정을 보이며 급락할 때야말로 훌륭한 장기 투자 자산을 할인된 최적가에 매집할 수 있는 절호의 기회입니다.", "link": "https://www.berkshirehathaway.com/letters/letters.html"}
-            ]
-        };
-        // --- KOSPI_DATA_END ---
+                "date": "2026년 07월 04일",
+                "high52w": "9,052.42",
+                "low52w": "3,054.28",
+                "chartData": [
+                        3054.28,
+                        3175.77,
+                        3188.07,
+                        3196.05,
+                        3119.41,
+                        3210.01,
+                        3225.66,
+                        3168.73,
+                        3186.01,
+                        3205.12,
+                        3395.54,
+                        3445.24,
+                        3386.05,
+                        3549.21,
+                        3610.6,
+                        3748.89,
+                        3941.59,
+                        4107.5,
+                        3953.76,
+                        4011.57,
+                        3853.26,
+                        3926.59,
+                        4100.05,
+                        4167.16,
+                        4020.55,
+                        4129.68,
+                        4309.63,
+                        4586.32,
+                        4840.74,
+                        4990.07,
+                        5224.36,
+                        5089.14,
+                        5507.01,
+                        5808.53,
+                        6244.13,
+                        5584.87,
+                        5487.24,
+                        5781.2,
+                        5438.87,
+                        5377.3,
+                        5858.87,
+                        6191.92,
+                        6475.63,
+                        6598.87,
+                        7498.0,
+                        7493.18,
+                        7847.71,
+                        8476.15,
+                        8160.59,
+                        8123.62,
+                        9052.42,
+                        8411.21,
+                        8088.34,
+                        8088.34
+                ]
+        },
+        "etfs": [
+                {
+                        "name": "KODEX 200",
+                        "ticker": "069500",
+                        "price": "0",
+                        "change": "+0",
+                        "pct": "+0.00%"
+                },
+                {
+                        "name": "TIGER TOP10",
+                        "ticker": "292150",
+                        "price": "0",
+                        "change": "+0",
+                        "pct": "+0.00%"
+                },
+                {
+                        "name": "KODEX 반도체",
+                        "ticker": "091160",
+                        "price": "0",
+                        "change": "+0",
+                        "pct": "+0.00%"
+                },
+                {
+                        "name": "TIGER Fn반도체TOP10",
+                        "ticker": "305540",
+                        "price": "0",
+                        "change": "+0",
+                        "pct": "+0.00%"
+                },
+                {
+                        "name": "KODEX 증권",
+                        "ticker": "102970",
+                        "price": "0",
+                        "change": "+0",
+                        "pct": "+0.00%"
+                }
+        ],
+        "stocks": [
+                {
+                        "name": "삼성전자",
+                        "price": "0",
+                        "change": "+0",
+                        "pct": "+0.00%",
+                        "marketCap": "N/A"
+                },
+                {
+                        "name": "SK하이닉스",
+                        "price": "0",
+                        "change": "+0",
+                        "pct": "+0.00%",
+                        "marketCap": "N/A"
+                },
+                {
+                        "name": "LG에너지솔루션",
+                        "price": "0",
+                        "change": "+0",
+                        "pct": "+0.00%",
+                        "marketCap": "N/A"
+                },
+                {
+                        "name": "삼성바이오로직스",
+                        "price": "0",
+                        "change": "+0",
+                        "pct": "+0.00%",
+                        "marketCap": "N/A"
+                },
+                {
+                        "name": "현대차",
+                        "price": "0",
+                        "change": "+0",
+                        "pct": "+0.00%",
+                        "marketCap": "N/A"
+                },
+                {
+                        "name": "기아",
+                        "price": "0",
+                        "change": "+0",
+                        "pct": "+0.00%",
+                        "marketCap": "N/A"
+                },
+                {
+                        "name": "셀트리온",
+                        "price": "0",
+                        "change": "+0",
+                        "pct": "+0.00%",
+                        "marketCap": "N/A"
+                },
+                {
+                        "name": "KB금융",
+                        "price": "0",
+                        "change": "+0",
+                        "pct": "+0.00%",
+                        "marketCap": "N/A"
+                },
+                {
+                        "name": "POSCO홀딩스",
+                        "price": "0",
+                        "change": "+0",
+                        "pct": "+0.00%",
+                        "marketCap": "N/A"
+                },
+                {
+                        "name": "NAVER",
+                        "price": "0",
+                        "change": "+0",
+                        "pct": "+0.00%",
+                        "marketCap": "N/A"
+                }
+        ],
+        "comments": [
+                {
+                        "source": "워런 버핏 (Berkshire Hathaway)",
+                        "tag": "패닉 바잉",
+                        "text": "지수가 급격한 조정을 보이며 폭락할 때야말로 양질의 자산을 할인된 가격에 매입할 수 있는 축복의 시기입니다. 단기 수급 불균형은 장기 투자자에게 최고의 동반자입니다.",
+                        "link": "https://www.berkshirehathaway.com/letters/letters.html"
+                },
+                {
+                        "source": "하워드 막스 (Oaktree Memo)",
+                        "tag": "주기적 흔들림",
+                        "text": "패닉 셀링에 휘말리지 않는 강인한 투자 심리가 필요합니다. 현재 지수 하방 압력은 펀더멘털 손상이 아닌 거시경제 불확실성에 따른 심리적 발작입니다. 중심을 잡으십시오.",
+                        "link": "https://www.oaktreecapital.com/insights/howard-marks-memos"
+                }
+        ]
+};
+    // --- KOSPI_DATA_END ---
 
         let activeColorSystem = 'kr';
         let chartInstance = null;
