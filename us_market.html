@@ -62,7 +62,7 @@
             </div>
             <div class="text-right">
                 <p class="text-xs text-slate-500 font-medium">뉴욕 증시 마감 기준</p>
-                <p class="text-sm font-bold text-slate-300" id="market-date">데이터 수집 대기 중</p>
+                <p class="text-sm font-bold text-slate-300" id="market-date">2026년 07월 04일 업데이트</p>
             </div>
         </div>
 
@@ -152,19 +152,7 @@
     <script>
         // -------------------------------------------------------------
         // [중요] 아래 변수는 dashboard_factory.py 에 의해 자동 치환되는 영역입니다.
-        const marketDataList = [
-            {"ticker": "AAPL", "price": "$185.20", "change": "+$2.30", "pct": "+1.26%"},
-            {"ticker": "MSFT", "price": "$420.50", "change": "-$1.20", "pct": "-0.28%"},
-            {"ticker": "NVDA", "price": "$875.00", "change": "+$15.50", "pct": "+1.80%"},
-            {"ticker": "AMZN", "price": "$178.40", "change": "+$3.10", "pct": "+1.77%"},
-            {"ticker": "META", "price": "$505.20", "change": "+$8.50", "pct": "+1.71%"},
-            {"ticker": "GOOGL", "price": "$152.30", "change": "+$1.90", "pct": "+1.26%"},
-            {"ticker": "TSLA", "price": "$175.40", "change": "-$4.20", "pct": "-2.34%"},
-            {"ticker": "AVGO", "price": "$1350.00", "change": "+$25.00", "pct": "+1.89%"},
-            {"ticker": "AMD", "price": "$180.20", "change": "+$4.50", "pct": "+2.56%"},
-            {"ticker": "MU", "price": "$118.50", "change": "+$3.20", "pct": "+2.78%"},
-            {"ticker": "INTC", "price": "$42.30", "change": "-$0.55", "pct": "-1.28%"}
-        ];
+        const marketDataList = [{"name": "S&P 500", "price": "7,483.24", "change": "+0.01 (+0.00%)"}, {"name": "나스닥 종합", "price": "25,832.67", "change": "-207.36 (-0.80%)"}, {"name": "다우 존스", "price": "52,900.07", "change": "+594.83 (+1.14%)"}];
         const usOpinionsList = [
             {
                 "author": "Goldman Sachs",
