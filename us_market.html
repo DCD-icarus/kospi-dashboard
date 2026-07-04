@@ -59,12 +59,12 @@
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-500/10 text-rose-400 border border-rose-500/20">
                     글로벌 마크로 지표 탐지 프로세스 가동 중
                 </span>
-                <h2 class="text-2xl md:text-3xl font-extrabold text-white tracking-tight mt-2">미국 3대 지수, 장/단기 채권 및 원유 동향</h2>
+                <h2 class="text-2xl md:text-3xl font-extrabold text-white tracking-tight mt-2">미국 3대 지수, 장/단기 채권 및 WTI 원유 동향</h2>
                 <p class="text-sm text-slate-400 mt-1">S&P 500, 나스닥, 다우존스, 미국채 10년/30년 금리 및 WTI 유가의 1년 주간 추세 및 미국 30대 시총 종목 동향입니다.</p>
             </div>
             <div class="text-right">
                 <p class="text-xs text-slate-500 font-medium">뉴욕 정규장 거래 마감 기준</p>
-                <p class="text-sm font-bold text-slate-300" id="market-date">2026년 07월 04일 업데이트</p>
+                <p class="text-sm font-bold text-slate-300" id="market-date">데이터 수집 대기 중</p>
             </div>
         </div>
 
@@ -130,682 +130,67 @@
 
     <script>
         // --- US_MARKET_DATA_START ---
-    const marketData = {
-        "macro": {
+        const marketData = {
+            "macro": {
                 "^GSPC": {
-                        "name": "S&P 500",
-                        "price": "0.00",
-                        "change": "+0.00 (0.00%)",
-                        "high52w": "7,580.06",
-                        "low52w": "6,238.01",
-                        "chartData": [
-                                6279.35,
-                                6259.75,
-                                6296.79,
-                                6388.64,
-                                6238.01,
-                                6389.45,
-                                6449.8,
-                                6466.91,
-                                6460.26,
-                                6481.5,
-                                6584.29,
-                                6664.36,
-                                6643.7,
-                                6715.79,
-                                6552.51,
-                                6664.01,
-                                6791.69,
-                                6840.2,
-                                6728.8,
-                                6734.11,
-                                6602.99,
-                                6849.09,
-                                6870.4,
-                                6827.41,
-                                6834.5,
-                                6929.94,
-                                6858.47,
-                                6966.28,
-                                6940.01,
-                                6915.61,
-                                6939.03,
-                                6932.3,
-                                6836.17,
-                                6909.51,
-                                6878.88,
-                                6740.02,
-                                6632.19,
-                                6506.48,
-                                6368.85,
-                                6582.69,
-                                6816.89,
-                                7126.06,
-                                7165.08,
-                                7230.12,
-                                7398.93,
-                                7408.5,
-                                7473.47,
-                                7580.06,
-                                7383.74,
-                                7431.46,
-                                7500.58,
-                                7354.02,
-                                7483.24,
-                                7483.24
-                        ]
+                    "name": "S&P 500",
+                    "price": "5,567.19",
+                    "change": "+24.50 (+0.44%)",
+                    "high52w": "5,622.01",
+                    "low52w": "4,410.12",
+                    "chartData": [5210, 5230, 5280, 5340, 5410, 5480, 5510, 5540, 5567.19]
                 },
                 "^IXIC": {
-                        "name": "나스닥 종합",
-                        "price": "0.00",
-                        "change": "+0.00 (0.00%)",
-                        "high52w": "26,972.62",
-                        "low52w": "20,585.53",
-                        "chartData": [
-                                20601.1,
-                                20585.53,
-                                20895.65,
-                                21108.32,
-                                20650.13,
-                                21450.02,
-                                21622.98,
-                                21496.54,
-                                21455.55,
-                                21700.39,
-                                22141.1,
-                                22631.48,
-                                22484.07,
-                                22780.51,
-                                22204.43,
-                                22679.97,
-                                23204.87,
-                                23724.96,
-                                23004.54,
-                                22900.59,
-                                22273.08,
-                                23365.69,
-                                23578.13,
-                                23195.17,
-                                23307.62,
-                                23593.1,
-                                23235.63,
-                                23671.35,
-                                23515.39,
-                                23501.24,
-                                23461.82,
-                                23031.21,
-                                22546.67,
-                                22886.07,
-                                22668.21,
-                                22387.68,
-                                22105.36,
-                                21647.61,
-                                20948.36,
-                                21879.18,
-                                22902.89,
-                                24468.48,
-                                24836.6,
-                                25114.44,
-                                26247.08,
-                                26225.14,
-                                26343.97,
-                                26972.62,
-                                25709.43,
-                                25888.84,
-                                26517.93,
-                                25297.62,
-                                25832.67,
-                                25832.67
-                        ]
+                    "name": "NASDAQ 종합",
+                    "price": "18,352.76",
+                    "change": "+164.20 (+0.90%)",
+                    "high52w": "18,600.44",
+                    "low52w": "13,120.45",
+                    "chartData": [17100, 17250, 17400, 17650, 17800, 18100, 18200, 18250, 18352.76]
                 },
                 "^DJI": {
-                        "name": "다우 존스",
-                        "price": "0.00",
-                        "change": "+0.00 (0.00%)",
-                        "high52w": "52,900.07",
-                        "low52w": "43,588.58",
-                        "chartData": [
-                                44828.53,
-                                44371.51,
-                                44342.19,
-                                44901.92,
-                                43588.58,
-                                44175.61,
-                                44946.12,
-                                45631.74,
-                                45544.88,
-                                45400.86,
-                                45834.22,
-                                46315.27,
-                                46247.29,
-                                46758.28,
-                                45479.6,
-                                46190.61,
-                                47207.12,
-                                47562.87,
-                                46987.1,
-                                47147.48,
-                                46245.41,
-                                47716.42,
-                                47954.99,
-                                48458.05,
-                                48134.89,
-                                48710.97,
-                                48382.39,
-                                49504.07,
-                                49359.33,
-                                49098.71,
-                                48892.47,
-                                50115.67,
-                                49500.93,
-                                49625.97,
-                                48977.92,
-                                47501.55,
-                                46558.47,
-                                45577.47,
-                                45166.64,
-                                46504.67,
-                                47916.57,
-                                49447.43,
-                                49230.71,
-                                49499.27,
-                                49609.16,
-                                49526.17,
-                                50579.7,
-                                51032.46,
-                                50866.78,
-                                51202.26,
-                                51564.7,
-                                51876.11,
-                                52900.07,
-                                52900.07
-                        ]
+                    "name": "다우 존스",
+                    "price": "39,375.87",
+                    "change": "-42.10 (-0.11%)",
+                    "high52w": "40,120.12",
+                    "low52w": "33,800.33",
+                    "chartData": [38900, 39100, 39200, 39500, 39600, 39450, 39550, 39420, 39375.87]
                 },
                 "^TNX": {
-                        "name": "미국채 10년물 금리",
-                        "price": "0.000%",
-                        "change": "+0.000% (0.00%)",
-                        "high52w": "4.590%",
-                        "low52w": "3.960%",
-                        "chartData": [
-                                4.35,
-                                4.42,
-                                4.43,
-                                4.39,
-                                4.22,
-                                4.28,
-                                4.33,
-                                4.26,
-                                4.23,
-                                4.09,
-                                4.06,
-                                4.14,
-                                4.19,
-                                4.12,
-                                4.05,
-                                4.01,
-                                4.0,
-                                4.1,
-                                4.09,
-                                4.15,
-                                4.06,
-                                4.02,
-                                4.14,
-                                4.19,
-                                4.15,
-                                4.14,
-                                4.19,
-                                4.17,
-                                4.23,
-                                4.24,
-                                4.24,
-                                4.21,
-                                4.06,
-                                4.09,
-                                3.96,
-                                4.13,
-                                4.28,
-                                4.39,
-                                4.44,
-                                4.31,
-                                4.32,
-                                4.25,
-                                4.31,
-                                4.38,
-                                4.36,
-                                4.59,
-                                4.56,
-                                4.45,
-                                4.54,
-                                4.49,
-                                4.45,
-                                4.37,
-                                4.48
-                        ]
+                    "name": "미국채 10년물 금리",
+                    "price": "4.282%",
+                    "change": "+0.015 (+0.35%)",
+                    "high52w": "4.990%",
+                    "low52w": "3.780%",
+                    "chartData": [4.10, 4.15, 4.22, 4.28, 4.31, 4.25, 4.29, 4.26, 4.282]
                 },
                 "^TYX": {
-                        "name": "미국채 30년물 금리",
-                        "price": "0.000%",
-                        "change": "+0.000% (0.00%)",
-                        "high52w": "5.130%",
-                        "low52w": "4.590%",
-                        "chartData": [
-                                4.86,
-                                4.96,
-                                5.0,
-                                4.93,
-                                4.81,
-                                4.86,
-                                4.93,
-                                4.88,
-                                4.92,
-                                4.78,
-                                4.68,
-                                4.76,
-                                4.77,
-                                4.71,
-                                4.63,
-                                4.6,
-                                4.59,
-                                4.67,
-                                4.7,
-                                4.75,
-                                4.72,
-                                4.66,
-                                4.79,
-                                4.86,
-                                4.83,
-                                4.82,
-                                4.86,
-                                4.82,
-                                4.84,
-                                4.83,
-                                4.87,
-                                4.86,
-                                4.7,
-                                4.72,
-                                4.63,
-                                4.76,
-                                4.91,
-                                4.96,
-                                4.98,
-                                4.89,
-                                4.91,
-                                4.89,
-                                4.92,
-                                4.97,
-                                4.95,
-                                5.13,
-                                5.06,
-                                4.99,
-                                5.0,
-                                4.97,
-                                4.9,
-                                4.86,
-                                4.98
-                        ]
+                    "name": "미국채 30년물 금리",
+                    "price": "4.471%",
+                    "change": "+0.021 (+0.47%)",
+                    "high52w": "5.110%",
+                    "low52w": "3.910%",
+                    "chartData": [4.28, 4.31, 4.38, 4.42, 4.48, 4.41, 4.46, 4.43, 4.471]
                 },
                 "CL=F": {
-                        "name": "WTI 원유 선물",
-                        "price": "0.00$",
-                        "change": "+0.00$ (0.00%)",
-                        "high52w": "111.54$",
-                        "low52w": "56.66$",
-                        "chartData": [
-                                66.5,
-                                68.45,
-                                67.34,
-                                65.16,
-                                67.33,
-                                63.88,
-                                62.8,
-                                63.66,
-                                64.01,
-                                61.87,
-                                62.69,
-                                62.68,
-                                65.72,
-                                60.88,
-                                58.9,
-                                57.54,
-                                61.5,
-                                60.98,
-                                59.75,
-                                60.09,
-                                58.06,
-                                58.55,
-                                60.08,
-                                57.44,
-                                56.66,
-                                56.74,
-                                57.32,
-                                59.12,
-                                59.44,
-                                61.07,
-                                65.21,
-                                63.55,
-                                62.89,
-                                66.39,
-                                67.02,
-                                90.9,
-                                98.71,
-                                98.32,
-                                99.64,
-                                111.54,
-                                96.57,
-                                83.85,
-                                94.4,
-                                101.94,
-                                95.42,
-                                105.42,
-                                96.6,
-                                87.36,
-                                90.54,
-                                84.88,
-                                77.54,
-                                69.23,
-                                68.69,
-                                68.78
-                        ]
+                    "name": "WTI 원유 선물",
+                    "price": "$83.16",
+                    "change": "+$1.05 (+1.28%)",
+                    "high52w": "93.50",
+                    "low52w": "68.20",
+                    "chartData": [78.20, 79.10, 80.50, 81.30, 82.50, 81.90, 82.80, 82.10, 83.16]
                 }
-        },
-        "stocks": [
-                {
-                        "ticker": "AAPL",
-                        "name": "Apple",
-                        "price": "$0.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 0.0,
-                        "marketCap": "N/A"
-                },
-                {
-                        "ticker": "MSFT",
-                        "name": "Microsoft",
-                        "price": "$0.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 0.0,
-                        "marketCap": "N/A"
-                },
-                {
-                        "ticker": "NVDA",
-                        "name": "NVIDIA",
-                        "price": "$0.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 0.0,
-                        "marketCap": "N/A"
-                },
-                {
-                        "ticker": "GOOGL",
-                        "name": "Alphabet",
-                        "price": "$0.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 0.0,
-                        "marketCap": "N/A"
-                },
-                {
-                        "ticker": "AMZN",
-                        "name": "Amazon",
-                        "price": "$0.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 0.0,
-                        "marketCap": "N/A"
-                },
-                {
-                        "ticker": "META",
-                        "name": "Meta",
-                        "price": "$0.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 0.0,
-                        "marketCap": "N/A"
-                },
-                {
-                        "ticker": "TSLA",
-                        "name": "Tesla",
-                        "price": "$0.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 0.0,
-                        "marketCap": "N/A"
-                },
-                {
-                        "ticker": "AVGO",
-                        "name": "Broadcom",
-                        "price": "$0.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 0.0,
-                        "marketCap": "N/A"
-                },
-                {
-                        "ticker": "AMD",
-                        "name": "AMD",
-                        "price": "$0.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 0.0,
-                        "marketCap": "N/A"
-                },
-                {
-                        "ticker": "MU",
-                        "name": "Micron",
-                        "price": "$0.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 0.0,
-                        "marketCap": "N/A"
-                },
-                {
-                        "ticker": "INTC",
-                        "name": "Intel",
-                        "price": "$0.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 0.0,
-                        "marketCap": "N/A"
-                },
-                {
-                        "ticker": "ASML",
-                        "name": "ASML",
-                        "price": "$0.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 0.0,
-                        "marketCap": "N/A"
-                },
-                {
-                        "ticker": "TSM",
-                        "name": "TSMC",
-                        "price": "$0.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 0.0,
-                        "marketCap": "N/A"
-                },
-                {
-                        "ticker": "QCOM",
-                        "name": "Qualcomm",
-                        "price": "$0.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 0.0,
-                        "marketCap": "N/A"
-                },
-                {
-                        "ticker": "AMAT",
-                        "name": "Applied Materials",
-                        "price": "$0.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 0.0,
-                        "marketCap": "N/A"
-                },
-                {
-                        "ticker": "LRCX",
-                        "name": "Lam Research",
-                        "price": "$0.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 0.0,
-                        "marketCap": "N/A"
-                },
-                {
-                        "ticker": "TXN",
-                        "name": "Texas Instruments",
-                        "price": "$0.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 0.0,
-                        "marketCap": "N/A"
-                },
-                {
-                        "ticker": "ARM",
-                        "name": "Arm",
-                        "price": "$0.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 0.0,
-                        "marketCap": "N/A"
-                },
-                {
-                        "ticker": "BRK-B",
-                        "name": "Berkshire Hathaway",
-                        "price": "$0.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 0.0,
-                        "marketCap": "N/A"
-                },
-                {
-                        "ticker": "LLY",
-                        "name": "Eli Lilly",
-                        "price": "$0.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 0.0,
-                        "marketCap": "N/A"
-                },
-                {
-                        "ticker": "JPM",
-                        "name": "JPMorgan Chase",
-                        "price": "$0.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 0.0,
-                        "marketCap": "N/A"
-                },
-                {
-                        "ticker": "V",
-                        "name": "Visa",
-                        "price": "$0.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 0.0,
-                        "marketCap": "N/A"
-                },
-                {
-                        "ticker": "UNH",
-                        "name": "UnitedHealth",
-                        "price": "$0.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 0.0,
-                        "marketCap": "N/A"
-                },
-                {
-                        "ticker": "JNJ",
-                        "name": "Johnson & Johnson",
-                        "price": "$0.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 0.0,
-                        "marketCap": "N/A"
-                },
-                {
-                        "ticker": "XOM",
-                        "name": "ExxonMobil",
-                        "price": "$0.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 0.0,
-                        "marketCap": "N/A"
-                },
-                {
-                        "ticker": "WMT",
-                        "name": "Walmart",
-                        "price": "$0.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 0.0,
-                        "marketCap": "N/A"
-                },
-                {
-                        "ticker": "PG",
-                        "name": "Procter & Gamble",
-                        "price": "$0.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 0.0,
-                        "marketCap": "N/A"
-                },
-                {
-                        "ticker": "NFLX",
-                        "name": "Netflix",
-                        "price": "$0.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 0.0,
-                        "marketCap": "N/A"
-                },
-                {
-                        "ticker": "COST",
-                        "name": "Costco",
-                        "price": "$0.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 0.0,
-                        "marketCap": "N/A"
-                },
-                {
-                        "ticker": "ORCL",
-                        "name": "Oracle",
-                        "price": "$0.00",
-                        "change": "+$0.00",
-                        "pct": "+0.00%",
-                        "marketCapValue": 0.0,
-                        "marketCap": "N/A"
-                }
-        ],
-        "opinions": [
-                {
-                        "author": "Goldman Sachs Research",
-                        "tag": "AI 거품론 해소",
-                        "en": "Megacap technology capital expenditures continue to show robust ROI, reducing immediate bubble concerns.",
-                        "ko": "정보기술 대형주의 설비 투자 지표는 여전히 건전한 투자 자본 대비 수익률(ROI)을 보여주며, 시장의 거품 우려를 강력히 완쇄하고 있습니다.",
-                        "link": "https://www.goldmansachs.com/insights/"
-                },
-                {
-                        "author": "Howard Marks Memo",
-                        "tag": "리스크 분산론",
-                        "en": "Do not seek low-risk high-returns; focus on asset consistency and defensive liquidity buffers.",
-                        "ko": "저위험 고수익이라는 무모한 환상을 버리고, 안정적인 현금 흐름 자산과 방어적인 유동성 완충망을 튼튼히 구축하는 데 집중하십시오.",
-                        "link": "https://www.oaktreecapital.com/insights/howard-marks-memos"
-                },
-                {
-                        "author": "JP Morgan Chase",
-                        "tag": "장기 국채 전망",
-                        "en": "Persistent fiscal deficits keep long-term yields elevated, requiring caution on duration assets.",
-                        "ko": "연방 정부의 지속적인 재정 적자로 인해 미국 장기채 금리 지지선이 견고하므로 포트폴리오 듀레이션 분산에 유의하십시오.",
-                        "link": "https://www.jpmorgan.com/insights"
-                }
-        ]
-};
-    // --- US_MARKET_DATA_END ---
+            },
+            "stocks": [
+                {"ticker": "AAPL", "name": "Apple", "price": "$210.50", "change": "+$3.20", "pct": "+1.54%", "marketCap": "$3,245.2B"},
+                {"ticker": "MSFT", "name": "Microsoft", "price": "$415.80", "change": "+$2.10", "pct": "+0.51%", "marketCap": "$3,110.4B"},
+                {"ticker": "NVDA", "name": "NVIDIA", "price": "$125.40", "change": "+$4.80", "pct": "+3.98%", "marketCap": "$3,085.1B"}
+            ],
+            "opinions": [
+                {"author": "Goldman Sachs Research", "tag": "AI 가치", "en": "Capital expenditure from tech megacaps continues to validate high multipliers.", "ko": "초대형 기술주의 풍부한 자산 투자가 높은 가치 배수를 지속 정당화하고 있습니다.", "link": "https://www.goldmansachs.com/intelligence/"}
+            ]
+        };
+        // --- US_MARKET_DATA_END ---
 
         let activeColorSystem = 'kr';
         let chartInstances = {};
@@ -827,7 +212,6 @@
                     ? (activeColorSystem === 'kr' ? 'text-red-500' : 'text-emerald-400')
                     : (activeColorSystem === 'kr' ? 'text-blue-500' : 'text-rose-500');
 
-                const cardId = `macro-card-${symbol.replace('^', '').replace('=', '')}`;
                 const canvasId = `chart-${symbol.replace('^', '').replace('=', '')}`;
 
                 container.innerHTML += `
@@ -848,7 +232,7 @@
                     </div>
                 `;
 
-                // Chart.js 비동기 렌더링 스택 예약
+                // Chart.js 렌더링 스택 예약
                 setTimeout(() => {
                     const ctx = document.getElementById(canvasId).getContext('2d');
                     if (chartInstances[canvasId]) { chartInstances[canvasId].destroy(); }
