@@ -1,55 +1,44 @@
-# STREAMING_CHUNK: Configuring YAML schedules and action runners...
-name: Scheduled Dashboard Factory
+name: Daily KOSPI Dashboard Update
 
 on:
   schedule:
-    # 1. 월~금요일 한국시간 오후 4:00 (KOSPI & REITs 동시 수집 -> UTC 오전 7:00)
+    # UTC 기준 오전 7:00 = 한국 시간(KST) 오후 4:00 (월~금요일 실행)
     - cron: '0 7 * * 1-5'
-    # 2. 화~토요일 한국시간 오전 7:00 (미국 주식시장 마감 수집 -> UTC 전날(월~금) 오후 10:00)
-    - cron: '0 22 * * 1-5'
-    # 3. 매일 한국시간 오전 7:10 (서울 부동산 실거래 정보 수집 -> UTC 전날(월~일) 오후 10:10)
-    - cron: '10 22 * * *'
-  workflow_dispatch: # 직접 버튼을 눌러 수동 강제 수집 가능
+  workflow_dispatch: # 직접 버튼을 눌러 수동 강제 수집 및 수동 푸시 가능
 
 permissions:
   contents: write
 
 jobs:
-  run-factory:
+  update-dashboard:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install requests beautifulsoup4
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests beautifulsoup4
 
-      # 복잡한 시간 판별 셸 스크립트를 제거하고 파이썬 엔진에서 안전하게 자동 판별하여 구동합니다.
-      - name: Run Factory Scraper (Auto Mode)
-        run: python dashboard_factory.py --mode auto
+    - name: Run Python Scraper and Update Dashboard
+      env:
+        # 카카오 연동을 위해 발급받은 평생 Secrets 키셋 매핑 전달
+        KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
+        KAKAO_REFRESH_TOKEN: ${{ secrets.KAKAO_REFRESH_TOKEN }}
+        GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
+      run: python update_dashboard.py
 
-      # 변경 사항이 있는 파일만 안전하게 추가하고 명시적으로 브랜치에 푸시합니다.
-      - name: Commit and Push changes safely
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          
-          for file in index.html kospi_dashboard.html reits.html us_market.html seoul_estate.html; do
-            if [ -f "$file" ]; then
-              git add "$file"
-            fi
-          done
-          
-          if ! git diff --cached --quiet; then
-            git commit -m "⚡️ Factory Auto-Update Dashboard Database ($(date +'%Y-%m-%d %H:%M:%S'))"
-            git push origin HEAD:${{ github.ref_name }}
-          else
-            echo "업데이트된 금융/부동산 데이터 변동사항이 없습니다."
-          fi
+    - name: Commit and Push changes
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git add index.html
+        # 변동 사항이 발생했을 때만 안전하게 저장소에 커밋하여 충돌 방지
+        git diff-index --quiet HEAD || git commit -m "⚡️ Auto-Update KOSPI Top 10 Market Data ($(date +'%Y-%m-%d'))"
+        git push origin HEAD:${{ github.ref_name }}
