@@ -60,6 +60,7 @@
 
         <!-- 1. 핵심 리츠 부동산 인프라 ETF 2대장 (가장 상단 배치) -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- ETF 1 -->
             <div class="bg-gradient-to-br from-slate-900/80 to-slate-950/60 border border-slate-800 p-6 rounded-2xl glow-card flex items-center justify-between">
                 <div>
                     <span class="text-[10px] bg-rose-500/10 text-rose-400 px-2 py-0.5 rounded border border-rose-500/20 font-bold">대표 주거/인프라 연합</span>
@@ -72,6 +73,7 @@
                 </div>
             </div>
 
+            <!-- ETF 2 -->
             <div class="bg-gradient-to-br from-slate-900/80 to-slate-950/60 border border-slate-800 p-6 rounded-2xl glow-card flex items-center justify-between">
                 <div>
                     <span class="text-[10px] bg-indigo-500/10 text-indigo-400 px-2 py-0.5 rounded border border-indigo-500/20 font-bold">국내 하이 배당 최강전</span>
@@ -140,7 +142,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="text-[10px] text-slate-500 mt-4 pt-4 border-t border-slate-800/50">
+                <div class="text-[10px] text-slate-500 pt-4 border-t border-slate-800/50">
                     * 리츠 마켓 종합 헤드라인 요약
                 </div>
             </div>
@@ -159,217 +161,45 @@
         // --- REITS_DATA_START ---
         const marketData = {
             "etfs": [
-                        {
-                                    "name": "TIGER 리츠부동산인프라",
-                                    "price": "4,385원",
-                                    "change": "-15원",
-                                    "pct": "-0.34%",
-                                    "cap": "3,420억",
-                                    "yield": "7.45%"
-                        },
-                        {
-                                    "name": "KODEX 한국부동산리츠",
-                                    "price": "4,850원",
-                                    "change": "-20원",
-                                    "pct": "-0.41%",
-                                    "cap": "1,120억",
-                                    "yield": "6.95%"
-                        }
+                {"name": "TIGER 리츠부동산인프라", "price": "4,385원", "change": "-15원", "pct": "-0.34%", "cap": "3,420억", "yield": "7.45%"},
+                {"name": "KODEX 한국부동산리츠", "price": "4,850원", "change": "-20원", "pct": "-0.41%", "cap": "1,120억", "yield": "6.95%"}
             ],
             "assets": [
-                        {
-                                    "name": "맥쿼리인프라펀드",
-                                    "price": "11,820원",
-                                    "change": "-30원",
-                                    "cap": "5조 2,410억",
-                                    "yield": "6.55%"
-                        },
-                        {
-                                    "name": "SK리츠",
-                                    "price": "4,350원",
-                                    "change": "-15원",
-                                    "cap": "1조 1,240억",
-                                    "yield": "7.20%"
-                        },
-                        {
-                                    "name": "롯데리츠",
-                                    "price": "3,250원",
-                                    "change": "-10원",
-                                    "cap": "8,420억",
-                                    "yield": "8.45%"
-                        },
-                        {
-                                    "name": "제이알글로벌리츠",
-                                    "price": "3,140원",
-                                    "change": "-5원",
-                                    "cap": "6,210억",
-                                    "yield": "9.15%"
-                        },
-                        {
-                                    "name": "신한알파리츠",
-                                    "price": "6,120원",
-                                    "change": "-20원",
-                                    "cap": "5,840억",
-                                    "yield": "6.10%"
-                        },
-                        {
-                                    "name": "ESR켄달스퀘어리츠",
-                                    "price": "3,850원",
-                                    "change": "-10원",
-                                    "cap": "5,120억",
-                                    "yield": "6.25%"
-                        },
-                        {
-                                    "name": "KB발해인프라펀드",
-                                    "price": "8,120원",
-                                    "change": "-40원",
-                                    "cap": "4,850억",
-                                    "yield": "7.30%"
-                        },
-                        {
-                                    "name": "코람코라이프인프라리츠",
-                                    "price": "4,820원",
-                                    "change": "-5원",
-                                    "cap": "4,320억",
-                                    "yield": "7.80%"
-                        },
-                        {
-                                    "name": "디앤디플랫폼리츠",
-                                    "price": "3,120원",
-                                    "change": "-10원",
-                                    "cap": "3,840억",
-                                    "yield": "8.20%"
-                        },
-                        {
-                                    "name": "이리츠코크렙",
-                                    "price": "4,520원",
-                                    "change": "-15원",
-                                    "cap": "3,210억",
-                                    "yield": "7.95%"
-                        },
-                        {
-                                    "name": "한화리츠",
-                                    "price": "4,850원",
-                                    "change": "-10원",
-                                    "cap": "2,980억",
-                                    "yield": "8.10%"
-                        },
-                        {
-                                    "name": "KB스타리츠",
-                                    "price": "3,450원",
-                                    "change": "-5원",
-                                    "cap": "2,850억",
-                                    "yield": "8.40%"
-                        },
-                        {
-                                    "name": "삼성FN리츠",
-                                    "price": "4,920원",
-                                    "change": "-20원",
-                                    "cap": "2,450억",
-                                    "yield": "6.80%"
-                        },
-                        {
-                                    "name": "미래에셋글로벌리츠",
-                                    "price": "2,850원",
-                                    "change": "0원",
-                                    "cap": "2,210억",
-                                    "yield": "8.85%"
-                        },
-                        {
-                                    "name": "신한글로벌액티브리츠",
-                                    "price": "2,950원",
-                                    "change": "-15원",
-                                    "cap": "1,980억",
-                                    "yield": "9.40%"
-                        },
-                        {
-                                    "name": "신한서부티엔디리츠",
-                                    "price": "2,840원",
-                                    "change": "-5원",
-                                    "cap": "1,840억",
-                                    "yield": "8.60%"
-                        },
-                        {
-                                    "name": "마스턴프리미어리츠",
-                                    "price": "2,420원",
-                                    "change": "-10원",
-                                    "cap": "1,620억",
-                                    "yield": "9.80%"
-                        },
-                        {
-                                    "name": "코람코더원리츠",
-                                    "price": "4,125원",
-                                    "change": "-15원",
-                                    "cap": "1,480억",
-                                    "yield": "7.50%"
-                        },
-                        {
-                                    "name": "NH올원리츠",
-                                    "price": "2,910원",
-                                    "change": "-5원",
-                                    "cap": "1,320억",
-                                    "yield": "8.35%"
-                        },
-                        {
-                                    "name": "미래에셋맵스리츠",
-                                    "price": "2,680원",
-                                    "change": "0원",
-                                    "cap": "1,180억",
-                                    "yield": "8.25%"
-                        },
-                        {
-                                    "name": "이지스밸류플러스리츠",
-                                    "price": "4,320원",
-                                    "change": "-10원",
-                                    "cap": "1,080억",
-                                    "yield": "8.15%"
-                        },
-                        {
-                                    "name": "이지스레지던스리츠",
-                                    "price": "3,420원",
-                                    "change": "-5원",
-                                    "cap": "980억",
-                                    "yield": "7.90%"
-                        },
-                        {
-                                    "name": "NH프라임리츠",
-                                    "price": "3,820원",
-                                    "change": "-10원",
-                                    "cap": "840억",
-                                    "yield": "7.10%"
-                        },
-                        {
-                                    "name": "대신밸류리츠",
-                                    "price": "4,150원",
-                                    "change": "-20원",
-                                    "cap": "720억",
-                                    "yield": "7.40%"
-                        }
+                {"name": "맥쿼리인프라펀드", "price": "11,820원", "change": "-30원", "cap": "5조 2,410억", "yield": "6.55%"},
+                {"name": "SK리츠", "price": "4,350원", "change": "-15원", "cap": "1조 1,240억", "yield": "7.20%"},
+                {"name": "롯데리츠", "price": "3,250원", "change": "-10원", "cap": "8,420억", "yield": "8.45%"},
+                {"name": "제이알글로벌리츠", "price": "3,140원", "change": "-5원", "cap": "6,210억", "yield": "9.15%"},
+                {"name": "신한알파리츠", "price": "6,120원", "change": "-20원", "cap": "5,840억", "yield": "6.10%"},
+                {"name": "ESR켄달스퀘어리츠", "price": "3,850원", "change": "-10원", "cap": "5,120억", "yield": "6.25%"},
+                {"name": "KB발해인프라펀드", "price": "8,120원", "change": "-40원", "cap": "4,850억", "yield": "7.30%"},
+                {"name": "코람코라이프인프라리츠", "price": "4,820원", "change": "-5원", "cap": "4,320억", "yield": "7.80%"},
+                {"name": "디앤디플랫폼리츠", "price": "3,120원", "change": "-10원", "cap": "3,840억", "yield": "8.20%"},
+                {"name": "이리츠코크렙", "price": "4,520원", "change": "-15원", "cap": "3,210억", "yield": "7.95%"},
+                {"name": "한화리츠", "price": "4,850원", "change": "-10원", "cap": "2,980억", "yield": "8.10%"},
+                {"name": "KB스타리츠", "price": "3,450원", "change": "-5원", "cap": "2,850억", "yield": "8.40%"},
+                {"name": "삼성FN리츠", "price": "4,920원", "change": "-20원", "cap": "2,450억", "yield": "6.80%"},
+                {"name": "미래에셋글로벌리츠", "price": "2,850원", "change": "0원", "cap": "2,210억", "yield": "8.85%"},
+                {"name": "신한글로벌액티브리츠", "price": "2,950원", "change": "-15원", "cap": "1,980억", "yield": "9.40%"},
+                {"name": "신한서부티엔디리츠", "price": "2,840원", "change": "-5원", "cap": "1,840억", "yield": "8.60%"},
+                {"name": "마스턴프리미어리츠", "price": "2,420원", "change": "-10원", "cap": "1,620억", "yield": "9.80%"},
+                {"name": "코람코더원리츠", "price": "4,125원", "change": "-15원", "cap": "1,480억", "yield": "7.50%"},
+                {"name": "NH올원리츠", "price": "2,910원", "change": "-5원", "cap": "1,320억", "yield": "8.35%"},
+                {"name": "미래에셋맵스리츠", "price": "2,680원", "change": "0원", "cap": "1,180억", "yield": "8.25%"},
+                {"name": "이지스밸류플러스리츠", "price": "4,320원", "change": "-10원", "cap": "1,080억", "yield": "8.15%"},
+                {"name": "이지스레지던스리츠", "price": "3,420원", "change": "-5원", "cap": "980억", "yield": "7.90%"},
+                {"name": "NH프라임리츠", "price": "3,820원", "change": "-10원", "cap": "840억", "yield": "7.10%"},
+                {"name": "대신밸류리츠", "price": "4,150원", "change": "-20원", "cap": "720억", "yield": "7.40%"}
             ],
             "disclosures": [
-                        {
-                                    "name": "맥쿼리인프라펀드",
-                                    "title": "분기 영업보고서 제출 및 분배금 확정 안내",
-                                    "date": "2026-07-03 15:42",
-                                    "link": "https://dart.fss.or.kr/dsbid001/main.do?query=%EB%A7%A5%EC%BF%BC%EB%A6%AC%EC%9D%B8%ED%94%84%EB%9D%BC"
-                        },
-                        {
-                                    "name": "SK리츠",
-                                    "title": "제15기 결산 정기주주총회 소집 결의 공시",
-                                    "date": "2026-07-03 14:15",
-                                    "link": "https://dart.fss.or.kr/dsbid001/main.do?query=SK%EB%A6%AC%EC%B8%A0"
-                        },
-                        {
-                                    "name": "신한알파리츠",
-                                    "title": "용산 더프라임 타워 지분 추가 취득 및 자금 차입 신고",
-                                    "date": "2026-07-03 11:30",
-                                    "link": "https://dart.fss.or.kr/dsbid001/main.do?query=%EC%8B%A0%ED%95%9C%EC%95%8C%ED%8C%8C%EB%A6%AC%EC%B8%A0"
-                        }
+                {"name": "맥쿼리인프라펀드", "title": "분기 영업보고서 제출 및 분배금 확정 안내", "date": "2026-07-03 15:42", "link": "https://dart.fss.or.kr/dsbid001/main.do?query=%EB%A7%A5%EC%BF%BC%EB%A6%AC%EC%9D%B8%ED%94%84%EB%9D%BC"},
+                {"name": "SK리츠", "title": "제15기 결산 정기주주총회 소집 결의 공시", "date": "2026-07-03 14:15", "link": "https://dart.fss.or.kr/dsbid001/main.do?query=SK%EB%A6%AC%EC%B8%A0"},
+                {"name": "신한알파리츠", "title": "용산 더프라임 타워 지분 추가 취득 및 자금 차입 신고", "date": "2026-07-03 11:30", "link": "https://dart.fss.or.kr/dsbid001/main.do?query=%EC%8B%A0%ED%95%9C%EC%95%8C%ED%8C%8C%EB%A6%AC%EC%B8%A0"}
             ]
-};
+        };
         // --- REITS_DATA_END ---
 
         function renderReits() {
+            // 상단 ETF 랜더링
             const t = marketData.etfs[0];
             document.getElementById('etf-0-price').innerText = t.price;
             document.getElementById('etf-0-change').innerText = `${t.change} (${t.pct})`;
@@ -382,6 +212,7 @@
             document.getElementById('etf-1-cap').innerText = k.cap;
             document.getElementById('etf-1-yield').innerText = k.yield;
 
+            // 24대 상장자산 렌더링 (시총 내림차순)
             const tbody = document.getElementById('assets-tbody');
             tbody.innerHTML = '';
             marketData.assets.forEach(asset => {
@@ -400,6 +231,7 @@
                 `;
             });
 
+            // 실시간 전자공시 바인딩
             const dContainer = document.getElementById('disclosure-container');
             dContainer.innerHTML = '';
             if (marketData.disclosures.length === 0) {
