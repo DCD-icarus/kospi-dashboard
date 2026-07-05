@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Multi-Profile Dashboard Factory
-2026년 7월 3일 정규장 마감 기준의 실제 금융 시장 종가 및 아실·실까 데이터 교차 검증 데이터를 수집하고
-각 대시보드 템플릿의 JSON 주입 영역을 정밀하게 치환하는 통합 팩토리 스크립트입니다.
-"""
 import os
 import re
 import json
@@ -11,10 +5,6 @@ import argparse
 import requests
 from datetime import datetime, timedelta, timezone
 
-
-# ==========================================
-# 1. 2026년 7월 3일 기준 무결성 백업 금융 데이터베이스 (스크래핑 차단 대피용)
-# ==========================================
 BACKUP_KOSPI_DATA = {
     "kospi_index": "2,685.34",
     "kospi_change": "-31.25",
@@ -152,111 +142,75 @@ BACKUP_SEOUL_DATA = {
     }
 }
 
-
 def run_kospi_mode():
-    print("[공장 가동] KOSPI 대시보드 데이터 수집 및 HTML 교체 시작...")
     file_path = "index.html"
     if not os.path.exists(file_path):
-        print("[에러] 코스피 대시보드 템플릿(index.html) 파일을 찾을 수 없습니다.")
-        return
-
+        return None
     with open(file_path, "r", encoding="utf-8") as f:
         content = f.read()
-
-    pattern_kospi = r"// --- KOSPI_DATA_START ---\s*const marketData = \{.*?\};\s*// --- KOSPI_DATA_END ---"
-    replacement_data = f"// --- KOSPI_DATA_START ---\n        const marketData = {json.dumps(BACKUP_KOSPI_DATA, ensure_ascii=False, indent=12)};\n        // --- KOSPI_DATA_END ---"
-    
-    if re.search(pattern_kospi, content, re.DOTALL):
-        content = re.sub(pattern_kospi, replacement_data, content, flags=re.DOTALL)
+    pattern = r"// --- KOSPI_DATA_START ---\s*const marketData = \{.*?\};\s*// --- KOSPI_DATA_END ---"
+    replacement = f"// --- KOSPI_DATA_START ---\n        const marketData = {json.dumps(BACKUP_KOSPI_DATA, ensure_ascii=False, indent=12)};\n        // --- KOSPI_DATA_END ---"
+    if re.search(pattern, content, re.DOTALL):
+        content = re.sub(pattern, replacement, content, flags=re.DOTALL)
     else:
         content = re.sub(r"const marketData = \{.*?\};", f"const marketData = {json.dumps(BACKUP_KOSPI_DATA, ensure_ascii=False, indent=12)};", content, count=1, flags=re.DOTALL)
-
     with open(file_path, "w", encoding="utf-8") as f:
         f.write(content)
-    print("[index.html] 업데이트 완료!")
     return BACKUP_KOSPI_DATA
 
 def run_reits_mode():
-    print("[공장 가동] 상장 리츠 대시보드 데이터 수집 및 HTML 교체 시작...")
     file_path = "reits.html"
     if not os.path.exists(file_path):
-        print("[에러] 리츠 대시보드 템플릿(reits.html) 파일을 찾을 수 없습니다.")
-        return
-
+        return None
     with open(file_path, "r", encoding="utf-8") as f:
         content = f.read()
-
-    pattern_reits = r"// --- REITS_DATA_START ---\s*const marketData = \{.*?\};\s*// --- REITS_DATA_END ---"
-    replacement_data = f"// --- REITS_DATA_START ---\n        const marketData = {json.dumps(BACKUP_REITS_DATA, ensure_ascii=False, indent=12)};\n        // --- REITS_DATA_END ---"
-
-    if re.search(pattern_reits, content, re.DOTALL):
-        content = re.sub(pattern_reits, replacement_data, content, flags=re.DOTALL)
+    pattern = r"// --- REITS_DATA_START ---\s*const marketData = \{.*?\};\s*// --- REITS_DATA_END ---"
+    replacement = f"// --- REITS_DATA_START ---\n        const marketData = {json.dumps(BACKUP_REITS_DATA, ensure_ascii=False, indent=12)};\n        // --- REITS_DATA_END ---"
+    if re.search(pattern, content, re.DOTALL):
+        content = re.sub(pattern, replacement, content, flags=re.DOTALL)
     else:
         content = re.sub(r"const marketData = \{.*?\};", f"const marketData = {json.dumps(BACKUP_REITS_DATA, ensure_ascii=False, indent=12)};", content, count=1, flags=re.DOTALL)
-
     with open(file_path, "w", encoding="utf-8") as f:
         f.write(content)
-    print("[reits.html] 업데이트 완료!")
     return BACKUP_REITS_DATA
 
 def run_us_market_mode():
-    print("[공장 가동] 미국 증시 대시보드 데이터 수집 및 HTML 교체 시작...")
     file_path = "us_market.html"
     if not os.path.exists(file_path):
-        print("[에러] 미국 대시보드 템플릿(us_market.html) 파일을 찾을 수 없습니다.")
-        return
-
+        return None
     with open(file_path, "r", encoding="utf-8") as f:
         content = f.read()
-
-    pattern_us = r"// --- US_DATA_START ---\s*const marketData = \{.*?\};\s*// --- US_DATA_END ---"
-    replacement_data = f"// --- US_DATA_START ---\n        const marketData = {json.dumps(BACKUP_US_DATA, ensure_ascii=False, indent=12)};\n        // --- US_DATA_END ---"
-
-    if re.search(pattern_us, content, re.DOTALL):
-        content = re.sub(pattern_us, replacement_data, content, flags=re.DOTALL)
+    pattern = r"// --- US_DATA_START ---\s*const marketData = \{.*?\};\s*// --- US_DATA_END ---"
+    replacement = f"// --- US_DATA_START ---\n        const marketData = {json.dumps(BACKUP_US_DATA, ensure_ascii=False, indent=12)};\n        // --- US_DATA_END ---"
+    if re.search(pattern, content, re.DOTALL):
+        content = re.sub(pattern, replacement, content, flags=re.DOTALL)
     else:
         content = re.sub(r"const marketData = \{.*?\};", f"const marketData = {json.dumps(BACKUP_US_DATA, ensure_ascii=False, indent=12)};", content, count=1, flags=re.DOTALL)
-
     with open(file_path, "w", encoding="utf-8") as f:
         f.write(content)
-    print("[us_market.html] 업데이트 완료!")
     return BACKUP_US_DATA
 
 def run_seoul_estate_mode():
-    print("[공장 가동] 서울 부동산 대시보드 데이터 수집 및 HTML 교체 시작...")
     file_path = "seoul_estate.html"
     if not os.path.exists(file_path):
-        print("[에러] 서울 부동산 대시보드 템플릿(seoul_estate.html) 파일을 찾을 수 없습니다.")
-        return
-
+        return None
     with open(file_path, "r", encoding="utf-8") as f:
         content = f.read()
-
-    pattern_seoul = r"// --- SEOUL_ESTATE_DATA_START ---\s*const marketData = \{.*?\};\s*// --- SEOUL_ESTATE_DATA_END ---"
-    replacement_data = f"// --- SEOUL_ESTATE_DATA_START ---\n        const marketData = {json.dumps(BACKUP_SEOUL_DATA, ensure_ascii=False, indent=12)};\n        // --- SEOUL_ESTATE_DATA_END ---"
-
-    if re.search(pattern_seoul, content, re.DOTALL):
-        content = re.sub(pattern_seoul, replacement_data, content, flags=re.DOTALL)
+    pattern = r"// --- SEOUL_ESTATE_DATA_START ---\s*const marketData = \{.*?\};\s*// --- SEOUL_ESTATE_DATA_END ---"
+    replacement = f"// --- SEOUL_ESTATE_DATA_START ---\n        const marketData = {json.dumps(BACKUP_SEOUL_DATA, ensure_ascii=False, indent=12)};\n        // --- SEOUL_ESTATE_DATA_END ---"
+    if re.search(pattern, content, re.DOTALL):
+        content = re.sub(pattern, replacement, content, flags=re.DOTALL)
     else:
         content = re.sub(r"const marketData = \{.*?\};", f"const marketData = {json.dumps(BACKUP_SEOUL_DATA, ensure_ascii=False, indent=12)};", content, count=1, flags=re.DOTALL)
-
     with open(file_path, "w", encoding="utf-8") as f:
         f.write(content)
-    print("[seoul_estate.html] 업데이트 완료!")
     return BACKUP_SEOUL_DATA
 
-
-# ==========================================
-# 3. 카카오톡 발송 로직 구현
-# ==========================================
 def get_kakao_access_token():
     client_id = os.environ.get("KAKAO_CLIENT_ID")
     refresh_token = os.environ.get("KAKAO_REFRESH_TOKEN")
-    
     if not client_id or not refresh_token:
-        print("[ℹ️ 알림] KAKAO_CLIENT_ID 혹은 KAKAO_REFRESH_TOKEN이 없어 카카오 전송을 건너뜁니다.")
         return None
-        
     url = "https://kauth.kakao.com/oauth/token"
     payload = {
         "grant_type": "refresh_token",
@@ -264,121 +218,83 @@ def get_kakao_access_token():
         "refresh_token": refresh_token
     }
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
-    
     response = requests.post(url, data=payload, headers=headers)
     if response.status_code == 200:
         return response.json().get("access_token")
-    else:
-        print(f"[오류] 카카오 토큰 연동 실패: {response.text}")
-        return None
+    return None
 
 def send_kakao_notification(token, mode, data):
     if not token:
         return
-    
     owner = os.environ.get('GITHUB_REPOSITORY_OWNER', 'username').lower()
     base_url = f"https://{owner}.github.io/kospi-dashboard/"
-    
     title = ""
     summary_text = ""
     target_url = base_url
-    
     if mode == "kospi":
-        title = "📈 KOSPI 마감 시황 보고"
-        summary_text = f"• KOSPI: {data['kospi_index']} ({data['kospi_change']} / {data['kospi_pct']})\n"
-        summary_text += f"• 1위 삼성전자: {data['stocks'][0]['price']}원\n"
-        summary_text += f"• 2위 SK하이닉스: {data['stocks'][1]['price']}원"
+        title = "KOSPI 마감 시황 보고"
+        summary_text = f"KOSPI: {data['kospi_index']} ({data['kospi_change']} / {data['kospi_pct']})\n1위 삼성전자: {data['stocks'][0]['price']}원\n2위 SK하이닉스: {data['stocks'][1]['price']}원"
         target_url = base_url + "index.html"
     elif mode == "reits":
-        title = "🏢 상장 리츠 및 인프라 시황 보고"
-        summary_text = f"• 맥쿼리인프라: {data['assets'][0]['price']} (배당률 {data['assets'][0]['yield']})\n"
-        summary_text += f"• SK리츠: {data['assets'][1]['price']} (배당률 {data['assets'][1]['yield']})\n"
-        summary_text += "• 24대 위탁관리리츠/인프라 시총 크기순 정렬 완료!"
+        title = "상장 리츠 및 인프라 시황 보고"
+        summary_text = f"맥쿼리인프라: {data['assets'][0]['price']} (배당률 {data['assets'][0]['yield']})\nSK리츠: {data['assets'][1]['price']}"
         target_url = base_url + "reits.html"
     elif mode == "us_market":
-        title = "🇺🇸 미국 뉴욕 증시 마감 보고"
-        summary_text = f"• S&P 500: {data['macro'][0]['val']} ({data['macro'][0]['pct']})\n"
-        summary_text += f"• 나스닥 종합: {data['macro'][1]['val']} ({data['macro'][1]['pct']})\n"
-        summary_text += f"• 미국채 10년물 금리: {data['macro'][3]['val']}"
+        title = "미국 뉴욕 증시 마감 보고"
+        summary_text = f"S&P 500: {data['macro'][0]['val']} ({data['macro'][0]['pct']})\n나스닥 종합: {data['macro'][1]['val']}"
         target_url = base_url + "us_market.html"
     elif mode == "seoul_estate":
-        title = "🏠 서울 부동산 실거래가 분석 보고"
-        summary_text = f"• 반포 래미안원베일리: {data['core'][0]['price']} (전용 {data['core'][0]['size']})\n"
-        summary_text += "• 서울 전체 아파트 실거래가 TOP 30 고가 순 정렬\n"
-        summary_text += "• 잠실 장미상가 10개 최저 호가 매물 업데이트 완료!"
+        title = "서울 부동산 실거래가 분석 보고"
+        summary_text = f"반포 래미안원베일리: {data['core'][0]['price']}\n잠실 장미상가 최저 매물 업데이트 완료!"
         target_url = base_url + "seoul_estate.html"
-
     template_object = {
         "object_type": "text",
-        "text": f"⚡ [Factory Auto-Update]\n{title}\n\n{summary_text}\n\n🔗 대시보드 바로가기:\n{target_url}",
+        "text": f"⚙️ {title}\n\n{summary_text}\n\n바로가기: {target_url}",
         "link": {"web_url": target_url, "mobile_web_url": target_url},
-        "buttons": [{"title": "📊 리포트 보기", "link": {"web_url": target_url, "mobile_web_url": target_url}}]
+        "buttons": [{"title": "리포트 보기", "link": {"web_url": target_url, "mobile_web_url": target_url}}]
     }
-    
     url = "https://kapi.kakao.com/v2/api/talk/memo/default/send"
     headers = {
         "Authorization": f"Bearer {token}",
         "Content-Type": "application/x-www-form-urlencoded"
     }
     payload = {"template_object": json.dumps(template_object, ensure_ascii=False)}
-    
-    response = requests.post(url, data=payload, headers=headers)
-    if response.status_code == 200:
-        print(f"[카카오톡] {mode} 마감 시황 보고 발송 성공!")
-    else:
-        print(f"[오류] 카카오 발송 실패: {response.text}")
+    requests.post(url, data=payload, headers=headers)
 
-# ==========================================
-# 4. 메인 오토 디스패처
-# ==========================================
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Multi-Profile Dashboard Scraper Factory")
-    parser.add_argument("--mode", type=str, required=True, help="수집 및 업데이트 대상 프로필 모드 (auto / kospi / reits / us_market / seoul_estate)")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--mode", type=str, required=True)
     args = parser.parse_args()
-
     mode_to_run = args.mode
-
     if args.mode == "auto":
-        # 한국 표준시(KST = UTC+9) 규정
         utc_now = datetime.now(timezone.utc)
         kst_now = utc_now + timedelta(hours=9)
         hour = kst_now.hour
         minute = kst_now.minute
-
-        print(f"[시간 분석] 현재 가상 컴퓨터 구동 시간(KST): {hour:02d}:{minute:02d}")
-
-        if hour == 16: # 오후 4시: 코스피 및 리츠 동시 갱신
+        if hour == 16:
             mode_to_run = "kospi_reits"
-        elif hour == 7: # 오전 7시: 미국 증시 및 부동산 수집
+        elif hour == 7:
             if minute >= 10:
                 mode_to_run = "seoul_estate"
             else:
                 mode_to_run = "us_market"
         else:
-            print("[알림] 예약 시각 외 수동 가동 감지 -> 4대 대시보드 일괄 수집 진행")
             mode_to_run = "all"
-
-    # 카카오 토큰 사전 갱신
     kakao_token = get_kakao_access_token()
-
-    if mode_to_run == "kospi" or mode_to_run == "all":
+    if mode_to_run in ["kospi", "all"]:
         data = run_kospi_mode()
         send_kakao_notification(kakao_token, "kospi", data)
-    
-    if mode_to_run == "reits" or mode_to_run == "all":
+    if mode_to_run in ["reits", "all"]:
         data = run_reits_mode()
         send_kakao_notification(kakao_token, "reits", data)
-
     if mode_to_run == "kospi_reits":
         data_k = run_kospi_mode()
         send_kakao_notification(kakao_token, "kospi", data_k)
         data_r = run_reits_mode()
         send_kakao_notification(kakao_token, "reits", data_r)
-
-    if mode_to_run == "us_market" or mode_to_run == "all":
+    if mode_to_run in ["us_market", "all"]:
         data = run_us_market_mode()
         send_kakao_notification(kakao_token, "us_market", data)
-
-    if mode_to_run == "seoul_estate" or mode_to_run == "all":
+    if mode_to_run in ["seoul_estate", "all"]:
         data = run_seoul_estate_mode()
         send_kakao_notification(kakao_token, "seoul_estate", data)
