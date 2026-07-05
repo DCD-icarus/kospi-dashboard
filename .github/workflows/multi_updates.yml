@@ -1,52 +1,45 @@
 name: Scheduled Dashboard Factory
 
 on:
-schedule:
-# 1. 월~금요일 한국시간 오후 4:00 (KOSPI & REITs 동시 수집 -> UTC 오전 7:00)
-- cron: '0 7 * * 1-5'
-# 2. 화~토요일 한국시간 오전 7:00 (미국 주식시장 마감 수집 -> UTC 전날(월~금) 오후 10:00)
-- cron: '0 22 * * 1-5'
-# 3. 매일 한국시간 오전 7:10 (서울 부동산 실거래 정보 수집 -> UTC 전날(월~일) 오후 10:10)
-- cron: '10 22 * * *'
-workflow_dispatch: # 직접 버튼을 눌러 언제든 수동 일괄 빌드 가능
+  schedule:
+    - cron: '0 7 * * 1-5'
+    - cron: '0 22 * * 1-5'
+    - cron: '10 22 * * *'
+  workflow_dispatch:
 
 permissions:
-contents: write
+  contents: write
 
 jobs:
-run-factory:
-runs-on: ubuntu-latest
-steps:
-- name: Checkout repository
-uses: actions/checkout@v4
-with:
-fetch-depth: 0
+  run-factory:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-- name: Set up Python
-  uses: actions/setup-python@v5
-  with:
-    python-version: '3.10'
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
 
-- name: Install dependencies
-  run: |
-    python -m pip install --upgrade pip
-    pip install requests beautifulsoup4
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests beautifulsoup4
 
-- name: Run Factory Scraper (Auto Dispatcher)
-  env:
-    # 카카오 자동 로그인 및 갱신 평생 키셋 연동 전달
-    KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
-    KAKAO_REFRESH_TOKEN: ${{ secrets.KAKAO_REFRESH_TOKEN }}
-    GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
-  run: |
-    # 셸의 복잡한 조건문과 시차 분석 꼬임을 방지하기 위해 파이썬 내부로 트리거를 완전히 이관합니다.
-    python dashboard_factory.py --mode auto
+      - name: Run Factory Scraper
+        env:
+          KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
+          KAKAO_REFRESH_TOKEN: ${{ secrets.KAKAO_REFRESH_TOKEN }}
+          GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
+        run: python dashboard_factory.py --mode auto
 
-- name: Commit and Push changes
-  run: |
-    git config --global user.name "github-actions[bot]"
-    git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-    git add *.html
-    # 변동 사항이 발생한 경우만 안전하게 추적하여 커밋을 생성하며 충돌을 방어합니다.
-    git diff-index --quiet HEAD || git commit -m "⚡️ Factory Auto-Update Dashboard Database ($(date +'%Y-%m-%d %H:%M:%S'))"
-    git push origin HEAD:${{ github.ref_name }}
+      - name: Commit and Push changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add *.html
+          git diff-index --quiet HEAD || git commit -m "Auto-Update Dashboards"
+          git push origin HEAD:${{ github.ref_name }}
