@@ -1261,59 +1261,88 @@ def send_hub_notification(token):
 
 
 # ---------------------------------------------------------------------------
-# SPI(seoulpi.io) 신규 아티클 알림 + 전용 페이지
+# 상업용 부동산 뉴스 (SPI + 딜북뉴스) - 신규 아티클 알림 + 전용 페이지
 # ---------------------------------------------------------------------------
 # 로그인 없이 공개된 아티클 목록 페이지에서 "제목 + 링크"만 가져오고, 신규
 # 아티클에 한해 개별 페이지의 og:title/description(검색엔진 미리보기용 공개
 # 메타데이터)에서 깔끔한 제목과 짧은 요약만 추가로 가져옵니다. 본문 전체는
-# SPI 이용약관상 무단 복제·배포가 금지되어 있어 절대 수집하지 않습니다.
-SPI_CACHE_FILE = "spi_articles_cache.json"
-SPI_PAGE_MAX_ITEMS = 30
+# 각 사이트 이용약관상 무단 복제·배포가 금지되어 있어 절대 수집하지 않습니다.
+#
+# 코어비트(corebeat.co.kr)는 확인 결과 콘텐츠가 자바스크립트로 렌더링되는
+# 구조라 일반 HTTP 요청으로는 목록을 가져올 수 없어 이번 범위에서 제외했습니다.
+# 정상적으로 제목이 보이는 목록 페이지 URL을 확인해주시면 추가하겠습니다.
+CRE_CACHE_FILE = "cre_articles_cache.json"
+CRE_PAGE_MAX_ITEMS = 30
+
+CRE_NEWS_SOURCES = [
+    {
+        "key": "spi",
+        "name": "SPI",
+        "list_url": "https://seoulpi.io/article/all",
+        "pattern": re.compile(r'<a[^>]+href="(/article/(\d{10,}))"[^>]*>(.*?)</a>', re.DOTALL),
+        "base_url": "https://seoulpi.io",
+        "exclude_ids": set(),
+    },
+    {
+        "key": "dealbook",
+        "name": "딜북뉴스",
+        "list_url": "https://www.dealbook.co.kr/news/",
+        "pattern": re.compile(r'<a[^>]+href="(https://www\.dealbook\.co\.kr/([a-z0-9\-]+)/)"[^>]*>(.*?)</a>', re.DOTALL),
+        "base_url": "",
+        # 단일 세그먼트라 정규식은 통과하지만 실제 아티클이 아닌 메뉴/유틸 링크
+        "exclude_ids": {"news", "introduction", "signin", "membership", "aboutmembership",
+                         "tos", "privacy", "shop", "author"},
+    },
+]
 
 
-def _load_spi_cache():
-    if os.path.exists(SPI_CACHE_FILE):
+def _load_cre_cache():
+    if os.path.exists(CRE_CACHE_FILE):
         try:
-            with open(SPI_CACHE_FILE, "r", encoding="utf-8") as f:
-                return json.load(f)  # {article_id: {title, summary, link, first_seen}}
+            with open(CRE_CACHE_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)  # {"소스:id": {title, summary, link, source, first_seen}}
         except Exception:
             return {}
     return {}
 
 
-def _save_spi_cache(cache):
+def _save_cre_cache(cache):
     try:
-        with open(SPI_CACHE_FILE, "w", encoding="utf-8") as f:
+        with open(CRE_CACHE_FILE, "w", encoding="utf-8") as f:
             json.dump(cache, f, ensure_ascii=False, indent=2)
     except Exception as e:
-        log.warning(f"SPI 캐시 저장 실패: {e}")
+        log.warning(f"CRE 뉴스 캐시 저장 실패: {e}")
 
 
-def fetch_spi_articles(limit=15):
-    """SPI 공개 아티클 목록에서 id/제목(원문)/링크만 추출 (본문 미수집, 로그인 불필요).
-    공식 API가 아니라 페이지 HTML에서 /article/<id> 링크와 그 안의 텍스트를
-    정규식으로 뽑는 방식이라, SPI가 페이지 구조를 바꾸면 깨질 수 있습니다."""
-    url = "https://seoulpi.io/article/all"
+def fetch_news_listing(source, limit=15):
+    """소스 설정(source)에 따라 아티클 목록에서 id/제목(원문)/링크만 추출.
+    사이트마다 URL 구조가 달라 source별로 정규식 패턴을 따로 씁니다."""
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
                        "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
     }
     try:
-        resp = requests.get(url, headers=headers, timeout=15)
+        resp = requests.get(source["list_url"], headers=headers, timeout=15)
         resp.raise_for_status()
         html = resp.text
     except Exception as e:
-        log.warning(f"SPI 아티클 목록 조회 실패: {e}")
+        log.warning(f"{source['name']} 목록 조회 실패: {e}")
         return []
 
-    pattern = re.compile(r'<a[^>]+href="(/article/(\d{10,}))"[^>]*>(.*?)</a>', re.DOTALL)
     articles = []
-    for m in pattern.finditer(html):
-        link_path, art_id, inner_html = m.group(1), m.group(2), m.group(3)
+    for m in source["pattern"].finditer(html):
+        path, sid, inner_html = m.group(1), m.group(2), m.group(3)
+        if sid in source["exclude_ids"]:
+            continue
         title_text = re.sub(r"<[^>]+>", " ", inner_html)
         title_text = re.sub(r"\s+", " ", title_text).strip()
-        if title_text:
-            articles.append({"id": art_id, "raw_title": title_text, "link": f"https://seoulpi.io{link_path}"})
+        if not title_text:
+            continue
+        link = path if path.startswith("http") else source["base_url"] + path
+        articles.append({
+            "id": f"{source['key']}:{sid}", "raw_title": title_text,
+            "link": link, "source": source["name"],
+        })
 
     seen_ids, dedup = set(), []
     for a in articles:
@@ -1321,13 +1350,13 @@ def fetch_spi_articles(limit=15):
             seen_ids.add(a["id"])
             dedup.append(a)
     if not dedup:
-        log.warning("SPI 아티클 파싱 결과 0건 - 페이지 구조가 바뀌었을 수 있음")
+        log.warning(f"{source['name']} 아티클 파싱 결과 0건 - 페이지 구조가 바뀌었을 수 있음")
     return dedup[:limit]
 
 
-def fetch_spi_article_meta(link):
+def fetch_article_meta(link):
     """개별 아티클 페이지의 공개 메타데이터(og:title, og:description)만 추출.
-    이건 SPI가 검색엔진·SNS 미리보기용으로 이미 공개해둔 정보라, 본문을
+    이건 각 사이트가 검색엔진·SNS 미리보기용으로 이미 공개해둔 정보라, 본문을
     긁는 것과 달리 저작권/약관 문제에서 자유롭습니다."""
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
@@ -1345,72 +1374,74 @@ def fetch_spi_article_meta(link):
         summary = desc_m.group(1).strip() if desc_m else None
         return title, summary
     except Exception as e:
-        log.warning(f"SPI 아티클 메타 조회 실패: {e}")
+        log.warning(f"아티클 메타 조회 실패 ({link}): {e}")
         return None, None
 
 
-def build_spi_news():
-    """목록에서 아티클을 가져오고, 캐시에 없는(신규) 아티클만 상세 메타를
-    추가로 조회해 캐시에 누적. 반환값은 화면 표시용 최신 N개 리스트."""
-    listing = fetch_spi_articles(limit=15)
-    cache = _load_spi_cache()
+def build_cre_news():
+    """등록된 모든 소스에서 목록을 가져오고, 캐시에 없는(신규) 아티클만 상세
+    메타를 추가로 조회해 캐시에 누적. 반환값은 화면 표시용 최신 N개 리스트."""
+    cache = _load_cre_cache()
     new_ids = []
 
-    for a in listing:
-        if a["id"] in cache:
-            continue
-        title, summary = fetch_spi_article_meta(a["link"])
-        cache[a["id"]] = {
-            "title": title or a["raw_title"][:80],
-            "summary": summary or "",
-            "link": a["link"],
-            "first_seen": kst_date_label(""),
-        }
-        new_ids.append(a["id"])
-        time.sleep(random.uniform(1.0, 2.0))  # SPI 서버 배려 차원의 텀
+    for source in CRE_NEWS_SOURCES:
+        listing = fetch_news_listing(source)
+        for a in listing:
+            if a["id"] in cache:
+                continue
+            title, summary = fetch_article_meta(a["link"])
+            cache[a["id"]] = {
+                "title": title or a["raw_title"][:80],
+                "summary": summary or "",
+                "link": a["link"],
+                "source": a["source"],
+                "first_seen": kst_date_label(""),
+            }
+            new_ids.append(a["id"])
+            time.sleep(random.uniform(1.0, 2.0))  # 상대 서버 배려 차원의 텀
 
     # 캐시가 무한정 커지지 않도록 최근 N개만 유지 (첫 발견 순 정렬)
     ordered = sorted(cache.items(), key=lambda kv: kv[1].get("first_seen", ""), reverse=True)
-    trimmed = dict(ordered[:SPI_PAGE_MAX_ITEMS])
-    _save_spi_cache(trimmed)
+    trimmed = dict(ordered[:CRE_PAGE_MAX_ITEMS])
+    _save_cre_cache(trimmed)
 
-    display_list = [{"id": k, **v} for k, v in ordered[:SPI_PAGE_MAX_ITEMS]]
+    display_list = [{"id": k, **v} for k, v in ordered[:CRE_PAGE_MAX_ITEMS]]
     return display_list, new_ids
 
 
-def run_spi_notify_mode(kakao_token):
-    file_path = "spi_news.html"
+def run_cre_news_mode(kakao_token):
+    file_path = "cre_news.html"
     if not os.path.exists(file_path):
-        log.warning(f"{file_path} 없음 - SPI 뉴스 페이지 업데이트 생략 (파일을 저장소에 올려주세요)")
+        log.warning(f"{file_path} 없음 - 상업용 부동산 뉴스 페이지 업데이트 생략 (파일을 저장소에 올려주세요)")
         return
 
-    display_list, new_ids = build_spi_news()
+    display_list, new_ids = build_cre_news()
     new_data = {"market_date": kst_date_label(), "articles": display_list}
-    replace_marketdata_block(file_path, "// --- SPI_NEWS_DATA_START ---", "// --- SPI_NEWS_DATA_END ---", new_data)
+    replace_marketdata_block(file_path, "// --- CRE_NEWS_DATA_START ---", "// --- CRE_NEWS_DATA_END ---", new_data)
 
     if new_ids:
-        log.info(f"SPI 신규 아티클 {len(new_ids)}건 발견")
+        log.info(f"CRE 뉴스 신규 아티클 {len(new_ids)}건 발견")
         new_items = [a for a in display_list if a["id"] in new_ids]
-        send_spi_notification(kakao_token, new_items)
+        send_cre_news_notification(kakao_token, new_items)
     else:
-        log.info("SPI 신규 아티클 없음")
+        log.info("CRE 뉴스 신규 아티클 없음")
 
 
-def send_spi_notification(token, new_articles):
+def send_cre_news_notification(token, new_articles):
     if not token or not new_articles:
         return
     top = new_articles[:3]
-    lines = [f"• {a['title'][:45]}" for a in top]
+    lines = [f"• [{a['source']}] {a['title'][:40]}" for a in top]
     extra = f" 외 {len(new_articles) - 3}건" if len(new_articles) > 3 else ""
     owner = os.environ.get("GITHUB_REPOSITORY_OWNER", "username").lower()
-    target_url = f"https://{owner}.github.io/kospi-dashboard/spi_news.html"
-    text = f"📰 SPI 신규 아티클 {len(new_articles)}건{extra}\n\n" + "\n".join(lines)
+    target_url = f"https://{owner}.github.io/kospi-dashboard/cre_news.html"
+    text = f"📰 상업용 부동산 뉴스 신규 {len(new_articles)}건{extra}\n\n" + "\n".join(lines)
     try:
         template_object = {
             "object_type": "text",
             "text": text[:190],
             "link": {"web_url": target_url, "mobile_web_url": target_url},
-            "buttons": [{"title": "SPI 뉴스 페이지 보기", "link": {"web_url": target_url, "mobile_web_url": target_url}}],
+            "buttons": [{"title": "뉴스 페이지 보기", "link": {"web_url": target_url, "mobile_web_url": target_url}}],
         }
         resp = requests.post(
             "https://kapi.kakao.com/v2/api/talk/memo/default/send",
@@ -1419,11 +1450,11 @@ def send_spi_notification(token, new_articles):
             timeout=10,
         )
         if resp.status_code != 200:
-            log.error(f"[spi] 카카오 알림 전송 실패 ({resp.status_code}): {resp.text}")
+            log.error(f"[cre_news] 카카오 알림 전송 실패 ({resp.status_code}): {resp.text}")
         else:
-            log.info(f"[spi] 카카오 알림 전송 완료 ({len(new_articles)}건)")
+            log.info(f"[cre_news] 카카오 알림 전송 완료 ({len(new_articles)}건)")
     except Exception as e:
-        log.error(f"[spi] 카카오 알림 전송 중 예외: {e}")
+        log.error(f"[cre_news] 카카오 알림 전송 중 예외: {e}")
 
 
 
@@ -1470,6 +1501,6 @@ if __name__ == "__main__":
         send_hub_notification(kakao_token)
         rose_d = run_rose_watch_mode(molit_key)
         send_kakao_notification(kakao_token, "rose_watch", rose_d)
-        run_spi_notify_mode(kakao_token)
+        run_cre_news_mode(kakao_token)
 
     log.info("실행 완료")
