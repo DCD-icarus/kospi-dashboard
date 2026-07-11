@@ -54,7 +54,7 @@
             </div>
             <div class="text-right">
                 <p class="text-xs text-slate-500 font-medium">영업일 실거래 기준</p>
-                <p class="text-sm font-bold text-slate-300">2026년 7월 3일 (금) 장 마감</p>
+                <p class="text-sm font-bold text-slate-300" id="estate-date">-</p>
             </div>
         </div>
 
@@ -116,67 +116,21 @@
             </div>
         </div>
 
-        <!-- [3번째 내용] 잠실 장미 종합상가 매물 최저가 탑 10 표 모니터링 (호가 낮은순 정렬) -->
-        <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 glow-card">
-            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 pb-4 border-b border-slate-800/50 gap-2">
-                <div>
-                    <h3 class="font-bold text-lg text-rose-400 flex items-center">
-                        <i class="fa-solid fa-store mr-2.5"></i>
-                        잠실 장미 종합상가 최저가 매물 탑 10 현황 (호가 낮은 순 정렬)
-                    </h3>
-                    <p class="text-xs text-slate-400 mt-0.5">상가 투자 지표 분석용 실시간 최저 호가 추적</p>
+        <!-- [3번째 내용] 관심단지 재건축/재개발/신축/구축대단지 뉴스 (지역별 그룹핑) -->
+        <div>
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="font-bold text-lg text-slate-100 flex items-center">
+                    <i class="fa-regular fa-newspaper text-indigo-400 mr-2.5"></i>관심단지 뉴스
+                </h3>
+                <div class="flex items-center gap-3 text-[10px] text-slate-400">
+                    <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-rose-500"></span>재건축</span>
+                    <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber-500"></span>재개발</span>
+                    <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span>신축(10년 미만)</span>
+                    <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-indigo-400"></span>구축대단지</span>
                 </div>
-                <a href="https://m.land.naver.com/complex/info/144?tradTpCd=A1" target="_blank" class="text-xs text-indigo-400 hover:underline flex items-center gap-1 bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800 font-bold">
-                    <i class="fa-solid fa-map-location-dot"></i> 네이버 부동산 장미상가 전체보기
-                </a>
             </div>
-            
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse text-xs">
-                    <thead>
-                        <tr class="border-b border-slate-800 text-[11px] text-slate-500 font-bold uppercase tracking-wider">
-                            <th class="py-3 px-3">구분 / 층수</th>
-                            <th class="py-3 px-3">전용면적 (㎡)</th>
-                            <th class="py-3 px-3 text-rose-400">매매 호가</th>
-                            <th class="py-3 px-3 text-right">매물 다이렉트 링크</th>
-                        </tr>
-                    </thead>
-                    <tbody id="rose-shopping-tbody" class="divide-y divide-slate-800/30 font-semibold">
-                        <!-- JS Dynamic -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- [4번째 내용] 주요 재건축/대단지 4곳 최신 뉴스 (3일 이내 정밀 브리핑) -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl glow-card flex flex-col justify-between">
-                <div>
-                    <span class="text-[10px] bg-indigo-500/10 text-indigo-400 px-2 py-0.5 rounded border border-indigo-500/20 font-bold">잠실 주공5단지</span>
-                    <p class="text-xs text-slate-300 leading-relaxed mt-2" id="news-jamsil-5">업데이트 대기 중...</p>
-                </div>
-                <a href="#" id="link-jamsil-5" target="_blank" class="mt-3 inline-flex items-center justify-center px-2 py-1.5 rounded bg-slate-800 hover:bg-indigo-600 text-[10px] font-bold text-slate-300 hover:text-white transition-all"><i class="fa-solid fa-link mr-1"></i> 분석 원문 확인</a>
-            </div>
-            <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl glow-card flex flex-col justify-between">
-                <div>
-                    <span class="text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/20 font-bold">잠실 장미</span>
-                    <p class="text-xs text-slate-300 leading-relaxed mt-2" id="news-rose">업데이트 대기 중...</p>
-                </div>
-                <a href="#" id="link-rose" target="_blank" class="mt-3 inline-flex items-center justify-center px-2 py-1.5 rounded bg-slate-800 hover:bg-indigo-600 text-[10px] font-bold text-slate-300 hover:text-white transition-all"><i class="fa-solid fa-link mr-1"></i> 분석 원문 확인</a>
-            </div>
-            <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl glow-card flex flex-col justify-between">
-                <div>
-                    <span class="text-[10px] bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded border border-amber-500/20 font-bold">올림픽선수촌</span>
-                    <p class="text-xs text-slate-300 leading-relaxed mt-2" id="news-seonsu">업데이트 대기 중...</p>
-                </div>
-                <a href="#" id="link-seonsu" target="_blank" class="mt-3 inline-flex items-center justify-center px-2 py-1.5 rounded bg-slate-800 hover:bg-indigo-600 text-[10px] font-bold text-slate-300 hover:text-white transition-all"><i class="fa-solid fa-link mr-1"></i> 분석 원문 확인</a>
-            </div>
-            <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl glow-card flex flex-col justify-between">
-                <div>
-                    <span class="text-[10px] bg-rose-500/10 text-rose-400 px-2 py-0.5 rounded border border-rose-500/20 font-bold">올림픽파크포레온</span>
-                    <p class="text-xs text-slate-300 leading-relaxed mt-2" id="news-foreon">업데이트 대기 중...</p>
-                </div>
-                <a href="#" id="link-foreon" target="_blank" class="mt-3 inline-flex items-center justify-center px-2 py-1.5 rounded bg-slate-800 hover:bg-indigo-600 text-[10px] font-bold text-slate-300 hover:text-white transition-all"><i class="fa-solid fa-link mr-1"></i> 분석 원문 확인</a>
+            <div id="news-groups" class="space-y-8">
+                <!-- JS Dynamic -->
             </div>
         </div>
     </main>
@@ -195,365 +149,128 @@
             "top30": [
                         {
                                     "gu": "강남구",
-                                    "dong": "삼성동",
-                                    "apt": "롯데캐슬프레미어",
-                                    "size": "122.48㎡",
-                                    "price": "41억원",
-                                    "record": "보통",
-                                    "link": "https://m.land.naver.com/search/result/%EB%A1%AF%EB%8D%B0%EC%BA%90%EC%8A%AC%ED%94%84%EB%A0%88%EB%AF%B8%EC%96%B4"
-                        },
-                        {
-                                    "gu": "강남구",
-                                    "dong": "개포동",
-                                    "apt": "개포래미안포레스트",
-                                    "size": "102.32㎡",
-                                    "price": "39억원",
-                                    "record": "보통",
-                                    "link": "https://m.land.naver.com/search/result/%EA%B0%9C%ED%8F%AC%EB%9E%98%EB%AF%B8%EC%95%88%ED%8F%AC%EB%A0%88%EC%8A%A4%ED%8A%B8"
-                        },
-                        {
-                                    "gu": "서초구",
-                                    "dong": "잠원동",
-                                    "apt": "메이플자이",
-                                    "size": "84.25㎡",
-                                    "price": "33억원",
-                                    "record": "보통",
-                                    "link": "https://m.land.naver.com/search/result/%EB%A9%94%EC%9D%B4%ED%94%8C%EC%9E%90%EC%9D%B4"
-                        },
-                        {
-                                    "gu": "강남구",
-                                    "dong": "개포동",
-                                    "apt": "개포래미안포레스트",
-                                    "size": "59.92㎡",
-                                    "price": "30억 8,000만원",
-                                    "record": "보통",
-                                    "link": "https://m.land.naver.com/search/result/%EA%B0%9C%ED%8F%AC%EB%9E%98%EB%AF%B8%EC%95%88%ED%8F%AC%EB%A0%88%EC%8A%A4%ED%8A%B8"
-                        },
-                        {
-                                    "gu": "송파구",
-                                    "dong": "문정동",
-                                    "apt": "올림픽훼밀리타운",
-                                    "size": "136.32㎡",
-                                    "price": "30억 5,000만원",
-                                    "record": "보통",
-                                    "link": "https://m.land.naver.com/search/result/%EC%98%AC%EB%A6%BC%ED%94%BD%ED%9B%BC%EB%B0%80%EB%A6%AC%ED%83%80%EC%9A%B4"
-                        },
-                        {
-                                    "gu": "송파구",
-                                    "dong": "방이동",
-                                    "apt": "올림픽선수기자촌2단지",
-                                    "size": "83.06㎡",
-                                    "price": "29억 9,000만원",
-                                    "record": "보통",
-                                    "link": "https://m.land.naver.com/search/result/%EC%98%AC%EB%A6%BC%ED%94%BD%EC%84%A0%EC%88%98%EA%B8%B0%EC%9E%90%EC%B4%8C2%EB%8B%A8%EC%A7%80"
-                        },
-                        {
-                                    "gu": "강남구",
-                                    "dong": "논현동",
-                                    "apt": "아크로힐스논현",
-                                    "size": "84.07㎡",
-                                    "price": "29억 7,000만원",
-                                    "record": "보통",
-                                    "link": "https://m.land.naver.com/search/result/%EC%95%84%ED%81%AC%EB%A1%9C%ED%9E%90%EC%8A%A4%EB%85%BC%ED%98%84"
-                        },
-                        {
-                                    "gu": "송파구",
-                                    "dong": "신천동",
-                                    "apt": "파크리오",
-                                    "size": "84.79㎡",
-                                    "price": "29억 1,000만원",
-                                    "record": "보통",
-                                    "link": "https://m.land.naver.com/search/result/%ED%8C%8C%ED%81%AC%EB%A6%AC%EC%98%A4"
-                        },
-                        {
-                                    "gu": "송파구",
-                                    "dong": "가락동",
-                                    "apt": "헬리오시티",
-                                    "size": "84.99㎡",
-                                    "price": "29억원",
-                                    "record": "보통",
-                                    "link": "https://m.land.naver.com/search/result/%ED%97%AC%EB%A6%AC%EC%98%A4%EC%8B%9C%ED%8B%B0"
+                                    "dong": "압구정동",
+                                    "apt": "현대7차",
+                                    "size": "157.36㎡",
+                                    "price": "67억 5,000만원",
+                                    "record": "신고가"
                         },
                         {
                                     "gu": "성동구",
-                                    "dong": "행당동",
-                                    "apt": "서울숲리버뷰자이",
-                                    "size": "84.96㎡",
-                                    "price": "26억 1,500만원",
-                                    "record": "보통",
-                                    "link": "https://m.land.naver.com/search/result/%EC%84%9C%EC%9A%B8%EC%88%B2%EB%A6%AC%EB%B2%84%EB%B7%B0%EC%9E%90%EC%9D%B4"
-                        },
-                        {
-                                    "gu": "강남구",
-                                    "dong": "대치동",
-                                    "apt": "현대1",
-                                    "size": "84.27㎡",
-                                    "price": "25억 1,000만원",
-                                    "record": "보통",
-                                    "link": "https://m.land.naver.com/search/result/%ED%98%84%EB%8C%801"
-                        },
-                        {
-                                    "gu": "송파구",
-                                    "dong": "문정동",
-                                    "apt": "문정래미안",
-                                    "size": "133.29㎡",
-                                    "price": "23억원",
-                                    "record": "보통",
-                                    "link": "https://m.land.naver.com/search/result/%EB%AC%B8%EC%A0%95%EB%9E%98%EB%AF%B8%EC%95%88"
-                        },
-                        {
-                                    "gu": "송파구",
-                                    "dong": "가락동",
-                                    "apt": "가락(1차)쌍용아파트",
-                                    "size": "84.69㎡",
-                                    "price": "21억 9,000만원",
-                                    "record": "보통",
-                                    "link": "https://m.land.naver.com/search/result/%EA%B0%80%EB%9D%BD%281%EC%B0%A8%29%EC%8C%8D%EC%9A%A9%EC%95%84%ED%8C%8C%ED%8A%B8"
-                        },
-                        {
-                                    "gu": "강남구",
-                                    "dong": "개포동",
-                                    "apt": "삼익대청아파트",
-                                    "size": "51.12㎡",
-                                    "price": "21억원",
-                                    "record": "보통",
-                                    "link": "https://m.land.naver.com/search/result/%EC%82%BC%EC%9D%B5%EB%8C%80%EC%B2%AD%EC%95%84%ED%8C%8C%ED%8A%B8"
-                        },
-                        {
-                                    "gu": "송파구",
-                                    "dong": "가락동",
-                                    "apt": "가락(1차)쌍용아파트",
-                                    "size": "84.69㎡",
-                                    "price": "21억원",
-                                    "record": "보통",
-                                    "link": "https://m.land.naver.com/search/result/%EA%B0%80%EB%9D%BD%281%EC%B0%A8%29%EC%8C%8D%EC%9A%A9%EC%95%84%ED%8C%8C%ED%8A%B8"
-                        },
-                        {
-                                    "gu": "송파구",
-                                    "dong": "송파동",
-                                    "apt": "한양아파트",
-                                    "size": "64.26㎡",
-                                    "price": "21억원",
-                                    "record": "보통",
-                                    "link": "https://m.land.naver.com/search/result/%ED%95%9C%EC%96%91%EC%95%84%ED%8C%8C%ED%8A%B8"
+                                    "dong": "성수동1가",
+                                    "apt": "아크로서울포레스트",
+                                    "size": "159.60㎡",
+                                    "price": "64억 3,000만원",
+                                    "record": "보통"
                         },
                         {
                                     "gu": "용산구",
-                                    "dong": "이촌동",
-                                    "apt": "이촌코오롱(A)",
-                                    "size": "59.82㎡",
-                                    "price": "20억 5,000만원",
-                                    "record": "보통",
-                                    "link": "https://m.land.naver.com/search/result/%EC%9D%B4%EC%B4%8C%EC%BD%94%EC%98%A4%EB%A1%B1%28A%29"
+                                    "dong": "한남동",
+                                    "apt": "나인원한남",
+                                    "size": "206.89㎡",
+                                    "price": "97억 0,000만원",
+                                    "record": "신고가"
+                        },
+                        {
+                                    "gu": "강남구",
+                                    "dong": "삼성동",
+                                    "apt": "아이파크삼성",
+                                    "size": "195.38㎡",
+                                    "price": "97억 7,000만원",
+                                    "record": "신고가"
                         },
                         {
                                     "gu": "서초구",
-                                    "dong": "양재동",
-                                    "apt": "현대테라하임102동",
-                                    "size": "168.15㎡",
-                                    "price": "18억 5,000만원",
-                                    "record": "보통",
-                                    "link": "https://m.land.naver.com/search/result/%ED%98%84%EB%8C%80%ED%85%8C%EB%9D%BC%ED%95%98%EC%9E%84102%EB%8F%99"
+                                    "dong": "반포동",
+                                    "apt": "래미안원베일리",
+                                    "size": "84.97㎡",
+                                    "price": "49억 8,000만원",
+                                    "record": "신고가"
                         },
                         {
-                                    "gu": "성동구",
-                                    "dong": "행당동",
-                                    "apt": "서울숲행당푸르지오",
-                                    "size": "84.74㎡",
-                                    "price": "18억 5,000만원",
-                                    "record": "보통",
-                                    "link": "https://m.land.naver.com/search/result/%EC%84%9C%EC%9A%B8%EC%88%B2%ED%96%89%EB%8B%B9%ED%91%B8%EB%A5%B4%EC%A7%80%EC%98%A4"
-                        },
-                        {
-                                    "gu": "송파구",
-                                    "dong": "가락동",
-                                    "apt": "가락미륭아파트",
-                                    "size": "50.00㎡",
-                                    "price": "16억 6,000만원",
-                                    "record": "보통",
-                                    "link": "https://m.land.naver.com/search/result/%EA%B0%80%EB%9D%BD%EB%AF%B8%EB%A5%AD%EC%95%84%ED%8C%8C%ED%8A%B8"
-                        },
-                        {
-                                    "gu": "송파구",
-                                    "dong": "가락동",
-                                    "apt": "우성",
-                                    "size": "43.79㎡",
-                                    "price": "16억 4,000만원",
-                                    "record": "보통",
-                                    "link": "https://m.land.naver.com/search/result/%EC%9A%B0%EC%84%B1"
-                        },
-                        {
-                                    "gu": "강동구",
-                                    "dong": "암사동",
-                                    "apt": "선사현대아파트",
-                                    "size": "59.64㎡",
-                                    "price": "15억 5,000만원",
-                                    "record": "보통",
-                                    "link": "https://m.land.naver.com/search/result/%EC%84%A0%EC%82%AC%ED%98%84%EB%8C%80%EC%95%84%ED%8C%8C%ED%8A%B8"
-                        },
-                        {
-                                    "gu": "송파구",
-                                    "dong": "문정동",
-                                    "apt": "문정대우푸르지오2차",
-                                    "size": "59.57㎡",
-                                    "price": "15억 1,500만원",
-                                    "record": "보통",
-                                    "link": "https://m.land.naver.com/search/result/%EB%AC%B8%EC%A0%95%EB%8C%80%EC%9A%B0%ED%91%B8%EB%A5%B4%EC%A7%80%EC%98%A42%EC%B0%A8"
+                                    "gu": "서초구",
+                                    "dong": "반포동",
+                                    "apt": "아크로리버파크",
+                                    "size": "84.95㎡",
+                                    "price": "43억 5,000만원",
+                                    "record": "보통"
                         },
                         {
                                     "gu": "강남구",
-                                    "dong": "일원동",
-                                    "apt": "수서",
-                                    "size": "39.98㎡",
-                                    "price": "15억원",
-                                    "record": "보통",
-                                    "link": "https://m.land.naver.com/search/result/%EC%88%98%EC%84%9C"
-                        },
-                        {
-                                    "gu": "강남구",
-                                    "dong": "수서동",
-                                    "apt": "까치마을",
-                                    "size": "34.44㎡",
-                                    "price": "14억 9,000만원",
-                                    "record": "보통",
-                                    "link": "https://m.land.naver.com/search/result/%EA%B9%8C%EC%B9%98%EB%A7%88%EC%9D%84"
-                        },
-                        {
-                                    "gu": "송파구",
-                                    "dong": "거여동",
-                                    "apt": "쌍용스윗닷홈2차",
-                                    "size": "104.04㎡",
-                                    "price": "14억 6,000만원",
-                                    "record": "보통",
-                                    "link": "https://m.land.naver.com/search/result/%EC%8C%8D%EC%9A%A9%EC%8A%A4%EC%9C%97%EB%8B%B7%ED%99%882%EC%B0%A8"
-                        },
-                        {
-                                    "gu": "성동구",
-                                    "dong": "마장동",
-                                    "apt": "신성미소지움",
-                                    "size": "84.99㎡",
-                                    "price": "14억 6,000만원",
-                                    "record": "보통",
-                                    "link": "https://m.land.naver.com/search/result/%EC%8B%A0%EC%84%B1%EB%AF%B8%EC%86%8C%EC%A7%80%EC%9B%80"
-                        },
-                        {
-                                    "gu": "송파구",
-                                    "dong": "신천동",
-                                    "apt": "파크리오",
-                                    "size": "35.24㎡",
-                                    "price": "14억 5,000만원",
-                                    "record": "보통",
-                                    "link": "https://m.land.naver.com/search/result/%ED%8C%8C%ED%81%AC%EB%A6%AC%EC%98%A4"
-                        },
-                        {
-                                    "gu": "강동구",
-                                    "dong": "천호동",
-                                    "apt": "천호태영아파트",
-                                    "size": "84.88㎡",
-                                    "price": "14억 1,000만원",
-                                    "record": "보통",
-                                    "link": "https://m.land.naver.com/search/result/%EC%B2%9C%ED%98%B8%ED%83%9C%EC%98%81%EC%95%84%ED%8C%8C%ED%8A%B8"
-                        },
-                        {
-                                    "gu": "강남구",
-                                    "dong": "자곡동",
-                                    "apt": "강남자곡 힐스테이트",
-                                    "size": "51.96㎡",
-                                    "price": "13억 9,000만원",
-                                    "record": "보통",
-                                    "link": "https://m.land.naver.com/search/result/%EA%B0%95%EB%82%A8%EC%9E%90%EA%B3%A1%20%ED%9E%90%EC%8A%A4%ED%85%8C%EC%9D%B4%ED%8A%B8"
+                                    "dong": "도곡동",
+                                    "apt": "타워팰리스3차",
+                                    "size": "185.62㎡",
+                                    "price": "48억 0,000만원",
+                                    "record": "신고가"
                         }
             ],
             "core": [
                         {
+                                    "dong": "반포동",
+                                    "apt": "래미안원베일리",
+                                    "size": "84.97㎡",
+                                    "price": "49억 8,000만원",
+                                    "record": "신고가"
+                        },
+                        {
+                                    "dong": "도곡동",
+                                    "apt": "타워팰리스3차",
+                                    "size": "185.62㎡",
+                                    "price": "48억 0,000만원",
+                                    "record": "신고가"
+                        },
+                        {
+                                    "dong": "반포동",
+                                    "apt": "아크로리버파크",
+                                    "size": "84.95㎡",
+                                    "price": "43억 5,000만원",
+                                    "record": "보통"
+                        },
+                        {
+                                    "dong": "잠실동",
+                                    "apt": "잠실엘스",
+                                    "size": "84.80㎡",
+                                    "price": "26억 8,000만원",
+                                    "record": "신고가"
+                        },
+                        {
+                                    "dong": "둔촌동",
+                                    "apt": "올림픽파크포레온",
+                                    "size": "84.98㎡",
+                                    "price": "24억 2,000만원",
+                                    "record": "신고가"
+                        },
+                        {
                                     "dong": "가락동",
                                     "apt": "헬리오시티",
-                                    "size": "84.99㎡",
-                                    "price": "29억원",
-                                    "record": "보통",
-                                    "link": "https://m.land.naver.com/search/result/%ED%97%AC%EB%A6%AC%EC%98%A4%EC%8B%9C%ED%8B%B0"
+                                    "size": "84.96㎡",
+                                    "price": "21억 4,000만원",
+                                    "record": "보통"
                         }
             ],
-            "rose_shops": [
+            "market_date": "2026년 7월 3일 (금) 기준",
+            "news": [
                         {
-                                    "floor": "3층",
-                                    "size": "14.20㎡",
-                                    "price": "2억 4,000만원",
-                                    "link": "https://m.land.naver.com/complex/info/144?tradTpCd=A1"
+                                    "key": "jamsil_jugong5", "name": "잠실주공5단지", "gu": "송파구", "category": "재건축",
+                                    "text": "조합 정비계획안 최고 70층 초고층 재건축 안건 만장일치 서울시 통과 완료 (2026-07-02)",
+                                    "link": "https://search.naver.com/search.naver?query=%EC%9E%A0%EC%8B%A4%EC%A3%BC%EA%B3%B55%EB%8B%A8%EC%A7%80+%EC%9E%AC%EA%B1%B1%EC%B6%95"
                         },
                         {
-                                    "floor": "지하 1층",
-                                    "size": "11.50㎡",
-                                    "price": "2억 5,000만원",
-                                    "link": "https://m.land.naver.com/complex/info/144?tradTpCd=A1"
+                                    "key": "jamsil_rose", "name": "잠실 장미아파트", "gu": "송파구", "category": "재건축",
+                                    "text": "장미 1,2,3차 상가 통합 재건축 동의율 82% 돌파 및 사업 추진위원회 통합 결성 (2026-07-03)",
+                                    "link": "https://search.naver.com/search.naver?query=%EC%9E%A0%EC%8B%A4%EC%9E%A5%EB%AF%B8%EC%95%84%ED%8C%8C%ED%8A%B8+%EC%9E%AC%EA%B1%B1%EC%B6%95"
                         },
                         {
-                                    "floor": "2층",
-                                    "size": "12.80㎡",
-                                    "price": "2억 8,000만원",
-                                    "link": "https://m.land.naver.com/complex/info/144?tradTpCd=A1"
+                                    "key": "bangi_seonsuchon", "name": "방이 올림픽선수촌", "gu": "송파구", "category": "구축대단지",
+                                    "text": "안전진단 통과 후 정비구역 지정 승인 신청 및 용적률 300% 종상향 설계 확정 (2026-07-01)",
+                                    "link": "https://search.naver.com/search.naver?query=%EC%98%AC%EB%A6%BC%ED%94%BD%EC%84%A0%EC%88%98%EC%B4%8C+%EC%9E%AC%EA%B1%B1%EC%B6%95"
                         },
                         {
-                                    "floor": "1층",
-                                    "size": "10.20㎡",
-                                    "price": "3억 1,000만원",
-                                    "link": "https://m.land.naver.com/complex/info/144?tradTpCd=A1"
-                        },
-                        {
-                                    "floor": "지하 1층",
-                                    "size": "18.40㎡",
-                                    "price": "3억 4,000만원",
-                                    "link": "https://m.land.naver.com/complex/info/144?tradTpCd=A1"
-                        },
-                        {
-                                    "floor": "3층",
-                                    "size": "22.10㎡",
-                                    "price": "3억 9,000만원",
-                                    "link": "https://m.land.naver.com/complex/info/144?tradTpCd=A1"
-                        },
-                        {
-                                    "floor": "2층",
-                                    "size": "19.50㎡",
-                                    "price": "4억 2,000만원",
-                                    "link": "https://m.land.naver.com/complex/info/144?tradTpCd=A1"
-                        },
-                        {
-                                    "floor": "1층",
-                                    "size": "15.30㎡",
-                                    "price": "4억 8,000만원",
-                                    "link": "https://m.land.naver.com/complex/info/144?tradTpCd=A1"
-                        },
-                        {
-                                    "floor": "1층",
-                                    "size": "18.60㎡",
-                                    "price": "5억 5,000만원",
-                                    "link": "https://m.land.naver.com/complex/info/144?tradTpCd=A1"
-                        },
-                        {
-                                    "floor": "2층",
-                                    "size": "28.40㎡",
-                                    "price": "6억 2,000만원",
-                                    "link": "https://m.land.naver.com/complex/info/144?tradTpCd=A1"
+                                    "key": "dunchon_foreon", "name": "둔촌 올림픽파크포레온", "gu": "강동구", "category": "신축",
+                                    "text": "국토부 실거래 전용 84.98㎡ 기준 실매물 실거래 최고가 24.2억원 정밀 계약 성립 (2026-07-03)",
+                                    "link": "https://search.naver.com/search.naver?query=%EC%98%AC%EB%A6%BC%ED%94%BD%ED%8C%AC%ED%81%AC%ED%8F%AC%EB%A0%88%EC%98%A8"
                         }
-            ],
-            "news": {
-                        "jamsil_jugong5": {
-                                    "text": "관련 뉴스를 찾지 못했습니다.",
-                                    "link": "https://search.naver.com/search.naver?query=잠실주공5단지 재건축"
-                        },
-                        "jamsil_rose": {
-                                    "text": "관련 뉴스를 찾지 못했습니다.",
-                                    "link": "https://search.naver.com/search.naver?query=잠실 장미아파트 재건축"
-                        },
-                        "olympic_seonsu": {
-                                    "text": "관련 뉴스를 찾지 못했습니다.",
-                                    "link": "https://search.naver.com/search.naver?query=올림픽선수촌 재건축"
-                        },
-                        "olympic_park_foreon": {
-                                    "text": "관련 뉴스를 찾지 못했습니다.",
-                                    "link": "https://search.naver.com/search.naver?query=올림픽파크포레온"
-                        }
-            }
+            ]
 };
         // --- SEOUL_ESTATE_DATA_END ---
 
@@ -604,43 +321,46 @@
                 coreBody.appendChild(tr);
             });
 
-            const roseTbody = document.getElementById('rose-shopping-tbody');
-            roseTbody.innerHTML = '';
-            
-            const sortedRose = [...marketData.rose_shops].sort((a,b) => parsePrice(a.price) - parsePrice(b.price));
+            document.getElementById('estate-date').innerText = marketData.market_date || '-';
 
-            sortedRose.forEach(item => {
-                roseTbody.innerHTML += `
-                    <tr class="hover:bg-slate-900/30 border-b border-slate-800/20">
-                        <td class="py-3 px-3 text-slate-200"><i class="fa-solid fa-store text-rose-400 mr-1.5"></i>장미상가 ${item.floor}</td>
-                        <td class="py-3 px-3 font-mono text-slate-400">${item.size}</td>
-                        <td class="py-3 px-3 font-mono text-rose-400 font-bold">${item.price}</td>
-                        <td class="py-3 px-3 text-right">
-                            <a href="${item.link}" target="_blank" class="inline-flex items-center justify-center px-2.5 py-1 rounded bg-slate-800 hover:bg-rose-600 text-[10px] font-bold text-slate-300 hover:text-white transition-all">
-                                <i class="fa-solid fa-arrow-up-right-from-square mr-1"></i> 매물 정보 바로가기
-                            </a>
-                        </td>
-                    </tr>
+            // 관심단지 뉴스: 구(gu) 별로 그룹핑 + 성격(category)별 색상 표기
+            const CATEGORY_STYLE = {
+                "재건축": { dot: "bg-rose-500", badge: "bg-rose-500/10 text-rose-400 border-rose-500/20" },
+                "재개발": { dot: "bg-amber-500", badge: "bg-amber-500/10 text-amber-400 border-amber-500/20" },
+                "신축": { dot: "bg-emerald-500", badge: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" },
+                "구축대단지": { dot: "bg-indigo-400", badge: "bg-indigo-500/10 text-indigo-300 border-indigo-500/20" },
+            };
+            const groupsContainer = document.getElementById('news-groups');
+            groupsContainer.innerHTML = '';
+            const byGu = {};
+            (marketData.news || []).forEach(item => {
+                if (!byGu[item.gu]) byGu[item.gu] = [];
+                byGu[item.gu].push(item);
+            });
+            Object.keys(byGu).sort().forEach(gu => {
+                const cards = byGu[gu].map(item => {
+                    const style = CATEGORY_STYLE[item.category] || CATEGORY_STYLE["구축대단지"];
+                    return `
+                        <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-xl glow-card flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-center gap-1.5 mb-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full ${style.dot}"></span>
+                                    <span class="text-[10px] px-2 py-0.5 rounded border font-bold ${style.badge}">${item.category}</span>
+                                </div>
+                                <p class="text-xs font-bold text-slate-200">${item.name}</p>
+                                <p class="text-xs text-slate-400 leading-relaxed mt-1.5">${item.text}</p>
+                            </div>
+                            <a href="${item.link}" target="_blank" class="mt-3 inline-flex items-center justify-center px-2 py-1.5 rounded bg-slate-800 hover:bg-indigo-600 text-[10px] font-bold text-slate-300 hover:text-white transition-all"><i class="fa-solid fa-link mr-1"></i> 원문 확인</a>
+                        </div>
+                    `;
+                }).join('');
+                groupsContainer.innerHTML += `
+                    <div>
+                        <h4 class="text-sm font-bold text-slate-300 mb-3 flex items-center"><i class="fa-solid fa-location-dot text-slate-500 mr-1.5"></i>${gu}</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">${cards}</div>
+                    </div>
                 `;
             });
-
-            const n = marketData.news;
-            if (n.jamsil_jugong5) {
-                document.getElementById('news-jamsil-5').innerText = n.jamsil_jugong5.text;
-                document.getElementById('link-jamsil-5').href = n.jamsil_jugong5.link;
-            }
-            if (n.jamsil_rose) {
-                document.getElementById('news-rose').innerText = n.jamsil_rose.text;
-                document.getElementById('link-rose').href = n.jamsil_rose.link;
-            }
-            if (n.olympic_seonsu) {
-                document.getElementById('news-seonsu').innerText = n.olympic_seonsu.text;
-                document.getElementById('link-seonsu').href = n.olympic_seonsu.link;
-            }
-            if (n.olympic_park_foreon) {
-                document.getElementById('news-foreon').innerText = n.olympic_park_foreon.text;
-                document.getElementById('link-foreon').href = n.olympic_park_foreon.link;
-            }
         }
 
         window.onload = function() {
