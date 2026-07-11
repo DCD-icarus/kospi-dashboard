@@ -340,6 +340,12 @@ LOW_QUALITY_TITLE_KEYWORDS = [
     "테마주", "레이더", "코스피 코스닥 특징주", "장중 특징",
 ]
 
+# 제목 관련성 판단 시 무시할 일반 서술어 (검색어에서 이런 단어만 남으면
+# 핵심 키워드가 아니므로 더 구체적인 단어를 필수 조건으로 삼기 위해 제외)
+_QUERY_STOPWORDS = {
+    "마감", "시황", "투자의견", "목표주가", "전망", "투자은행", "월가", "재건축", "재개발",
+}
+
 
 def _extract_domain(url):
     if not url:
@@ -353,6 +359,10 @@ def _is_major_press(url):
     return any(domain == d or domain.endswith("." + d) for d in MAJOR_PRESS_DOMAINS)
 
 
+def _is_naver_hosted(url):
+    return _extract_domain(url) == "naver.com"
+
+
 def _is_low_quality_title(title):
     if any(k in title for k in LOW_QUALITY_TITLE_KEYWORDS):
         return True
@@ -362,19 +372,32 @@ def _is_low_quality_title(title):
     return False
 
 
+def _title_matches_query(title, query):
+    """검색어의 핵심 키워드(가장 긴 단어 = 보통 가장 구체적인 종목/단지명)가
+    제목에 실제로 등장하는지 확인. 간헐적으로만 연관된, 본문에만 스치듯
+    언급되는 기사를 걸러내기 위한 최소한의 관련성 검증입니다."""
+    tokens = [t for t in re.split(r"[\s()·,]+", query) if len(t) >= 2 and t not in _QUERY_STOPWORDS]
+    if not tokens:
+        return True
+    primary = max(tokens, key=len)
+    return primary in title
+
+
 def fetch_naver_news(query, client_id, client_secret, display=4):
     """네이버 뉴스 검색 오픈API (공식). 실제 기사 제목/링크/날짜를 반환.
     이전 버전의 '거장 코멘트'는 실존 인물에게 가상의 발언을 붙인 가짜 콘텐츠였어서
     전면 제거하고, 실제 검색 결과 기반 뉴스로 교체했습니다.
 
-    우선순위: ① 주요 언론사(MAJOR_PRESS_DOMAINS) + 정상 기사 → ② 매체 무관 정상 기사
-    → ③ (그래도 부족하면) 나머지 아무 결과나. 링크는 네이버뉴스 게재본을 우선 사용."""
+    필터링 순서: ① 검색어 핵심 키워드가 제목에 포함(관련성) + 저품질 제목 제외
+    → ② 그중 주요 언론사 + 네이버뉴스 게재본 있는 것 우선 → ③ 주요 언론사만 →
+    ④ 관련성 있는 것 전체. 관련성 없는 기사는 개수를 못 채우더라도 포함하지 않습니다
+    (있으나 마나 한 기사보다 없는 게 낫다는 원칙)."""
     if not client_id or not client_secret:
         return []
     try:
         resp = requests.get(
             "https://openapi.naver.com/v1/search/news.json",
-            params={"query": query, "display": min(display * 5, 30), "sort": "date"},
+            params={"query": query, "display": min(display * 6, 30), "sort": "date"},
             headers={"X-Naver-Client-Id": client_id, "X-Naver-Client-Secret": client_secret},
             timeout=8,
         )
@@ -383,28 +406,43 @@ def fetch_naver_news(query, client_id, client_secret, display=4):
         all_results = []
         for item in data.get("items", []):
             title = re.sub(r"<.*?>", "", item.get("title", "")).replace("&quot;", '"').replace("&amp;", "&")
-            link = item.get("link") or item.get("originallink")  # 네이버뉴스 게재본 우선
+            original = item.get("originallink") or ""
+            naver_copy = item.get("link") or ""
+            # 최종 표시 링크: 네이버뉴스 게재본이 있으면 그쪽(광고 적음), 없으면 원문
+            final_link = naver_copy if _is_naver_hosted(naver_copy) else (naver_copy or original)
+            press_src = original or naver_copy  # 언론사 판별은 항상 원문 도메인 기준
             pub = item.get("pubDate", "")
             try:
                 date_str = datetime.strptime(pub, "%a, %d %b %Y %H:%M:%S %z").strftime("%Y-%m-%d %H:%M")
             except Exception:
                 date_str = pub
-            all_results.append({"title": title, "link": link, "date": date_str, "source": "네이버뉴스"})
+            all_results.append({
+                "title": title, "link": final_link, "date": date_str, "source": "네이버뉴스",
+                "_press_src": press_src, "_naver_hosted": _is_naver_hosted(naver_copy),
+            })
 
-        quality = [r for r in all_results if not _is_low_quality_title(r["title"])]
-        major_quality = [r for r in quality if _is_major_press(r["link"])]
+        relevant = [
+            r for r in all_results
+            if _title_matches_query(r["title"], query) and not _is_low_quality_title(r["title"])
+        ]
+        tier_best = [r for r in relevant if _is_major_press(r["_press_src"]) and r["_naver_hosted"]]
+        tier_press = [r for r in relevant if _is_major_press(r["_press_src"])]
 
-        if len(major_quality) >= display:
-            results = major_quality[:display]
-        elif len(quality) >= display:
-            results = quality[:display]
+        if len(tier_best) >= display:
+            results = tier_best[:display]
+        elif len(tier_press) >= display:
+            results = tier_press[:display]
         else:
-            results = all_results[:display]  # 최후에는 필터 없이라도 채움
+            results = relevant[:display]  # 관련성은 있지만 주요언론/네이버게재본은 부족 - 그래도 관련 없는 건 안 채움
+
+        for r in results:
+            r.pop("_press_src", None)
+            r.pop("_naver_hosted", None)
 
         if results:
-            log.info(f"네이버 뉴스 조회 성공 ('{query}'): {len(results)}건 (주요언론 {len(major_quality)}건 확보)")
+            log.info(f"네이버 뉴스 조회 성공 ('{query}'): {len(results)}건 (관련기사 {len(relevant)}건 중 선정)")
         else:
-            log.warning(f"네이버 뉴스 조회 결과 0건 ('{query}') - 검색어와 일치하는 최신 기사가 없거나 API 응답이 비어있음")
+            log.warning(f"네이버 뉴스 조회 결과 0건 ('{query}') - 제목 관련성 조건을 만족하는 기사가 없음")
         return results
     except Exception as e:
         log.warning(f"네이버 뉴스 조회 실패 ('{query}'): {e}")
