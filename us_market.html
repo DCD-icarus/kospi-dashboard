@@ -40,7 +40,7 @@
                 </div>
             </div>
             
-            <span class="text-xs text-slate-400 font-mono"><i class="fa-regular fa-clock mr-1"></i>EST 16:00 PM CLOSE</span>
+            <span class="text-xs text-slate-400 font-mono"><i class="fa-regular fa-clock mr-1"></i><span id="us-market-close-label">-</span></span>
         </div>
     </header>
 
@@ -56,7 +56,7 @@
             </div>
             <div class="text-right">
                 <p class="text-xs text-slate-500 font-medium">거래일자 기준</p>
-                <p class="text-sm font-bold text-slate-300"><i class="fa-regular fa-calendar-check mr-1.5 text-indigo-400"></i>2026년 7월 3일 (금) 장 마감</p>
+                <p class="text-sm font-bold text-slate-300"><i class="fa-regular fa-calendar-check mr-1.5 text-indigo-400"></i><span id="us-date">-</span></p>
             </div>
         </div>
 
@@ -114,134 +114,138 @@
             "macro": [
                         {
                                     "name": "S&P 500",
-                                    "val": "7,575.39",
-                                    "change": "+31.75",
-                                    "pct": "+0.42%",
-                                    "trend": "up"
+                                    "val": "5,432.10",
+                                    "change": "+12.40",
+                                    "pct": "+0.23%",
+                                    "trend": "up",
+                                    "high": "5,620.12",
+                                    "low": "4,820.44"
                         },
                         {
                                     "name": "나스닥 종합",
-                                    "val": "26,281.61",
-                                    "change": "+74.72",
-                                    "pct": "+0.29%",
-                                    "trend": "up"
+                                    "val": "17,820.50",
+                                    "change": "+56.80",
+                                    "pct": "+0.32%",
+                                    "trend": "up",
+                                    "high": "18,650.10",
+                                    "low": "14,510.20"
                         },
                         {
                                     "name": "다우존스 지수",
-                                    "val": "52,637.01",
-                                    "change": "+149.60",
-                                    "pct": "+0.29%",
-                                    "trend": "up"
+                                    "val": "39,120.40",
+                                    "change": "-15.20",
+                                    "pct": "-0.04%",
+                                    "trend": "down",
+                                    "high": "40,110.80",
+                                    "low": "36,810.15"
                         },
                         {
                                     "name": "미국채 10년 금리",
-                                    "val": "4.569%",
-                                    "change": "+0.030",
-                                    "pct": "+0.66%",
-                                    "trend": "up"
+                                    "val": "4.215%",
+                                    "change": "-0.012",
+                                    "pct": "-0.28%",
+                                    "trend": "down",
+                                    "high": "4.730%",
+                                    "low": "3.820%"
                         },
                         {
                                     "name": "미국채 30년 금리",
-                                    "val": "5.071%",
-                                    "change": "+0.018",
-                                    "pct": "+0.36%",
-                                    "trend": "up"
+                                    "val": "4.385%",
+                                    "change": "-0.008",
+                                    "pct": "-0.18%",
+                                    "trend": "down",
+                                    "high": "4.890%",
+                                    "low": "3.950%"
                         },
                         {
                                     "name": "WTI 선물 유가",
-                                    "val": "71.41",
-                                    "change": "-0.67",
-                                    "pct": "-0.93%",
-                                    "trend": "down"
+                                    "val": "81.45",
+                                    "change": "+0.45",
+                                    "pct": "+0.56%",
+                                    "trend": "up",
+                                    "high": "88.20",
+                                    "low": "68.50"
                         }
             ],
             "top30": [
                         {
                                     "ticker": "MSFT",
-                                    "price": "$385.10",
-                                    "change": "+$0.74",
-                                    "pct": "+0.19%",
-                                    "cap": "2.86조달러",
-                                    "link": "https://finance.yahoo.com/quote/MSFT"
+                                    "price": "$428.15",
+                                    "change": "+$1.85",
+                                    "pct": "+0.43%",
+                                    "cap": "3.18조달러"
                         },
                         {
                                     "ticker": "AAPL",
-                                    "price": "$315.32",
-                                    "change": "$-0.90",
-                                    "pct": "-0.28%",
-                                    "cap": "4.63조달러",
-                                    "link": "https://finance.yahoo.com/quote/AAPL"
+                                    "price": "$210.45",
+                                    "change": "+$1.20",
+                                    "pct": "+0.57%",
+                                    "cap": "3.12조달러"
                         },
                         {
                                     "ticker": "NVDA",
-                                    "price": "$210.96",
-                                    "change": "+$8.18",
-                                    "pct": "+4.03%",
-                                    "cap": "4.91조달러",
-                                    "link": "https://finance.yahoo.com/quote/NVDA"
+                                    "price": "$125.80",
+                                    "change": "+$2.45",
+                                    "pct": "+1.99%",
+                                    "cap": "3.09조달러"
                         },
                         {
                                     "ticker": "GOOGL",
-                                    "price": "$357.18",
-                                    "change": "$-1.71",
-                                    "pct": "-0.48%",
-                                    "cap": "4.36조달러",
-                                    "link": "https://finance.yahoo.com/quote/GOOGL"
+                                    "price": "$175.60",
+                                    "change": "-$0.80",
+                                    "pct": "-0.45%",
+                                    "cap": "2.18조달러"
                         },
                         {
                                     "ticker": "AMZN",
-                                    "price": "$245.34",
-                                    "change": "$-1.70",
-                                    "pct": "-0.69%",
-                                    "cap": "2.64조달러",
-                                    "link": "https://finance.yahoo.com/quote/AMZN"
+                                    "price": "$189.40",
+                                    "change": "+$1.10",
+                                    "pct": "+0.58%",
+                                    "cap": "1.97조달러"
                         },
                         {
                                     "ticker": "META",
-                                    "price": "$669.21",
-                                    "change": "+$37.73",
-                                    "pct": "+5.97%",
-                                    "cap": "1.70조달러",
-                                    "link": "https://finance.yahoo.com/quote/META"
+                                    "price": "$495.20",
+                                    "change": "-$3.15",
+                                    "pct": "-0.63%",
+                                    "cap": "1.25조달러"
                         },
                         {
                                     "ticker": "TSLA",
-                                    "price": "$407.76",
-                                    "change": "+$1.21",
-                                    "pct": "+0.30%",
-                                    "cap": "1.53조달러",
-                                    "link": "https://finance.yahoo.com/quote/TSLA"
+                                    "price": "$198.50",
+                                    "change": "+$4.20",
+                                    "pct": "+2.16%",
+                                    "cap": "6,330억달러"
                         },
                         {
                                     "ticker": "AVGO",
-                                    "price": "$399.97",
-                                    "change": "$-1.14",
-                                    "pct": "-0.28%",
-                                    "cap": "1.90조달러",
-                                    "link": "https://finance.yahoo.com/quote/AVGO"
+                                    "price": "$1,410.20",
+                                    "change": "+$15.40",
+                                    "pct": "+1.10%",
+                                    "cap": "6,540억달러"
                         },
                         {
                                     "ticker": "LLY",
-                                    "price": "$1,188.58",
-                                    "change": "$-28.37",
-                                    "pct": "-2.33%",
-                                    "cap": "1.06조달러",
-                                    "link": "https://finance.yahoo.com/quote/LLY"
+                                    "price": "$895.40",
+                                    "change": "-$5.10",
+                                    "pct": "-0.57%",
+                                    "cap": "8,490억달러"
                         },
                         {
                                     "ticker": "V",
-                                    "price": "$348.97",
-                                    "change": "+$0.77",
-                                    "pct": "+0.22%",
-                                    "cap": "664억달러",
-                                    "link": "https://finance.yahoo.com/quote/V"
+                                    "price": "$272.30",
+                                    "change": "+$0.85",
+                                    "pct": "+0.31%",
+                                    "cap": "5,580억달러"
                         }
-            ],
-            "news": []
+            ]
 };
         // --- US_DATA_END ---
 
         function renderUsMarket() {
+            document.getElementById('us-date').innerText = marketData.market_date || '-';
+            document.getElementById('us-market-close-label').innerText = (marketData.market_date || '') + ' NY CLOSE';
+
             const grid = document.getElementById('macro-grid-container');
             grid.innerHTML = '';
 
