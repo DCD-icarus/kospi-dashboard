@@ -33,6 +33,8 @@ v2 -> v3 변경점:
 import os
 import re
 import json
+import time
+import random
 import logging
 import argparse
 import xml.etree.ElementTree as ET
@@ -867,16 +869,17 @@ def _to_float(v):
 
 
 def _format_commercial_row(row):
-    name = row.get("bldNm") or row.get("mhouseNm") or row.get("offiNm") or row.get("buildingName") or "장미상가(재건축 장미1,2,3차)"
+    # 실제 응답 필드 확인 결과(2026-07-11 로그): 이 데이터셋에는 건물명 필드가
+    # 아예 없습니다 (bldNm 등 존재하지 않음) - 그래서 항상 고정 라벨을 씁니다.
+    name = "장미상가(재건축 장미1,2,3차)"
     amount_manwon = _to_float(row.get("dealAmount"))
     price = _fmt_eok(int(amount_manwon)) if amount_manwon else (row.get("dealAmount") or "N/A")
 
-    floor_raw = row.get("flr") or row.get("floor")
-    floor_label = _format_floor_label(floor_raw)
+    floor_label = _format_floor_label(row.get("floor"))
 
-    area_raw = row.get("totFlrAr") or row.get("area") or row.get("dealArea")
-    area_sqm = _to_float(area_raw)
-    area_label = f"{area_sqm:.2f}㎡" if area_sqm else (str(area_raw) if area_raw else "-")
+    # 면적 필드 = buildingAr(건물면적). plottageAr(대지권면적)은 참고용으로만 남겨둠.
+    area_sqm = _to_float(row.get("buildingAr"))
+    area_label = f"{area_sqm:.2f}㎡" if area_sqm else "-"
 
     pyeong_price = None
     pyeong_label = "-"
@@ -904,10 +907,23 @@ ROSE_TARGET_DONG = "신천동"
 ROSE_TARGET_JIBUN = {"7", "11"}  # 아실 확인: 재건축 장미1,2,3차 상가 - 서울시 송파구 신천동 7 / 11
 
 
+def _normalize_jibun(v):
+    """MOLIT 데이터는 지번을 '0007'처럼 0으로 채운 형태로 주는 경우가 많아,
+    숫자로 변환 가능하면 앞자리 0을 제거하고 비교합니다."""
+    if v is None:
+        return None
+    v = str(v).strip()
+    try:
+        return str(int(v))
+    except (ValueError, TypeError):
+        return v
+
+
 def _row_matches_rose(row):
     """이름에 '장미'가 들어간 행 OR (법정동=신천동 AND 지번=7|11)인 행을 매칭.
     정확한 MOLIT 필드 태그명이 아직 검증 전이라, 키 이름에 'umd'(법정동)나
-    'jibun'/'bonbun'(지번)이 들어간 필드를 유연하게 찾아서 비교합니다."""
+    'jibun'/'bonbun'(지번)이 들어간 필드를 유연하게 찾아서 비교하고,
+    0으로 채워진 지번 표기('0007' 등)도 정규화해서 비교합니다."""
     values = [v for v in row.values() if isinstance(v, str)]
     if any("장미" in v for v in values):
         return True
@@ -917,7 +933,7 @@ def _row_matches_rose(row):
         if "umd" in kl or "dong" in kl:
             dong_val = v
         if "jibun" in kl or "bonbun" in kl:
-            jibun_val = v
+            jibun_val = _normalize_jibun(v)
     if dong_val == ROSE_TARGET_DONG and jibun_val in ROSE_TARGET_JIBUN:
         return True
     return False
@@ -996,20 +1012,41 @@ def fetch_naver_article_detail(article_id):
         "Referer": f"https://fin.land.naver.com/articles/{article_id}",
         "Accept": "application/json, text/plain, */*",
     }
-    try:
-        resp = requests.get(
-            url, params={"articleId": article_id, "realEstateType": "D02", "tradeType": "A1"},
-            headers=headers, timeout=10,
-        )
-        resp.raise_for_status()
-        data = resp.json()
-        if not data or data.get("detailCode") == "Error":
-            log.warning(f"매물 {article_id} 조회 거부됨 (Referer 우회 실패 가능성)")
+def fetch_naver_article_detail(article_id, max_retries=3):
+    """fin.land.naver.com 개별 매물 상세 조회 (비공식 API).
+    브라우저로 직접 접속하면 Referer가 없어 {"detailCode":"Error"}가 뜨는 걸
+    확인했습니다 - 매물 상세페이지 URL을 Referer로 넣어 우회를 시도합니다.
+    11건을 짧은 간격으로 연달아 호출하면 429(Too Many Requests)로 차단되는
+    것도 확인되어, 재시도 시 지수 백오프로 대기합니다."""
+    url = "https://fin.land.naver.com/front-api/v1/article/basicInfo"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                       "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        "Referer": f"https://fin.land.naver.com/articles/{article_id}",
+        "Accept": "application/json, text/plain, */*",
+    }
+    for attempt in range(max_retries):
+        try:
+            resp = requests.get(
+                url, params={"articleId": article_id, "realEstateType": "D02", "tradeType": "A1"},
+                headers=headers, timeout=10,
+            )
+            if resp.status_code == 429:
+                wait = (2 ** attempt) * 3 + random.uniform(0, 2)  # 3s, 6s, 12s(+jitter)
+                log.warning(f"매물 {article_id} 429(Too Many Requests) - {wait:.1f}초 대기 후 재시도 ({attempt+1}/{max_retries})")
+                time.sleep(wait)
+                continue
+            resp.raise_for_status()
+            data = resp.json()
+            if not data or data.get("detailCode") == "Error":
+                log.warning(f"매물 {article_id} 조회 거부됨 (Referer 우회 실패 가능성)")
+                return None
+            return data
+        except Exception as e:
+            log.warning(f"매물 {article_id} 조회 실패: {e}")
             return None
-        return data
-    except Exception as e:
-        log.warning(f"매물 {article_id} 조회 실패: {e}")
-        return None
+    log.warning(f"매물 {article_id} 재시도 {max_retries}회 모두 429 - 건너뜀")
+    return None
 
 
 def _format_naver_shop(article_id, data):
@@ -1032,11 +1069,15 @@ def _format_naver_shop(article_id, data):
 
 
 def build_rose_shops():
-    """확보된 articleId 11건의 매물 호가를 자동 조회. 실패한 건은 건너뛰고,
-    전부 실패하면 None을 반환해 run_rose_watch_mode()에서 기존 값을 보존합니다."""
+    """확보된 articleId 11건의 매물 호가를 자동 조회. 요청 사이에 텀을 둬서
+    이전에 발생했던 429(Too Many Requests) 차단을 피합니다. 실패한 건은
+    건너뛰고, 전부 실패하면 None을 반환해 run_rose_watch_mode()에서 기존
+    값을 보존합니다."""
     results = []
     logged_schema = False
-    for aid in ROSE_ARTICLE_IDS:
+    for i, aid in enumerate(ROSE_ARTICLE_IDS):
+        if i > 0:
+            time.sleep(random.uniform(2.0, 3.5))  # 요청 간 텀 (429 방지)
         data = fetch_naver_article_detail(aid)
         if data is None:
             continue
@@ -1216,6 +1257,115 @@ def send_hub_notification(token):
 
 
 # ---------------------------------------------------------------------------
+# SPI(seoulpi.io) 신규 아티클 알림
+# ---------------------------------------------------------------------------
+# 로그인 없이 공개된 아티클 목록 페이지에서 "제목 + 링크"만 가져옵니다.
+# SPI 이용약관상 본문 등 콘텐츠의 무단 복제·배포가 금지되어 있어, 본문은
+# 절대 수집하지 않고 새 글이 올라왔다는 사실과 원문 링크만 안내합니다.
+SPI_SEEN_FILE = "spi_seen_articles.json"
+
+
+def _load_spi_seen():
+    if os.path.exists(SPI_SEEN_FILE):
+        try:
+            with open(SPI_SEEN_FILE, "r", encoding="utf-8") as f:
+                return set(json.load(f))
+        except Exception:
+            return set()
+    return set()
+
+
+def _save_spi_seen(seen_ids):
+    try:
+        with open(SPI_SEEN_FILE, "w", encoding="utf-8") as f:
+            json.dump(sorted(seen_ids), f, ensure_ascii=False)
+    except Exception as e:
+        log.warning(f"SPI 열람기록 저장 실패: {e}")
+
+
+def fetch_spi_articles(limit=15):
+    """SPI 공개 아티클 목록에서 제목/링크만 추출 (본문 미수집, 로그인 불필요).
+    공식 API가 아니라 페이지 HTML에서 /article/<id> 링크와 그 안의 텍스트를
+    정규식으로 뽑는 방식이라, SPI가 페이지 구조를 바꾸면 깨질 수 있습니다."""
+    url = "https://seoulpi.io/article/all"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                       "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+    }
+    try:
+        resp = requests.get(url, headers=headers, timeout=15)
+        resp.raise_for_status()
+        html = resp.text
+    except Exception as e:
+        log.warning(f"SPI 아티클 목록 조회 실패: {e}")
+        return []
+
+    pattern = re.compile(r'<a[^>]+href="(/article/(\d{10,}))"[^>]*>(.*?)</a>', re.DOTALL)
+    articles = []
+    for m in pattern.finditer(html):
+        link_path, art_id, inner_html = m.group(1), m.group(2), m.group(3)
+        title_text = re.sub(r"<[^>]+>", " ", inner_html)
+        title_text = re.sub(r"\s+", " ", title_text).strip()
+        if title_text:
+            articles.append({"id": art_id, "title": title_text, "link": f"https://seoulpi.io{link_path}"})
+
+    seen_ids, dedup = set(), []
+    for a in articles:
+        if a["id"] not in seen_ids:
+            seen_ids.add(a["id"])
+            dedup.append(a)
+    if not dedup:
+        log.warning("SPI 아티클 파싱 결과 0건 - 페이지 구조가 바뀌었을 수 있음")
+    return dedup[:limit]
+
+
+def send_spi_notification(token, new_articles):
+    if not token or not new_articles:
+        return
+    top = new_articles[:3]
+    lines = [f"• {a['title'][:45]}" for a in top]
+    extra = f" 외 {len(new_articles) - 3}건" if len(new_articles) > 3 else ""
+    text = f"📰 SPI 신규 아티클 {len(new_articles)}건{extra}\n\n" + "\n".join(lines)
+    target_url = top[0]["link"]
+    try:
+        template_object = {
+            "object_type": "text",
+            "text": text[:190],
+            "link": {"web_url": target_url, "mobile_web_url": target_url},
+            "buttons": [{"title": "SPI에서 확인하기",
+                         "link": {"web_url": "https://seoulpi.io/article/all",
+                                  "mobile_web_url": "https://seoulpi.io/article/all"}}],
+        }
+        resp = requests.post(
+            "https://kapi.kakao.com/v2/api/talk/memo/default/send",
+            data={"template_object": json.dumps(template_object, ensure_ascii=False)},
+            headers={"Authorization": f"Bearer {token}", "Content-Type": "application/x-www-form-urlencoded"},
+            timeout=10,
+        )
+        if resp.status_code != 200:
+            log.error(f"[spi] 카카오 알림 전송 실패 ({resp.status_code}): {resp.text}")
+        else:
+            log.info(f"[spi] 카카오 알림 전송 완료 ({len(new_articles)}건)")
+    except Exception as e:
+        log.error(f"[spi] 카카오 알림 전송 중 예외: {e}")
+
+
+def run_spi_notify_mode(kakao_token):
+    articles = fetch_spi_articles(limit=15)
+    if not articles:
+        return
+    seen = _load_spi_seen()
+    new_articles = [a for a in articles if a["id"] not in seen]
+    if new_articles:
+        log.info(f"SPI 신규 아티클 {len(new_articles)}건 발견")
+        send_spi_notification(kakao_token, new_articles)
+    else:
+        log.info("SPI 신규 아티클 없음")
+    seen.update(a["id"] for a in articles)
+    _save_spi_seen(seen)
+
+
+# ---------------------------------------------------------------------------
 # main
 # ---------------------------------------------------------------------------
 if __name__ == "__main__":
@@ -1253,9 +1403,10 @@ if __name__ == "__main__":
         d = run_seoul_estate_mode(molit_key, naver_id, naver_secret)
         send_kakao_notification(kakao_token, "seoul_estate", d)
 
-        # 매일 07:10 KST에 도는 이 트리거에 허브 알림 + 장미상가(비공개) 알림도 함께 발송
+        # 매일 07:10 KST에 도는 이 트리거에 허브 알림 + 장미상가(비공개) 알림 + SPI 신규 아티클 알림도 함께 발송
         send_hub_notification(kakao_token)
         rose_d = run_rose_watch_mode(molit_key)
         send_kakao_notification(kakao_token, "rose_watch", rose_d)
+        run_spi_notify_mode(kakao_token)
 
     log.info("실행 완료")
