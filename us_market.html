@@ -86,43 +86,16 @@
             </div>
         </div>
 
-        <!-- 3. 글로벌 월가 코멘트 & 오피니언 리포트 -->
+        <!-- 3. 뉴욕증시 관련 실시간 뉴스 -->
         <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 glow-card">
             <h3 class="font-bold text-lg text-slate-100 mb-6 pb-4 border-b border-slate-800/50 flex items-center">
-                <i class="fa-solid fa-microphone-lines text-rose-500 mr-2.5"></i>월스트리트 애널리스트 & 투자 거장 코멘트
+                <i class="fa-regular fa-newspaper text-rose-500 mr-2.5"></i>뉴욕증시 관련 뉴스
             </h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-slate-950/40 p-5 rounded-xl border border-slate-800/60 flex flex-col justify-between">
-                    <div>
-                        <div class="flex items-center space-x-2 mb-3">
-                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">금리 인하 유효</span>
-                            <span class="text-xs text-slate-400 font-semibold">JP모건 (J.P. Morgan)</span>
-                        </div>
-                        <h4 class="text-xs font-bold text-slate-200 mb-1">마르코 콜라노빅 수석 투자자</h4>
-                        <p class="text-xs text-slate-400 leading-relaxed">
-                            "미국채 10년물 금리가 4.2% 밑으로 떨어지며 채권 매수세 유입이 확인되었습니다. 인플레이션 둔화 추세가 완전하게 고착되었으므로, 뉴욕 지수는 고가 부담을 넘어서 추가 하방 지지를 견고하게 형성할 것으로 보입니다."
-                        </p>
-                    </div>
-                    <a href="https://search.naver.com/search.naver?query=JP%EB%AA%A8%EA%B1%B4+%EB%89%B4%EC%9A%95%EC%A6%9D%EC%8B%9C+%EC%A0%84%EB%A7%9D" target="_blank" class="mt-4 inline-flex items-center text-[10px] text-indigo-400 hover:underline">
-                        <i class="fa-solid fa-arrow-up-right-from-square mr-1"></i> 원문 기사 바로보기
-                    </a>
-                </div>
-
-                <div class="bg-slate-950/40 p-5 rounded-xl border border-slate-800/60 flex flex-col justify-between">
-                    <div>
-                        <div class="flex items-center space-x-2 mb-3">
-                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20">기술주 거품론 검증</span>
-                            <span class="text-xs text-slate-400 font-semibold">골드만삭스 (Goldman Sachs)</span>
-                        </div>
-                        <h4 class="text-xs font-bold text-slate-200 mb-1">데이비드 코스틴 전략분석가</h4>
-                        <p class="text-xs text-slate-400 leading-relaxed">
-                            "AI 캐펙스(CAPEX) 지출 과잉 논란은 빅테크 기업들의 실제 영업이익률 성장을 확인하면 완벽히 일축될 일시적 노이즈입니다. 단기 매도 진통 이후 밸류에이션 리밸런싱이 완성되며 완만하게 우상향 재진입할 것입니다."
-                        </p>
-                    </div>
-                    <a href="https://search.naver.com/search.naver?query=%EA%B3%A8%EB%93%9C%EB%A7%8C%EC%82%AC%ED%81%AC+%EB%B9%85%ED%85%8C%ED%81%AC+%EB%B3%B4%EB%8F%84" target="_blank" class="mt-4 inline-flex items-center text-[10px] text-indigo-400 hover:underline">
-                        <i class="fa-solid fa-arrow-up-right-from-square mr-1"></i> 언론 분석 원문링크
-                    </a>
-                </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="news-container">
+                <!-- JS Dynamic -->
+            </div>
+            <div class="text-[10px] text-slate-500 mt-4 pt-4 border-t border-slate-800/50">
+                * 네이버 뉴스 검색 결과 기반, 실행 시점 최신순
             </div>
         </div>
     </main>
@@ -141,130 +114,131 @@
             "macro": [
                         {
                                     "name": "S&P 500",
-                                    "val": "7,575.39",
-                                    "change": "+31.75",
-                                    "pct": "+0.42%",
-                                    "trend": "up"
+                                    "val": "5,432.10",
+                                    "change": "+12.40",
+                                    "pct": "+0.23%",
+                                    "trend": "up",
+                                    "high": "5,620.12",
+                                    "low": "4,820.44"
                         },
                         {
                                     "name": "나스닥 종합",
-                                    "val": "26,281.61",
-                                    "change": "+74.72",
-                                    "pct": "+0.29%",
-                                    "trend": "up"
+                                    "val": "17,820.50",
+                                    "change": "+56.80",
+                                    "pct": "+0.32%",
+                                    "trend": "up",
+                                    "high": "18,650.10",
+                                    "low": "14,510.20"
                         },
                         {
                                     "name": "다우존스 지수",
-                                    "val": "52,637.01",
-                                    "change": "+149.60",
-                                    "pct": "+0.29%",
-                                    "trend": "up"
+                                    "val": "39,120.40",
+                                    "change": "-15.20",
+                                    "pct": "-0.04%",
+                                    "trend": "down",
+                                    "high": "40,110.80",
+                                    "low": "36,810.15"
                         },
                         {
                                     "name": "미국채 10년 금리",
-                                    "val": "4.569%",
-                                    "change": "+0.030",
-                                    "pct": "+0.66%",
-                                    "trend": "up"
+                                    "val": "4.215%",
+                                    "change": "-0.012",
+                                    "pct": "-0.28%",
+                                    "trend": "down",
+                                    "high": "4.730%",
+                                    "low": "3.820%"
                         },
                         {
                                     "name": "미국채 30년 금리",
-                                    "val": "5.071%",
-                                    "change": "+0.018",
-                                    "pct": "+0.36%",
-                                    "trend": "up"
+                                    "val": "4.385%",
+                                    "change": "-0.008",
+                                    "pct": "-0.18%",
+                                    "trend": "down",
+                                    "high": "4.890%",
+                                    "low": "3.950%"
                         },
                         {
                                     "name": "WTI 선물 유가",
-                                    "val": "71.41",
-                                    "change": "-0.67",
-                                    "pct": "-0.93%",
-                                    "trend": "down"
+                                    "val": "81.45",
+                                    "change": "+0.45",
+                                    "pct": "+0.56%",
+                                    "trend": "up",
+                                    "high": "88.20",
+                                    "low": "68.50"
                         }
             ],
             "top30": [
                         {
                                     "ticker": "MSFT",
-                                    "price": "$385.10",
-                                    "change": "+$0.74",
-                                    "pct": "+0.19%",
-                                    "cap": "2.86조달러",
-                                    "link": "https://finance.yahoo.com/quote/MSFT"
+                                    "price": "$428.15",
+                                    "change": "+$1.85",
+                                    "pct": "+0.43%",
+                                    "cap": "3.18조달러"
                         },
                         {
                                     "ticker": "AAPL",
-                                    "price": "$315.32",
-                                    "change": "$-0.90",
-                                    "pct": "-0.28%",
-                                    "cap": "4.63조달러",
-                                    "link": "https://finance.yahoo.com/quote/AAPL"
+                                    "price": "$210.45",
+                                    "change": "+$1.20",
+                                    "pct": "+0.57%",
+                                    "cap": "3.12조달러"
                         },
                         {
                                     "ticker": "NVDA",
-                                    "price": "$210.96",
-                                    "change": "+$8.18",
-                                    "pct": "+4.03%",
-                                    "cap": "5.11조달러",
-                                    "link": "https://finance.yahoo.com/quote/NVDA"
+                                    "price": "$125.80",
+                                    "change": "+$2.45",
+                                    "pct": "+1.99%",
+                                    "cap": "3.09조달러"
                         },
                         {
                                     "ticker": "GOOGL",
-                                    "price": "$357.18",
-                                    "change": "$-1.71",
-                                    "pct": "-0.48%",
-                                    "cap": "4.36조달러",
-                                    "link": "https://finance.yahoo.com/quote/GOOGL"
+                                    "price": "$175.60",
+                                    "change": "-$0.80",
+                                    "pct": "-0.45%",
+                                    "cap": "2.18조달러"
                         },
                         {
                                     "ticker": "AMZN",
-                                    "price": "$245.34",
-                                    "change": "$-1.70",
-                                    "pct": "-0.69%",
-                                    "cap": "2.64조달러",
-                                    "link": "https://finance.yahoo.com/quote/AMZN"
+                                    "price": "$189.40",
+                                    "change": "+$1.10",
+                                    "pct": "+0.58%",
+                                    "cap": "1.97조달러"
                         },
                         {
                                     "ticker": "META",
-                                    "price": "$669.21",
-                                    "change": "+$37.73",
-                                    "pct": "+5.97%",
-                                    "cap": "1.70조달러",
-                                    "link": "https://finance.yahoo.com/quote/META"
+                                    "price": "$495.20",
+                                    "change": "-$3.15",
+                                    "pct": "-0.63%",
+                                    "cap": "1.25조달러"
                         },
                         {
                                     "ticker": "TSLA",
-                                    "price": "$407.76",
-                                    "change": "+$1.21",
-                                    "pct": "+0.30%",
-                                    "cap": "1.53조달러",
-                                    "link": "https://finance.yahoo.com/quote/TSLA"
+                                    "price": "$198.50",
+                                    "change": "+$4.20",
+                                    "pct": "+2.16%",
+                                    "cap": "6,330억달러"
                         },
                         {
                                     "ticker": "AVGO",
-                                    "price": "$399.97",
-                                    "change": "$-1.14",
-                                    "pct": "-0.28%",
-                                    "cap": "1.90조달러",
-                                    "link": "https://finance.yahoo.com/quote/AVGO"
+                                    "price": "$1,410.20",
+                                    "change": "+$15.40",
+                                    "pct": "+1.10%",
+                                    "cap": "6,540억달러"
                         },
                         {
                                     "ticker": "LLY",
-                                    "price": "$1,188.58",
-                                    "change": "$-28.37",
-                                    "pct": "-2.33%",
-                                    "cap": "1.06조달러",
-                                    "link": "https://finance.yahoo.com/quote/LLY"
+                                    "price": "$895.40",
+                                    "change": "-$5.10",
+                                    "pct": "-0.57%",
+                                    "cap": "8,490억달러"
                         },
                         {
                                     "ticker": "V",
-                                    "price": "$348.97",
-                                    "change": "+$0.77",
-                                    "pct": "+0.22%",
-                                    "cap": "664억달러",
-                                    "link": "https://finance.yahoo.com/quote/V"
+                                    "price": "$272.30",
+                                    "change": "+$0.85",
+                                    "pct": "+0.31%",
+                                    "cap": "5,580억달러"
                         }
-            ],
-            "news": []
+            ]
 };
         // --- US_DATA_END ---
 
@@ -324,6 +298,29 @@
                     renderMacroChart(idx);
                 });
             }, 100);
+
+            // 뉴스
+            const newsContainer = document.getElementById('news-container');
+            newsContainer.innerHTML = '';
+            (marketData.news || []).forEach(n => {
+                newsContainer.innerHTML += `
+                    <div class="bg-slate-950/40 p-5 rounded-xl border border-slate-800/60 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">${n.source || '뉴스'}</span>
+                                <span class="text-[10px] text-slate-500">${n.date || ''}</span>
+                            </div>
+                            <p class="text-xs text-slate-400 leading-relaxed">${n.title}</p>
+                        </div>
+                        <a href="${n.link}" target="_blank" class="mt-4 inline-flex items-center text-[10px] text-indigo-400 hover:underline">
+                            <i class="fa-solid fa-arrow-up-right-from-square mr-1"></i> 원문 기사 보기
+                        </a>
+                    </div>
+                `;
+            });
+            if (!marketData.news || marketData.news.length === 0) {
+                newsContainer.innerHTML = '<p class="text-xs text-slate-500 col-span-2">표시할 뉴스가 없습니다.</p>';
+            }
         }
 
         function renderMacroChart(idx) {
