@@ -66,6 +66,8 @@ jobs:
           KAKAO_REFRESH_TOKEN: ${{ secrets.KAKAO_REFRESH_TOKEN }}
           DART_API_KEY: ${{ secrets.DART_API_KEY }}
           MOLIT_API_KEY: ${{ secrets.MOLIT_API_KEY }}
+          NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
+          NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
           GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
         run: python dashboard_factory.py --mode ${{ steps.resolve_mode.outputs.mode }}
 
@@ -73,6 +75,6 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add *.html stock_code_cache.json dart_corpcode_cache.json 2>/dev/null || git add *.html
+          git add *.html stock_code_cache.json dart_corpcode_cache.json spi_articles_cache.json 2>/dev/null || git add *.html
           git diff-index --quiet HEAD || git commit -m "Auto-Update Dashboards (${{ steps.resolve_mode.outputs.mode }})"
           git push origin HEAD:${{ github.ref_name }}
