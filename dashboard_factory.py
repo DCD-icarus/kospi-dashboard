@@ -320,39 +320,105 @@ yf_last_two = yf_snapshot
 # ---------------------------------------------------------------------------
 # 뉴스 (네이버 뉴스 검색 오픈API - 공식/문서화된 API)
 # ---------------------------------------------------------------------------
+# 주요 언론사 도메인 (약 25곳) - 이 목록에 있는 매체 기사를 우선 노출하고,
+# 부족하면 전체 검색 결과로 범위를 넓힙니다.
+MAJOR_PRESS_DOMAINS = {
+    "yna.co.kr", "chosun.com", "biz.chosun.com", "joongang.co.kr", "donga.com",
+    "mk.co.kr", "hankyung.com", "sedaily.com", "mt.co.kr", "edaily.co.kr",
+    "news1.kr", "hani.co.kr", "khan.co.kr", "seoul.co.kr", "munhwa.com",
+    "kmib.co.kr", "asiae.co.kr", "fnnews.com", "heraldcorp.com", "newsis.com",
+    "ytn.co.kr", "sbs.co.kr", "kbs.co.kr", "imbc.com", "jtbc.co.kr",
+    "moneys.co.kr", "businesspost.co.kr", "newspim.com", "etnews.com",
+}
+
+# 나열식/특징주 같은 기계적으로 생성된 저품질 기사를 걸러내기 위한 제목 키워드
+LOW_QUALITY_TITLE_KEYWORDS = [
+    "특징주", "상한가", "하한가", "급등주", "급락주", "인기검색", "인기 검색",
+    "테마주", "레이더", "코스피 코스닥 특징주", "장중 특징",
+]
+
+
+def _extract_domain(url):
+    if not url:
+        return ""
+    m = re.search(r"https?://(?:[a-zA-Z0-9\-]+\.)*([a-zA-Z0-9\-]+\.[a-zA-Z]{2,})(?:/|$)", url)
+    return m.group(1) if m else ""
+
+
+def _is_major_press(url):
+    domain = _extract_domain(url)
+    return any(domain == d or domain.endswith("." + d) for d in MAJOR_PRESS_DOMAINS)
+
+
+def _is_low_quality_title(title):
+    if any(k in title for k in LOW_QUALITY_TITLE_KEYWORDS):
+        return True
+    # 종목명·숫자가 콤마/가운뎃점으로 과도하게 나열된 기계적 생성 기사 추정
+    if title.count(",") >= 4 or title.count("·") >= 5:
+        return True
+    return False
+
+
 def fetch_naver_news(query, client_id, client_secret, display=4):
     """네이버 뉴스 검색 오픈API (공식). 실제 기사 제목/링크/날짜를 반환.
     이전 버전의 '거장 코멘트'는 실존 인물에게 가상의 발언을 붙인 가짜 콘텐츠였어서
-    전면 제거하고, 실제 검색 결과 기반 뉴스로 교체했습니다."""
+    전면 제거하고, 실제 검색 결과 기반 뉴스로 교체했습니다.
+
+    우선순위: ① 주요 언론사(MAJOR_PRESS_DOMAINS) + 정상 기사 → ② 매체 무관 정상 기사
+    → ③ (그래도 부족하면) 나머지 아무 결과나. 링크는 네이버뉴스 게재본을 우선 사용."""
     if not client_id or not client_secret:
         return []
     try:
         resp = requests.get(
             "https://openapi.naver.com/v1/search/news.json",
-            params={"query": query, "display": display, "sort": "date"},
+            params={"query": query, "display": min(display * 5, 30), "sort": "date"},
             headers={"X-Naver-Client-Id": client_id, "X-Naver-Client-Secret": client_secret},
             timeout=8,
         )
         resp.raise_for_status()
         data = resp.json()
-        results = []
+        all_results = []
         for item in data.get("items", []):
             title = re.sub(r"<.*?>", "", item.get("title", "")).replace("&quot;", '"').replace("&amp;", "&")
-            link = item.get("originallink") or item.get("link")
+            link = item.get("link") or item.get("originallink")  # 네이버뉴스 게재본 우선
             pub = item.get("pubDate", "")
             try:
                 date_str = datetime.strptime(pub, "%a, %d %b %Y %H:%M:%S %z").strftime("%Y-%m-%d %H:%M")
             except Exception:
                 date_str = pub
-            results.append({"title": title, "link": link, "date": date_str, "source": "네이버뉴스"})
+            all_results.append({"title": title, "link": link, "date": date_str, "source": "네이버뉴스"})
+
+        quality = [r for r in all_results if not _is_low_quality_title(r["title"])]
+        major_quality = [r for r in quality if _is_major_press(r["link"])]
+
+        if len(major_quality) >= display:
+            results = major_quality[:display]
+        elif len(quality) >= display:
+            results = quality[:display]
+        else:
+            results = all_results[:display]  # 최후에는 필터 없이라도 채움
+
         if results:
-            log.info(f"네이버 뉴스 조회 성공 ('{query}'): {len(results)}건")
+            log.info(f"네이버 뉴스 조회 성공 ('{query}'): {len(results)}건 (주요언론 {len(major_quality)}건 확보)")
         else:
             log.warning(f"네이버 뉴스 조회 결과 0건 ('{query}') - 검색어와 일치하는 최신 기사가 없거나 API 응답이 비어있음")
         return results
     except Exception as e:
         log.warning(f"네이버 뉴스 조회 실패 ('{query}'): {e}")
         return []
+
+
+def fetch_naver_news_multi(queries, client_id, client_secret, per_query=3, total_cap=6):
+    """여러 검색어로 각각 조회 후 링크 기준 중복 제거해 합침.
+    예: 일반 시황 뉴스 + 증권사 리포트(목표주가/투자의견) 뉴스를 한 리스트로."""
+    combined, seen_links = [], set()
+    for q in queries:
+        for item in fetch_naver_news(q, client_id, client_secret, display=per_query):
+            if item["link"] in seen_links:
+                continue
+            seen_links.add(item["link"])
+            combined.append(item)
+    return combined[:total_cap]
 
 
 def replace_marketdata_block(file_path, start_marker, end_marker, new_data_obj):
@@ -427,7 +493,9 @@ def build_kospi_data(naver_id=None, naver_secret=None):
         log.error("KOSPI 종목 데이터를 하나도 가져오지 못했습니다.")
         return None
 
-    news = fetch_naver_news("코스피 마감 시황", naver_id, naver_secret, display=4)
+    news = fetch_naver_news_multi(
+        ["코스피 마감 시황", "코스피 목표주가 투자의견"], naver_id, naver_secret, per_query=4, total_cap=5
+    )
 
     return {
         "kospi_index": f"{idx['close']:,.2f}",
@@ -492,7 +560,9 @@ def build_reits_data(dart_api_key, naver_id=None, naver_secret=None):
     if not disclosures:
         log.warning("DART 공시 데이터 없음 (DART_API_KEY 미설정 또는 조회 실패) - disclosures 비움")
 
-    news = fetch_naver_news("상장리츠", naver_id, naver_secret, display=4)
+    news = fetch_naver_news_multi(
+        ["상장리츠", "리츠 목표주가 투자의견"], naver_id, naver_secret, per_query=4, total_cap=5
+    )
 
     return {"etfs": etfs, "assets": assets, "disclosures": disclosures, "news": news, "market_date": kst_date_label()}
 
@@ -609,6 +679,80 @@ def run_reits_mode(dart_api_key, naver_id=None, naver_secret=None):
 # ---------------------------------------------------------------------------
 # US Market
 # ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# 해외 저널(WSJ·FT) RSS + 파파고 번역
+# ---------------------------------------------------------------------------
+# 둘 다 각 언론사가 공식적으로 공개 배포하는 RSS라 저작권 문제 없이 제목/요약을
+# 가져올 수 있습니다 (본문 전체는 여전히 가져오지 않음).
+FOREIGN_NEWS_FEEDS = [
+    {"name": "WSJ", "url": "https://feeds.a.dj.com/rss/RSSMarketsMain.xml"},
+    {"name": "FT", "url": "https://www.ft.com/markets?format=rss"},
+]
+
+
+def fetch_rss_feed(url, limit=3):
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                       "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+    }
+    try:
+        resp = requests.get(url, headers=headers, timeout=10)
+        resp.raise_for_status()
+        root = ET.fromstring(resp.content)
+        items = []
+        for item in root.findall(".//item")[:limit]:
+            title = (item.findtext("title") or "").strip()
+            link = (item.findtext("link") or "").strip()
+            desc = re.sub(r"<[^>]+>", " ", item.findtext("description") or "")
+            desc = re.sub(r"\s+", " ", desc).strip()
+            pub = (item.findtext("pubDate") or "").strip()
+            if title and link:
+                items.append({"title": title, "link": link, "description": desc[:220], "pubDate": pub})
+        return items
+    except Exception as e:
+        log.warning(f"RSS 피드 조회 실패 ({url}): {e}")
+        return []
+
+
+def translate_papago(text, client_id, client_secret):
+    """네이버 파파고 번역 오픈API (공식). 앱에서 '파파고 번역'을 사용 API로
+    추가 등록해야 동작합니다 - 미등록/실패 시 None을 반환하고 영어 원문만 표시."""
+    if not text or not client_id or not client_secret:
+        return None
+    try:
+        resp = requests.post(
+            "https://openapi.naver.com/v1/papago/n2mt",
+            data={"source": "en", "target": "ko", "text": text[:500]},
+            headers={"X-Naver-Client-Id": client_id, "X-Naver-Client-Secret": client_secret},
+            timeout=8,
+        )
+        resp.raise_for_status()
+        return resp.json().get("message", {}).get("result", {}).get("translatedText")
+    except Exception as e:
+        log.warning(f"파파고 번역 실패: {e}")
+        return None
+
+
+def build_foreign_market_news(naver_id, naver_secret, limit_per_feed=2):
+    """WSJ·FT RSS에서 최신 기사 제목/요약을 가져오고, 파파고로 한글 번역을 병기."""
+    results = []
+    for feed in FOREIGN_NEWS_FEEDS:
+        for it in fetch_rss_feed(feed["url"], limit=limit_per_feed):
+            title_ko = translate_papago(it["title"], naver_id, naver_secret)
+            summary_ko = translate_papago(it["description"], naver_id, naver_secret) if it["description"] else None
+            results.append({
+                "source": feed["name"], "title": it["title"], "title_ko": title_ko,
+                "summary": it["description"], "summary_ko": summary_ko,
+                "link": it["link"], "date": it["pubDate"],
+            })
+    if results:
+        translated = sum(1 for r in results if r["title_ko"])
+        log.info(f"해외 저널(WSJ/FT) 조회 성공: {len(results)}건 (번역 성공 {translated}건)")
+    else:
+        log.warning("해외 저널(WSJ/FT) 조회 결과 0건")
+    return results
+
+
 def build_us_market_data(naver_id=None, naver_secret=None):
     macro = []
     for ticker, name in US_MACRO_TICKERS:
@@ -643,8 +787,15 @@ def build_us_market_data(naver_id=None, naver_secret=None):
     if not macro and not top30:
         return None
 
-    news = fetch_naver_news("뉴욕증시 마감", naver_id, naver_secret, display=4)
-    return {"macro": macro, "top30": top30, "news": news, "market_date": kst_date_label("NY 마감 기준")}
+    news = fetch_naver_news_multi(
+        ["뉴욕증시 마감", "월가 투자은행 전망 골드만삭스 JP모건", "월스트리트저널 블룸버그 증시"],
+        naver_id, naver_secret, per_query=3, total_cap=6
+    )
+    foreign_news = build_foreign_market_news(naver_id, naver_secret)
+    return {
+        "macro": macro, "top30": top30, "news": news, "foreign_news": foreign_news,
+        "market_date": kst_date_label("NY 마감 기준"),
+    }
 
 
 def run_us_market_mode(naver_id=None, naver_secret=None):
@@ -995,114 +1146,26 @@ def build_rose_stats(matched_rows, now):
     return stats
 
 
-# 신이사님이 네이버부동산에서 직접 확인해주신 장미상가 매물 11건의 articleId.
-# 리스트/검색 API는 막혀 있어 자동 발견은 안 되고, 이 목록에 있는 매물의
-# 상세정보만 매일 갱신합니다. 매물이 추가/삭제되면 이 리스트를 수동으로 갱신해야 합니다.
-ROSE_ARTICLE_IDS = [
-    "2637267879", "2635413456", "2632272074", "2632270827", "2633793700",
-    "2636884585", "2637305176", "2632027465", "2632271578", "2632914018", "2635413792",
-]
-
-
-def fetch_naver_article_detail(article_id):
-    """fin.land.naver.com 개별 매물 상세 조회 (비공식 API).
-    브라우저로 직접 접속하면 Referer가 없어 {"detailCode":"Error"}가 뜨는 걸
-    확인했습니다 - 매물 상세페이지 URL을 Referer로 넣어 우회를 시도합니다.
-    처음엔 429 발생 시 지수 백오프로 재시도했는데, 대기시간을 8~34초까지
-    늘려도 3번 다 실패하는 게 반복 확인되어(요청 빈도가 아니라 GitHub
-    Actions IP 자체가 막혔을 가능성) 재시도를 없애고 1회만 시도합니다.
-    이러면 실패해도 몇 초 안에 다음 항목으로 넘어가 전체 실행 시간이
-    과도하게 길어지는 걸 막을 수 있습니다."""
-    url = "https://fin.land.naver.com/front-api/v1/article/basicInfo"
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-                       "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-        "Referer": f"https://fin.land.naver.com/articles/{article_id}",
-        "Accept": "application/json, text/plain, */*",
-    }
-    try:
-        resp = requests.get(
-            url, params={"articleId": article_id, "realEstateType": "D02", "tradeType": "A1"},
-            headers=headers, timeout=8,
-        )
-        if resp.status_code == 429:
-            log.warning(f"매물 {article_id} 429(Too Many Requests) - 재시도 없이 건너뜀")
-            return None
-        resp.raise_for_status()
-        data = resp.json()
-        if not data or data.get("detailCode") == "Error":
-            log.warning(f"매물 {article_id} 조회 거부됨 (Referer 우회 실패 가능성)")
-            return None
-        return data
-    except Exception as e:
-        log.warning(f"매물 {article_id} 조회 실패: {e}")
-        return None
-
-
-def _format_naver_shop(article_id, data):
-    """정확한 응답 필드명이 검증 전이라, 흔한 후보 키들을 순서대로 시도.
-    전부 실패하면 최소한 링크는 살아있도록 '정보없음'으로 채웁니다."""
-    name = data.get("articleName") or data.get("atclNm") or "장미상가"
-    floor_raw = data.get("floorInfo") or data.get("flrInfo") or data.get("floor") or data.get("flrInfoNm")
-    price_raw = (data.get("dealOrWarrantPrc") or data.get("price") or data.get("dealPrice")
-                 or data.get("priceInfo"))
-    area2 = data.get("area2") or data.get("spc2") or data.get("exclusiveArea")  # 전용면적 추정
-    area1 = data.get("area1") or data.get("spc1") or data.get("supplyArea")     # 공급면적 추정
-    size = f"{area2}㎡(전용)" if area2 else (f"{area1}㎡(공급)" if area1 else "정보없음")
-    return {
-        "name": name,
-        "floor": str(floor_raw) if floor_raw else "정보없음",
-        "size": size,
-        "price": str(price_raw) if price_raw else "정보없음",
-        "link": f"https://fin.land.naver.com/articles/{article_id}",
-    }
-
-
-def build_rose_shops():
-    """확보된 articleId 11건의 매물 호가를 자동 조회. 요청 사이에 텀을 둬서
-    이전에 발생했던 429(Too Many Requests) 차단을 피합니다. 실패한 건은
-    건너뛰고, 전부 실패하면 None을 반환해 run_rose_watch_mode()에서 기존
-    값을 보존합니다."""
-    results = []
-    logged_schema = False
-    for i, aid in enumerate(ROSE_ARTICLE_IDS):
-        if i > 0:
-            time.sleep(random.uniform(1.5, 2.5))  # 요청 간 최소한의 예의상 텀 (재시도 없으니 길게 둘 필요 없음)
-        data = fetch_naver_article_detail(aid)
-        if data is None:
-            continue
-        if not logged_schema:
-            log.info(f"네이버 매물 상세 응답 필드 예시(articleId={aid}): {list(data.keys())}")
-            logged_schema = True
-        results.append(_format_naver_shop(aid, data))
-    if not results:
-        log.warning(
-            "네이버 매물 11건 전부 조회 실패 - 기존 shops 값 보존 "
-            "(대기시간을 늘려도 계속 실패해서 요청 빈도 문제가 아니라 "
-            "GitHub Actions IP 자체가 차단된 것으로 판단, 재시도는 제거함)"
-        )
-        return None
-    if len(results) < len(ROSE_ARTICLE_IDS):
-        log.warning(f"네이버 매물 일부만 조회 성공: {len(results)}/{len(ROSE_ARTICLE_IDS)}건")
-    return results
+# 네이버 개별 매물 API는 GitHub Actions에서 반복적으로 429(Too Many Requests)로
+# 차단되는 게 확인되어(요청 빈도 문제가 아니라 IP 차단으로 추정) 자동 조회를
+# 포기했습니다. 대신 신이사님이 실제로 확인해주신, 신천동 상가/매매로 필터링된
+# 네이버부동산 지도 링크를 그대로 안내합니다 - 최신 매물은 이 링크에서 직접 확인.
+ROSE_NAVER_MAP_URL = (
+    "https://fin.land.naver.com/map?center=3zmAKu-2AK38S&zoom=16.293105263167224"
+    "&tradeTypes=A1&realEstateTypes=D02&layer=NobwRAlgJmBcYEMBOAXCBjANgUwPqYgGcUwAaMQ7ZdACwAVkEBbQucFATwAds4"
+    "wBhADIBVAMoAVAKIAlMmCwBXYtiQBJGPACMADgD0AJn0BmAGyHdmgAyaArDYCcc5GizZRAe1QQAdgHNx3LzwdNKq-JK4AIKi-GAAvnG"
+    "k4NB8zhg4uFDYKAgQmHJcjCxsiF6u6nz6JkYA7FU12jWOiRRUSLQMSMyssCAJALpAA&showOnlySelectedRegion=true"
+)
 
 
 def run_rose_watch_mode(molit_api_key=None):
-    """장미상가 페이지: 실거래가(국토부 상업용 실거래 API, 자동) + 호가(네이버
-    개별 매물 11건, articleId 기반 자동) 두 섹션을 함께 관리."""
+    """장미상가 페이지: 실거래가(국토부 상업용 실거래 API, 자동) + 호가는
+    네이버부동산 필터링 지도로 바로가기 링크만 제공 (개별 매물 자동조회는
+    GitHub Actions에서 지속적으로 차단되어 포기함)."""
     file_path = "rose_watch.html"
     if not os.path.exists(file_path):
         log.warning(f"{file_path} 없음 - 장미상가 페이지 업데이트 생략 (파일을 저장소에 올려주세요)")
         return None
-    with open(file_path, "r", encoding="utf-8") as f:
-        content = f.read()
-    m = re.search(r"const marketData = (\{.*?\});", content, re.DOTALL)
-    old_data = {}
-    if m:
-        try:
-            old_data = json.loads(m.group(1))
-        except Exception as e:
-            log.warning(f"{file_path} 기존 데이터 파싱 실패: {e}")
 
     real_trades = build_rose_real_trades(molit_api_key)
     real_trade_stats = build_rose_stats(real_trades, datetime.now(KST))
@@ -1111,16 +1174,12 @@ def run_rose_watch_mode(molit_api_key=None):
         r.pop("_pyeong_price_raw", None)
         r.pop("_deal_dt", None)
 
-    shops = build_rose_shops()
-    if shops is None:
-        shops = old_data.get("shops", [])  # 전부 실패 시 기존 값 보존
-
     new_data = {
         "market_date": kst_date_label(),
-        "shops": shops,  # 호가(네이버 개별 매물 11건) - articleId 기반 자동 수집
+        "naver_map_url": ROSE_NAVER_MAP_URL,  # 호가는 자동수집 대신 필터링된 지도로 바로가기
         "real_trades": real_trades,  # 실거래가(국토부 상업용 부동산 API) - 자동 수집
         "real_trade_stats": real_trade_stats,  # 기간별(1/3/6/12개월) 평단가 최고·최저·평균
-        "note": "실거래가·호가 모두 자동 갱신됩니다. 호가는 확보된 매물 11건 기준이며, 신규 매물은 articleId를 추가해야 반영됩니다.",
+        "note": "실거래가는 국토부 공식 데이터로 자동 갱신됩니다. 매물 호가는 네이버 자동조회가 계속 차단되어, 아래 링크에서 직접 확인해주세요.",
     }
     ok = replace_marketdata_block(
         file_path, "// --- ROSE_WATCH_DATA_START ---", "// --- ROSE_WATCH_DATA_END ---", new_data
