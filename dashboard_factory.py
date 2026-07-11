@@ -755,32 +755,36 @@ def fetch_rss_feed(url, limit=3):
         return []
 
 
-def translate_papago(text, client_id, client_secret):
-    """네이버 파파고 번역 오픈API (공식). 앱에서 '파파고 번역'을 사용 API로
-    추가 등록해야 동작합니다 - 미등록/실패 시 None을 반환하고 영어 원문만 표시."""
-    if not text or not client_id or not client_secret:
+def translate_text(text, source="en", target="ko"):
+    """MyMemory 번역 API (무료, 가입/API 키 불필요). 요청 1건당 500byte 제한이
+    있어 짧은 제목/요약 번역에 적합합니다. 익명 기준 일일 5,000자까지 무료라
+    해외 뉴스 요약 몇 건 번역하는 용도로는 충분합니다."""
+    if not text:
         return None
     try:
-        resp = requests.post(
-            "https://openapi.naver.com/v1/papago/n2mt",
-            data={"source": "en", "target": "ko", "text": text[:500]},
-            headers={"X-Naver-Client-Id": client_id, "X-Naver-Client-Secret": client_secret},
+        resp = requests.get(
+            "https://api.mymemory.translated.net/get",
+            params={"q": text[:480], "langpair": f"{source}|{target}"},
             timeout=8,
         )
         resp.raise_for_status()
-        return resp.json().get("message", {}).get("result", {}).get("translatedText")
+        data = resp.json()
+        if data.get("responseStatus") == 200:
+            translated = data.get("responseData", {}).get("translatedText")
+            return translated
+        return None
     except Exception as e:
-        log.warning(f"파파고 번역 실패: {e}")
+        log.warning(f"번역 실패(MyMemory): {e}")
         return None
 
 
-def build_foreign_market_news(naver_id, naver_secret, limit_per_feed=2):
-    """WSJ·FT RSS에서 최신 기사 제목/요약을 가져오고, 파파고로 한글 번역을 병기."""
+def build_foreign_market_news(limit_per_feed=2):
+    """WSJ·FT RSS에서 최신 기사 제목/요약을 가져오고, MyMemory로 한글 번역을 병기."""
     results = []
     for feed in FOREIGN_NEWS_FEEDS:
         for it in fetch_rss_feed(feed["url"], limit=limit_per_feed):
-            title_ko = translate_papago(it["title"], naver_id, naver_secret)
-            summary_ko = translate_papago(it["description"], naver_id, naver_secret) if it["description"] else None
+            title_ko = translate_text(it["title"])
+            summary_ko = translate_text(it["description"]) if it["description"] else None
             results.append({
                 "source": feed["name"], "title": it["title"], "title_ko": title_ko,
                 "summary": it["description"], "summary_ko": summary_ko,
@@ -832,7 +836,7 @@ def build_us_market_data(naver_id=None, naver_secret=None):
         ["뉴욕증시 마감", "월가 투자은행 전망 골드만삭스 JP모건", "월스트리트저널 블룸버그 증시"],
         naver_id, naver_secret, per_query=3, total_cap=6
     )
-    foreign_news = build_foreign_market_news(naver_id, naver_secret)
+    foreign_news = build_foreign_market_news()
     return {
         "macro": macro, "top30": top30, "news": news, "foreign_news": foreign_news,
         "market_date": kst_date_label("NY 마감 기준"),
