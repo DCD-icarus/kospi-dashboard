@@ -2,10 +2,21 @@ name: Scheduled Dashboard Factory
 
 on:
   schedule:
-    - cron: '0 7 * * 1-5'
-    - cron: '0 22 * * 1-5'
-    - cron: '10 22 * * *'
+    - cron: '0 7 * * 1-5'    # KST 16:00 평일 -> KOSPI + REITs 마감
+    - cron: '0 22 * * 1-5'   # KST 07:00 평일 -> 미국장 마감
+    - cron: '10 22 * * *'    # KST 07:10 매일 -> 서울 부동산 실거래가
   workflow_dispatch:
+    inputs:
+      mode:
+        description: '수동 실행 시 강제 모드 (비워두면 all)'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - kospi_reits
+          - us_market
+          - seoul_estate
 
 permissions:
   contents: write
@@ -27,19 +38,41 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install requests beautifulsoup4
+          pip install requests yfinance
+
+      # 기존 코드는 실행 시각(시/분)을 스스로 계산해서 모드를 추론했는데,
+      # GitHub Actions 스케줄 큐가 지연되면(특히 정시 실행은 흔히 지연됨)
+      # 분(minute) 경계값을 오판해서 엉뚱한 모드가 실행되는 문제가 있었습니다.
+      # 아래는 "어떤 cron 표현식이 이 실행을 트리거했는지"를 GitHub이 알려주는
+      # github.event.schedule 값을 그대로 모드에 매핑하므로, 실행이 늦게 시작되어도
+      # 항상 의도한 모드가 정확히 실행됩니다.
+      - name: Resolve run mode from trigger
+        id: resolve_mode
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "mode=${{ github.event.inputs.mode }}" >> "$GITHUB_OUTPUT"
+          else
+            case "${{ github.event.schedule }}" in
+              "0 7 * * 1-5")  echo "mode=kospi_reits" >> "$GITHUB_OUTPUT" ;;
+              "0 22 * * 1-5") echo "mode=us_market" >> "$GITHUB_OUTPUT" ;;
+              "10 22 * * *")  echo "mode=seoul_estate" >> "$GITHUB_OUTPUT" ;;
+              *)              echo "mode=all" >> "$GITHUB_OUTPUT" ;;
+            esac
+          fi
 
       - name: Run Factory Scraper
         env:
           KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
           KAKAO_REFRESH_TOKEN: ${{ secrets.KAKAO_REFRESH_TOKEN }}
+          DART_API_KEY: ${{ secrets.DART_API_KEY }}
+          MOLIT_API_KEY: ${{ secrets.MOLIT_API_KEY }}
           GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
-        run: python dashboard_factory.py --mode auto
+        run: python dashboard_factory.py --mode ${{ steps.resolve_mode.outputs.mode }}
 
       - name: Commit and Push changes
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add *.html
-          git diff-index --quiet HEAD || git commit -m "Auto-Update Dashboards"
+          git add *.html stock_code_cache.json 2>/dev/null || git add *.html
+          git diff-index --quiet HEAD || git commit -m "Auto-Update Dashboards (${{ steps.resolve_mode.outputs.mode }})"
           git push origin HEAD:${{ github.ref_name }}
