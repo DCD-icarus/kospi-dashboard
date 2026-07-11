@@ -345,9 +345,13 @@ def fetch_naver_news(query, client_id, client_secret, display=4):
             except Exception:
                 date_str = pub
             results.append({"title": title, "link": link, "date": date_str, "source": "네이버뉴스"})
+        if results:
+            log.info(f"네이버 뉴스 조회 성공 ('{query}'): {len(results)}건")
+        else:
+            log.warning(f"네이버 뉴스 조회 결과 0건 ('{query}') - 검색어와 일치하는 최신 기사가 없거나 API 응답이 비어있음")
         return results
     except Exception as e:
-        log.warning(f"네이버 뉴스 조회 실패 ({query}): {e}")
+        log.warning(f"네이버 뉴스 조회 실패 ('{query}'): {e}")
         return []
 
 
@@ -1004,7 +1008,11 @@ def fetch_naver_article_detail(article_id):
     """fin.land.naver.com 개별 매물 상세 조회 (비공식 API).
     브라우저로 직접 접속하면 Referer가 없어 {"detailCode":"Error"}가 뜨는 걸
     확인했습니다 - 매물 상세페이지 URL을 Referer로 넣어 우회를 시도합니다.
-    그래도 막히면 None을 반환하고 상위 로직에서 기존 값을 보존합니다."""
+    처음엔 429 발생 시 지수 백오프로 재시도했는데, 대기시간을 8~34초까지
+    늘려도 3번 다 실패하는 게 반복 확인되어(요청 빈도가 아니라 GitHub
+    Actions IP 자체가 막혔을 가능성) 재시도를 없애고 1회만 시도합니다.
+    이러면 실패해도 몇 초 안에 다음 항목으로 넘어가 전체 실행 시간이
+    과도하게 길어지는 걸 막을 수 있습니다."""
     url = "https://fin.land.naver.com/front-api/v1/article/basicInfo"
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
@@ -1012,41 +1020,23 @@ def fetch_naver_article_detail(article_id):
         "Referer": f"https://fin.land.naver.com/articles/{article_id}",
         "Accept": "application/json, text/plain, */*",
     }
-def fetch_naver_article_detail(article_id, max_retries=3):
-    """fin.land.naver.com 개별 매물 상세 조회 (비공식 API).
-    브라우저로 직접 접속하면 Referer가 없어 {"detailCode":"Error"}가 뜨는 걸
-    확인했습니다 - 매물 상세페이지 URL을 Referer로 넣어 우회를 시도합니다.
-    11건을 짧은 간격으로 연달아 호출하면 429(Too Many Requests)로 차단되는
-    것도 확인되어, 재시도 시 지수 백오프로 대기합니다."""
-    url = "https://fin.land.naver.com/front-api/v1/article/basicInfo"
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-                       "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-        "Referer": f"https://fin.land.naver.com/articles/{article_id}",
-        "Accept": "application/json, text/plain, */*",
-    }
-    for attempt in range(max_retries):
-        try:
-            resp = requests.get(
-                url, params={"articleId": article_id, "realEstateType": "D02", "tradeType": "A1"},
-                headers=headers, timeout=10,
-            )
-            if resp.status_code == 429:
-                wait = (2 ** attempt) * 8 + random.uniform(0, 3)  # 8s, 16s, 32s(+jitter)
-                log.warning(f"매물 {article_id} 429(Too Many Requests) - {wait:.1f}초 대기 후 재시도 ({attempt+1}/{max_retries})")
-                time.sleep(wait)
-                continue
-            resp.raise_for_status()
-            data = resp.json()
-            if not data or data.get("detailCode") == "Error":
-                log.warning(f"매물 {article_id} 조회 거부됨 (Referer 우회 실패 가능성)")
-                return None
-            return data
-        except Exception as e:
-            log.warning(f"매물 {article_id} 조회 실패: {e}")
+    try:
+        resp = requests.get(
+            url, params={"articleId": article_id, "realEstateType": "D02", "tradeType": "A1"},
+            headers=headers, timeout=8,
+        )
+        if resp.status_code == 429:
+            log.warning(f"매물 {article_id} 429(Too Many Requests) - 재시도 없이 건너뜀")
             return None
-    log.warning(f"매물 {article_id} 재시도 {max_retries}회 모두 429 - 건너뜀")
-    return None
+        resp.raise_for_status()
+        data = resp.json()
+        if not data or data.get("detailCode") == "Error":
+            log.warning(f"매물 {article_id} 조회 거부됨 (Referer 우회 실패 가능성)")
+            return None
+        return data
+    except Exception as e:
+        log.warning(f"매물 {article_id} 조회 실패: {e}")
+        return None
 
 
 def _format_naver_shop(article_id, data):
@@ -1077,7 +1067,7 @@ def build_rose_shops():
     logged_schema = False
     for i, aid in enumerate(ROSE_ARTICLE_IDS):
         if i > 0:
-            time.sleep(random.uniform(4.0, 6.0))  # 요청 간 텀 (429 방지, 이전보다 더 늘림)
+            time.sleep(random.uniform(1.5, 2.5))  # 요청 간 최소한의 예의상 텀 (재시도 없으니 길게 둘 필요 없음)
         data = fetch_naver_article_detail(aid)
         if data is None:
             continue
@@ -1088,8 +1078,8 @@ def build_rose_shops():
     if not results:
         log.warning(
             "네이버 매물 11건 전부 조회 실패 - 기존 shops 값 보존 "
-            "(대기시간을 늘려도 계속 실패하면 요청 빈도 문제가 아니라 "
-            "GitHub Actions IP 자체가 차단된 것일 수 있습니다 - 이 경우 자동화가 어려울 수 있음)"
+            "(대기시간을 늘려도 계속 실패해서 요청 빈도 문제가 아니라 "
+            "GitHub Actions IP 자체가 차단된 것으로 판단, 재시도는 제거함)"
         )
         return None
     if len(results) < len(ROSE_ARTICLE_IDS):
@@ -1497,10 +1487,12 @@ if __name__ == "__main__":
         d = run_seoul_estate_mode(molit_key, naver_id, naver_secret)
         send_kakao_notification(kakao_token, "seoul_estate", d)
 
-        # 매일 07:10 KST에 도는 이 트리거에 허브 알림 + 장미상가(비공개) 알림 + SPI 신규 아티클 알림도 함께 발송
+        # 매일 07:10 KST에 도는 이 트리거에 허브 알림 + CRE 뉴스 + 장미상가(비공개) 알림도 함께 발송.
+        # rose_watch의 네이버 매물 호가 조회가 가장 불안정한(실패 가능성 높은) 단계라
+        # 일부러 맨 뒤에 배치 - 앞의 알림들이 이 단계의 지연/실패에 영향받지 않도록 함
         send_hub_notification(kakao_token)
+        run_cre_news_mode(kakao_token)
         rose_d = run_rose_watch_mode(molit_key)
         send_kakao_notification(kakao_token, "rose_watch", rose_d)
-        run_cre_news_mode(kakao_token)
 
     log.info("실행 완료")
