@@ -528,20 +528,32 @@ def _load_dart_corpcode_map(api_key):
         return {}
 
 
-def fetch_dart_disclosures(api_key, days_back=7, limit=30):
-    """관심 리츠/인프라 종목별로 DART 고유번호(corp_code)를 찾아 개별 조회.
-    (이전 버전은 유가증권시장 전체 공시 피드에서 이름 문자열매칭으로 걸러냈는데,
-    하루 공시량이 많으면 페이지 1(100건) 밖으로 밀려 리츠 공시를 놓칠 수 있었습니다.
-    종목별로 직접 조회하면 개수 제한 걱정 없이 모두 잡힙니다.)"""
+def _recent_business_day_start(n_days):
+    """오늘로부터 최근 n영업일 전 날짜(KST)를 반환. 주말만 건너뛰고
+    공휴일은 반영하지 않는 단순 계산입니다(한국 공휴일 캘린더 미적용)."""
+    d = datetime.now(KST)
+    counted = 0
+    while counted < n_days:
+        d -= timedelta(days=1)
+        if d.weekday() < 5:  # 0=월 ... 4=금
+            counted += 1
+    return d
+
+
+def fetch_dart_disclosures(api_key, business_days_back=2, limit=30):
+    """관심 리츠 종목별(ETF 제외)로 DART 고유번호(corp_code)를 찾아 최근 영업일
+    기준으로 개별 조회. (이전 버전은 유가증권시장 전체 공시 피드에서 이름
+    문자열매칭으로 걸러냈는데, 하루 공시량이 많으면 페이지 1(100건) 밖으로
+    밀려 리츠 공시를 놓칠 수 있었습니다. 종목별로 직접 조회하면 놓치지 않습니다.)"""
     if not api_key:
         return []
     corpcode_map = _load_dart_corpcode_map(api_key)
     if not corpcode_map:
         return []
     end_de = datetime.now(KST).strftime("%Y%m%d")
-    bgn_de = (datetime.now(KST) - timedelta(days=days_back)).strftime("%Y%m%d")
+    bgn_de = _recent_business_day_start(business_days_back).strftime("%Y%m%d")
     results = []
-    for name in REIT_ASSET_NAMES + REIT_ETF_NAMES:
+    for name in REIT_ASSET_NAMES:  # ETF(TIGER 리츠부동산인프라 등)는 공시 대상에서 제외
         norm = name.replace(" ", "")
         corp_code = corpcode_map.get(norm)
         if not corp_code:
