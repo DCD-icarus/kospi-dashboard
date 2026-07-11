@@ -38,7 +38,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install requests yfinance
+          pip install requests yfinance pandas
 
       # 기존 코드는 실행 시각(시/분)을 스스로 계산해서 모드를 추론했는데,
       # GitHub Actions 스케줄 큐가 지연되면(특히 정시 실행은 흔히 지연됨)
@@ -73,6 +73,6 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add *.html stock_code_cache.json 2>/dev/null || git add *.html
+          git add *.html stock_code_cache.json dart_corpcode_cache.json 2>/dev/null || git add *.html
           git diff-index --quiet HEAD || git commit -m "Auto-Update Dashboards (${{ steps.resolve_mode.outputs.mode }})"
           git push origin HEAD:${{ github.ref_name }}
