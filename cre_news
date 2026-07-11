@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>상업용 부동산 뉴스 (CRE)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', 'Noto Sans KR', sans-serif; }
+        .glow-card {
+            box-shadow: 0 10px 30px -15px rgba(0, 0, 0, 0.3);
+            transition: all 0.25s ease;
+        }
+        .glow-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 18px 35px -12px rgba(0, 0, 0, 0.45);
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+
+    <!-- Header -->
+    <header class="border-b border-slate-800/80 bg-slate-900/50 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-gradient-to-tr from-indigo-500 to-slate-700 p-2 rounded-xl text-white shadow-lg">
+                    <i class="fa-regular fa-newspaper text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg tracking-tight text-white">상업용 부동산 뉴스 (CRE)</h1>
+                    <p class="text-[10px] text-slate-500 uppercase tracking-widest font-semibold">SPI · 딜북뉴스 · 자동 수집</p>
+                </div>
+            </div>
+            <span class="text-xs text-slate-400 font-mono" id="cre-date">-</span>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-grow w-full">
+        <div class="mb-8">
+            <h2 class="text-2xl font-bold text-slate-100">최신 아티클</h2>
+            <p class="text-sm text-slate-400 mt-1">제목과 요약(각 매체 공개 미리보기 정보)만 표시하며, 본문은 원문 링크에서 확인하실 수 있습니다.</p>
+        </div>
+
+        <div id="cre-list" class="space-y-4">
+            <!-- JS Dynamic -->
+        </div>
+    </main>
+
+    <footer class="border-t border-slate-800/60 py-6 mt-10">
+        <p class="text-center text-[11px] text-slate-600">출처: seoulpi.io, dealbook.co.kr · 콘텐츠 저작권은 각 매체사에 있습니다.</p>
+    </footer>
+
+    <script>
+        // --- CRE_NEWS_DATA_START ---
+        const marketData = {
+            "market_date": "2026년 7월 11일 (토) 기준",
+            "articles": []
+        };
+        // --- CRE_NEWS_DATA_END ---
+
+        function render() {
+            document.getElementById('cre-date').innerText = marketData.market_date || '-';
+            const list = document.getElementById('cre-list');
+            list.innerHTML = '';
+            const articles = marketData.articles || [];
+            if (articles.length === 0) {
+                list.innerHTML = '<p class="text-sm text-slate-500 text-center py-10">표시할 아티클이 없습니다.</p>';
+                return;
+            }
+            articles.forEach(a => {
+                list.innerHTML += `
+                    <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 glow-card flex flex-col sm:flex-row sm:items-center gap-4">
+                        <div class="flex-1 min-w-0">
+                            <span class="text-[10px] bg-indigo-500/10 text-indigo-400 px-2 py-0.5 rounded border border-indigo-500/20 font-bold">${a.source || ''}</span>
+                            <h3 class="font-bold text-sm text-slate-100 leading-snug mt-1.5">${a.title}</h3>
+                            ${a.summary ? `<p class="text-xs text-slate-400 leading-relaxed mt-2">${a.summary}</p>` : ''}
+                            <p class="text-[10px] text-slate-600 mt-2">${a.first_seen || ''}</p>
+                        </div>
+                        <a href="${a.link}" target="_blank" class="shrink-0 inline-flex items-center justify-center gap-1.5 text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg px-4 py-2.5 transition-colors">
+                            기사 보기 <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                        </a>
+                    </div>
+                `;
+            });
+        }
+
+        window.onload = render;
+    </script>
+</body>
+</html>
