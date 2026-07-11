@@ -40,6 +40,7 @@ import argparse
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
+from urllib.parse import quote
 
 import requests
 
@@ -83,12 +84,13 @@ KNOWN_CODES = {
     "셀트리온": "068270", "KB금융": "105560", "POSCO홀딩스": "005490", "NAVER": "035420",
     "KODEX 200": "069500", "TIGER 코리아TOP10": "277630", "KODEX 반도체": "091160",
     "TIGER 반도체TOP10": "381170", "KODEX 증권": "102970",
+    "맥쿼리인프라": "088980", "KB발해인프라": "415640",  # 실제 상장명 확인함 ('펀드' 접미사 없음)
 }
 
 REIT_ETF_NAMES = ["TIGER 리츠부동산인프라", "KODEX 한국부동산리츠"]
 REIT_ASSET_NAMES = [
-    "맥쿼리인프라펀드", "SK리츠", "롯데리츠", "제이알글로벌리츠", "신한알파리츠",
-    "ESR켄달스퀘어리츠", "KB발해인프라펀드", "코람코라이프인프라리츠", "디앤디플랫폼리츠",
+    "맥쿼리인프라", "SK리츠", "롯데리츠", "제이알글로벌리츠", "신한알파리츠",
+    "ESR켄달스퀘어리츠", "KB발해인프라", "코람코라이프인프라리츠", "디앤디플랫폼리츠",
     "이리츠코크렙", "한화리츠", "KB스타리츠", "삼성FN리츠", "미래에셋글로벌리츠",
     "신한글로벌액티브리츠", "신한서부티엔디리츠", "마스턴프리미어리츠", "코람코더원리츠",
     "NH올원리츠", "미래에셋맵스리츠", "이지스밸류플러스리츠", "이지스레지던스리츠",
@@ -105,7 +107,6 @@ US_MACRO_TICKERS = [
     ("^TYX", "미국채 30년 금리"),
     ("CL=F", "WTI 선물 유가"),
 ]
-
 # 서울 관심 지역 법정동코드 (앞 5자리) - 필요시 추가/수정
 LAWD_CODES = {
     "강남구": "11680", "서초구": "11650", "송파구": "11710",
@@ -224,9 +225,36 @@ def fmt_cap_usd(market_cap):
     return f"{tril:.2f}조달러" if tril >= 1 else f"{bil:,.0f}억달러"
 
 
-def _resolve_market_cap(t, price):
-    """market_cap 조회 fallback 체인: fast_info -> info['marketCap'] -> price*발행주식수.
-    yfinance의 fast_info는 국내(.KS) 종목에서 종종 비어 있어 3단계로 시도합니다."""
+def _scrape_naver_market_cap(code):
+    """야후파이낸스에 시가총액 데이터가 없는 국내 중소형 종목을 위한 최종 fallback.
+    네이버금융은 상장된 모든 종목의 시가총액을 항상 표시하므로 이를 직접 긁어옵니다."""
+    try:
+        resp = requests.get(
+            f"https://finance.naver.com/item/main.naver?code={code}",
+            headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                                     "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"},
+            timeout=8,
+        )
+        resp.raise_for_status()
+        html = resp.text
+        m = re.search(r'id="_market_sum">\s*([\d,\s\n<>/emspa]*?)</em>', html, re.DOTALL)
+        if not m:
+            return None
+        digits = re.sub(r"<[^>]+>", "", m.group(1))
+        digits = re.sub(r"[^\d]", "", digits)
+        if not digits:
+            return None
+        return int(digits) * 1e8  # 네이버는 '억원' 단위로 표시
+    except Exception as e:
+        log.warning(f"네이버 시가총액 조회 실패({code}): {e}")
+        return None
+
+
+def _resolve_market_cap(t, price, naver_code=None):
+    """market_cap 조회 fallback 체인:
+    ① fast_info -> ② info['marketCap'] -> ③ info['totalAssets'](ETF는 marketCap 대신
+    순자산총액을 씀) -> ④ price×발행주식수 -> ⑤ 네이버금융 페이지 직접 조회(최종 수단).
+    yfinance의 국내(.KS) 종목/ETF 커버리지가 들쭉날쭉해서 5단계로 시도합니다."""
     try:
         mc = t.fast_info.get("market_cap")
         if mc:
@@ -235,7 +263,7 @@ def _resolve_market_cap(t, price):
         pass
     try:
         info = t.info  # 네트워크 호출 1회 추가 (fast_info 실패시에만 사용)
-        mc = info.get("marketCap")
+        mc = info.get("marketCap") or info.get("totalAssets")
         if mc:
             return mc
         shares = info.get("sharesOutstanding")
@@ -243,6 +271,10 @@ def _resolve_market_cap(t, price):
             return shares * price
     except Exception:
         pass
+    if naver_code:
+        mc = _scrape_naver_market_cap(naver_code)
+        if mc:
+            return mc
     return None
 
 
@@ -289,7 +321,9 @@ def _resolve_trailing_dividend_yield(t, price):
 
 
 def _resolve_52w_range(t):
-    """52주 최고/최저가 fallback 체인: fast_info -> info."""
+    """52주 최고/최저가 fallback 체인: fast_info -> info -> 1년치 일봉 히스토리에서 직접 계산.
+    국채 금리(^TNX, ^TYX) 같은 지수형 티커는 앞 두 단계에 연중 최고/최저 필드
+    자체가 비어있는 경우가 있어, 최종적으로 1년 일봉의 고가/저가를 직접 계산합니다."""
     try:
         fi = t.fast_info
         high, low = fi.get("year_high"), fi.get("year_low")
@@ -302,6 +336,12 @@ def _resolve_52w_range(t):
         high, low = info.get("fiftyTwoWeekHigh"), info.get("fiftyTwoWeekLow")
         if high and low:
             return float(high), float(low)
+    except Exception:
+        pass
+    try:
+        hist = t.history(period="1y")
+        if not hist.empty:
+            return float(hist["High"].max()), float(hist["Low"].min())
     except Exception:
         pass
     return None, None
@@ -329,11 +369,13 @@ def yf_snapshot(ticker, want_dividend=False, want_52w=False, want_name=False):
             return None
         last, prev = hist.iloc[-1], hist.iloc[-2]
         price = float(last["Close"])
+        # .KS 종목이면 코드만 뽑아서 네이버금융 fallback에 사용 (해외 티커는 해당 없음)
+        naver_code = ticker[:-3] if ticker.endswith(".KS") else None
         result = {
             "close": price,
             "prev_close": float(prev["Close"]),
             "date": hist.index[-1].strftime("%Y-%m-%d"),
-            "market_cap": _resolve_market_cap(t, price),
+            "market_cap": _resolve_market_cap(t, price, naver_code=naver_code),
             "dividend_yield": None,
             "week52_high": None, "week52_low": None, "name": None,
         }
@@ -436,6 +478,7 @@ def fetch_naver_news(query, client_id, client_secret, display=4):
         )
         resp.raise_for_status()
         data = resp.json()
+        cutoff = _recent_business_day_start(1).replace(hour=0, minute=0, second=0, microsecond=0)
         all_results = []
         for item in data.get("items", []):
             title = re.sub(r"<.*?>", "", item.get("title", "")).replace("&quot;", '"').replace("&amp;", "&")
@@ -445,10 +488,14 @@ def fetch_naver_news(query, client_id, client_secret, display=4):
             final_link = naver_copy if _is_naver_hosted(naver_copy) else (naver_copy or original)
             press_src = original or naver_copy  # 언론사 판별은 항상 원문 도메인 기준
             pub = item.get("pubDate", "")
+            pub_dt = None
             try:
-                date_str = datetime.strptime(pub, "%a, %d %b %Y %H:%M:%S %z").strftime("%Y-%m-%d %H:%M")
+                pub_dt = datetime.strptime(pub, "%a, %d %b %Y %H:%M:%S %z")
+                date_str = pub_dt.strftime("%Y-%m-%d %H:%M")
             except Exception:
                 date_str = pub
+            if pub_dt is not None and pub_dt < cutoff:
+                continue  # 1영업일보다 오래된 기사는 최신성 낮음 - 제외 (뉴스/공시는 최신성이 핵심)
             all_results.append({
                 "title": title, "link": final_link, "date": date_str, "source": "네이버뉴스",
                 "_press_src": press_src, "_naver_hosted": _is_naver_hosted(naver_copy),
@@ -608,6 +655,7 @@ def build_reits_data(dart_api_key, naver_id=None, naver_secret=None):
             "name": name, "price": fmt_won(d["close"]), "change": fmt_won_change(c),
             "pct": fmt_pct(p), "cap": fmt_cap_won(d["market_cap"]),
             "yield": f"{yld:.2f}%" if yld is not None else "N/A",
+            "link": f"https://finance.naver.com/item/main.naver?code={code}",
         })
 
     assets = []
@@ -876,6 +924,7 @@ def build_us_market_data(naver_id=None, naver_secret=None):
         macro.append({
             "name": name, "val": val, "change": chg, "pct": fmt_pct(p),
             "trend": "down" if c < 0 else "up", "low": low_fmt, "high": high_fmt,
+            "link": f"https://finance.yahoo.com/quote/{quote(ticker, safe='')}",
         })
 
     top30 = []
@@ -1024,67 +1073,148 @@ def build_seoul_estate_data(molit_api_key):
 # 관심단지 뉴스 registry: 구(gu)별 그룹핑 + 성격(category)별 색상 표기용 메타데이터.
 # category: 재건축 / 재개발 / 신축(준공 10년 미만) / 구축대단지
 COMPLEX_REGISTRY = [
-    {"key": "jamsil_jugong5", "name": "잠실주공5단지", "gu": "송파구", "category": "재건축"},
-    {"key": "jamsil_rose", "name": "잠실 장미아파트", "gu": "송파구", "category": "재건축"},
-    {"key": "bangi_seonsuchon", "name": "방이 올림픽선수촌", "gu": "송파구", "category": "구축대단지"},
-    {"key": "dunchon_foreon", "name": "둔촌 올림픽파크포레온", "gu": "강동구", "category": "신축"},
-    {"key": "garak_helio", "name": "가락 헬리오시티", "gu": "송파구", "category": "신축"},
-    {"key": "jamsil_els", "name": "잠실 엘스", "gu": "송파구", "category": "구축대단지"},
-    {"key": "jamsil_riesens", "name": "잠실 리센츠", "gu": "송파구", "category": "구축대단지"},
-    {"key": "sincheon_parkrio", "name": "신천 파크리오", "gu": "송파구", "category": "구축대단지"},
-    {"key": "banpo_onebailey", "name": "반포 원베일리", "gu": "서초구", "category": "신축"},
-    {"key": "banpo_124", "name": "반포 124주구(반디클)", "gu": "서초구", "category": "재건축"},
-    {"key": "banpo_acro", "name": "반포 아크로리버파크", "gu": "서초구", "category": "구축대단지"},
-    {"key": "banpo_xi", "name": "반포자이", "gu": "서초구", "category": "구축대단지"},
-    {"key": "banpo_firstige", "name": "반포 래미안퍼스티지", "gu": "서초구", "category": "구축대단지"},
-    {"key": "hannam3", "name": "한남3구역(디에이치한남)", "gu": "용산구", "category": "재개발"},
-    {"key": "hannam5", "name": "한남5구역", "gu": "용산구", "category": "재개발"},
-    {"key": "noryangjin1", "name": "노량진1구역", "gu": "동작구", "category": "재개발"},
-    {"key": "noryangjin3", "name": "노량진3구역", "gu": "동작구", "category": "재개발"},
-    {"key": "acro_seoulforest", "name": "아크로서울포레스트", "gu": "성동구", "category": "신축"},
-    {"key": "seongsu1", "name": "성수전략정비구역 1지구", "gu": "성동구", "category": "재개발"},
-    {"key": "hannam_the_hill", "name": "한남더힐", "gu": "용산구", "category": "구축대단지"},
-    {"key": "nineone_hannam", "name": "나인원한남", "gu": "용산구", "category": "신축"},
-    {"key": "dogok_towerpalace", "name": "도곡동 타워팰리스 1/2/3차", "gu": "강남구", "category": "구축대단지"},
-    {"key": "gaepo_firstier", "name": "개포동 디에이치 퍼스티어 아이파크", "gu": "강남구", "category": "신축"},
-    {"key": "daechi_eunma", "name": "대치 은마아파트", "gu": "강남구", "category": "재건축"},
-    {"key": "yeouido_sibeom", "name": "여의도 시범아파트", "gu": "영등포구", "category": "재건축"},
-    {"key": "mokdong7", "name": "목동 신시가지 7단지", "gu": "양천구", "category": "재건축"},
-    {"key": "banpo_trinion", "name": "반포 트리니원", "gu": "서초구", "category": "신축"},
-    {"key": "seongsu_trimage", "name": "성수 트리마제", "gu": "성동구", "category": "신축"},
-    {"key": "ogeum_hyundai", "name": "오금 현대", "gu": "송파구", "category": "구축대단지"},
-    {"key": "godeok_gracium", "name": "고덕 그라시움", "gu": "강동구", "category": "신축"},
-    {"key": "myeongil_samik2", "name": "명일 삼익그린2차", "gu": "강동구", "category": "재건축"},
-    {"key": "acro_riverheim", "name": "아크로리버하임", "gu": "동작구", "category": "신축"},
-    {"key": "apgujeong3", "name": "압구정 3구역", "gu": "강남구", "category": "재건축"},
-    {"key": "apgujeong2", "name": "압구정 2구역", "gu": "강남구", "category": "재건축"},
-    {"key": "bangbae5", "name": "방배5구역(디에이치방배)", "gu": "서초구", "category": "재건축"},
-    {"key": "bangbae13", "name": "방배 13구역", "gu": "서초구", "category": "재건축"},
-    {"key": "bangbae15", "name": "방배15구역", "gu": "서초구", "category": "재건축"},
-    {"key": "bukahyeon2", "name": "북아현2구역", "gu": "서대문구", "category": "재개발"},
-    {"key": "bukahyeon3", "name": "북아현3구역", "gu": "서대문구", "category": "재개발"},
-    {"key": "ichon_hangang", "name": "이촌 한강맨션", "gu": "용산구", "category": "재건축"},
-    {"key": "seongsu_galleriaforet", "name": "성수 갤러리아포레", "gu": "성동구", "category": "구축대단지"},
-    {"key": "jamsil_asia", "name": "잠실 아시아선수촌", "gu": "송파구", "category": "구축대단지"},
-    {"key": "mapo_seongsan", "name": "마포 성산시영", "gu": "마포구", "category": "재건축"},
+    {"key": "jamsil_jugong5", "name": "잠실주공5단지", "gu": "송파구", "dong": "잠실동", "category": "재건축"},
+    {"key": "jamsil_rose", "name": "잠실 장미아파트", "gu": "송파구", "dong": "신천동", "category": "재건축"},
+    {"key": "bangi_seonsuchon", "name": "방이 올림픽선수촌", "gu": "송파구", "dong": "방이동", "category": "구축대단지"},
+    {"key": "dunchon_foreon", "name": "둔촌 올림픽파크포레온", "gu": "강동구", "dong": "둔촌동", "category": "신축"},
+    {"key": "garak_helio", "name": "가락 헬리오시티", "gu": "송파구", "dong": "가락동", "category": "신축"},
+    {"key": "jamsil_els", "name": "잠실 엘스", "gu": "송파구", "dong": "잠실동", "category": "구축대단지"},
+    {"key": "jamsil_riesens", "name": "잠실 리센츠", "gu": "송파구", "dong": "잠실동", "category": "구축대단지"},
+    {"key": "sincheon_parkrio", "name": "신천 파크리오", "gu": "송파구", "dong": "신천동", "category": "구축대단지"},
+    {"key": "banpo_onebailey", "name": "반포 원베일리", "gu": "서초구", "dong": "반포동", "category": "신축"},
+    {"key": "banpo_124", "name": "반포 124주구(반디클)", "gu": "서초구", "dong": "반포동", "category": "재건축"},
+    {"key": "banpo_acro", "name": "반포 아크로리버파크", "gu": "서초구", "dong": "반포동", "category": "구축대단지"},
+    {"key": "banpo_xi", "name": "반포자이", "gu": "서초구", "dong": "반포동", "category": "구축대단지"},
+    {"key": "banpo_firstige", "name": "반포 래미안퍼스티지", "gu": "서초구", "dong": "반포동", "category": "구축대단지"},
+    {"key": "hannam3", "name": "한남3구역(디에이치한남)", "gu": "용산구", "dong": "한남동", "category": "재개발"},
+    {"key": "hannam5", "name": "한남5구역", "gu": "용산구", "dong": "한남동", "category": "재개발"},
+    {"key": "noryangjin1", "name": "노량진1구역", "gu": "동작구", "dong": "노량진동", "category": "재개발"},
+    {"key": "noryangjin3", "name": "노량진3구역", "gu": "동작구", "dong": "노량진동", "category": "재개발"},
+    {"key": "acro_seoulforest", "name": "아크로서울포레스트", "gu": "성동구", "dong": "성수동", "category": "신축"},
+    {"key": "seongsu1", "name": "성수전략정비구역 1지구", "gu": "성동구", "dong": "성수동", "category": "재개발"},
+    {"key": "hannam_the_hill", "name": "한남더힐", "gu": "용산구", "dong": "한남동", "category": "구축대단지"},
+    {"key": "nineone_hannam", "name": "나인원한남", "gu": "용산구", "dong": "한남동", "category": "신축"},
+    {"key": "dogok_towerpalace", "name": "도곡동 타워팰리스 1/2/3차", "gu": "강남구", "dong": "도곡동", "category": "구축대단지"},
+    {"key": "gaepo_firstier", "name": "개포동 디에이치 퍼스티어 아이파크", "gu": "강남구", "dong": "개포동", "category": "신축"},
+    {"key": "daechi_eunma", "name": "대치 은마아파트", "gu": "강남구", "dong": "대치동", "category": "재건축"},
+    {"key": "yeouido_sibeom", "name": "여의도 시범아파트", "gu": "영등포구", "dong": "여의도동", "category": "재건축"},
+    {"key": "mokdong7", "name": "목동 신시가지 7단지", "gu": "양천구", "dong": "목동", "category": "재건축"},
+    {"key": "banpo_trinion", "name": "반포 트리니원", "gu": "서초구", "dong": "반포동", "category": "신축"},
+    {"key": "seongsu_trimage", "name": "성수 트리마제", "gu": "성동구", "dong": "성수동", "category": "신축"},
+    {"key": "ogeum_hyundai", "name": "오금 현대", "gu": "송파구", "dong": "오금동", "category": "구축대단지"},
+    {"key": "godeok_gracium", "name": "고덕 그라시움", "gu": "강동구", "dong": "고덕동", "category": "신축"},
+    {"key": "myeongil_samik2", "name": "명일 삼익그린2차", "gu": "강동구", "dong": "명일동", "category": "재건축"},
+    {"key": "acro_riverheim", "name": "아크로리버하임", "gu": "동작구", "dong": "흑석동", "category": "신축"},
+    {"key": "apgujeong3", "name": "압구정 3구역", "gu": "강남구", "dong": "압구정동", "category": "재건축"},
+    {"key": "apgujeong2", "name": "압구정 2구역", "gu": "강남구", "dong": "압구정동", "category": "재건축"},
+    {"key": "bangbae5", "name": "방배5구역(디에이치방배)", "gu": "서초구", "dong": "방배동", "category": "재건축"},
+    {"key": "bangbae13", "name": "방배 13구역", "gu": "서초구", "dong": "방배동", "category": "재건축"},
+    {"key": "bangbae15", "name": "방배15구역", "gu": "서초구", "dong": "방배동", "category": "재건축"},
+    {"key": "bukahyeon2", "name": "북아현2구역", "gu": "서대문구", "dong": "북아현동", "category": "재개발"},
+    {"key": "bukahyeon3", "name": "북아현3구역", "gu": "서대문구", "dong": "북아현동", "category": "재개발"},
+    {"key": "ichon_hangang", "name": "이촌 한강맨션", "gu": "용산구", "dong": "이촌동", "category": "재건축"},
+    {"key": "seongsu_galleriaforet", "name": "성수 갤러리아포레", "gu": "성동구", "dong": "성수동", "category": "구축대단지"},
+    {"key": "jamsil_asia", "name": "잠실 아시아선수촌", "gu": "송파구", "dong": "방이동", "category": "구축대단지"},
+    {"key": "mapo_seongsan", "name": "마포 성산시영", "gu": "마포구", "dong": "성산동", "category": "재건축"},
 ]
 
 
+def _complex_name_variants(name):
+    """'방배5구역(디에이치방배)' -> ['방배5구역', '디에이치방배'] 처럼 괄호 별칭을 분리."""
+    m = re.match(r"^(.*?)\(([^)]+)\)\s*$", name)
+    if m:
+        return [m.group(1).strip(), m.group(2).strip()]
+    return [name.strip()]
+
+
+def _normalize_ko(s):
+    return re.sub(r"[\s·,()]+", "", s or "")
+
+
+def fetch_complex_news(complex_name, client_id, client_secret, limit=3, pool=15):
+    """단지명 뉴스는 일반 뉴스보다 훨씬 엄격한 기준으로 매칭합니다: 제목 또는 본문
+    스니펫에 단지명(또는 괄호 별칭)이 '통째로' 등장하는 기사만 채택합니다.
+    이전 버전은 검색어를 단어 단위로 쪼개 그중 가장 긴 단어 하나만 요구했는데,
+    '방배5구역'과 '방배13구역'처럼 비슷한 이름의 다른 단지 기사가 서로 섞여
+    들어오는 문제가 있어 이번에 통째 매칭으로 바꿨습니다."""
+    if not client_id or not client_secret:
+        return []
+    variants = [_normalize_ko(v) for v in _complex_name_variants(complex_name)]
+    variants = [v for v in variants if len(v) >= 2]
+    if not variants:
+        return []
+    query = complex_name.split("(")[0].strip()
+    try:
+        resp = requests.get(
+            "https://openapi.naver.com/v1/search/news.json",
+            params={"query": query, "display": pool, "sort": "date"},
+            headers={"X-Naver-Client-Id": client_id, "X-Naver-Client-Secret": client_secret},
+            timeout=8,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        cutoff = _recent_business_day_start(1).replace(hour=0, minute=0, second=0, microsecond=0)
+        candidates = []
+        for item in data.get("items", []):
+            raw_title = re.sub(r"<.*?>", "", item.get("title", "")).replace("&quot;", '"').replace("&amp;", "&")
+            raw_desc = re.sub(r"<.*?>", "", item.get("description", "")).replace("&quot;", '"').replace("&amp;", "&")
+            if _is_low_quality_title(raw_title):
+                continue
+            norm_title, norm_desc = _normalize_ko(raw_title), _normalize_ko(raw_desc)
+            title_hit = any(v in norm_title for v in variants)
+            desc_hit = any(v in norm_desc for v in variants)
+            if not (title_hit or desc_hit):
+                continue
+            original = item.get("originallink") or ""
+            naver_copy = item.get("link") or ""
+            final_link = naver_copy if _is_naver_hosted(naver_copy) else (naver_copy or original)
+            press_src = original or naver_copy
+            pub = item.get("pubDate", "")
+            pub_dt = None
+            try:
+                pub_dt = datetime.strptime(pub, "%a, %d %b %Y %H:%M:%S %z")
+                date_str = pub_dt.strftime("%Y-%m-%d %H:%M")
+            except Exception:
+                date_str = pub
+            if pub_dt is not None and pub_dt < cutoff:
+                continue
+            candidates.append({
+                "title": raw_title, "link": final_link, "date": date_str,
+                "_title_hit": title_hit, "_naver_hosted": _is_naver_hosted(naver_copy),
+                "_major": _is_major_press(press_src),
+            })
+        # 제목에 단지명이 직접 있는 기사 > 네이버게재본 > 주요언론 순으로 정렬
+        candidates.sort(key=lambda r: (r["_title_hit"], r["_naver_hosted"], r["_major"]), reverse=True)
+        results = candidates[:limit]
+        for r in results:
+            r.pop("_title_hit", None)
+            r.pop("_naver_hosted", None)
+            r.pop("_major", None)
+        return results
+    except Exception as e:
+        log.warning(f"단지 뉴스 조회 실패 ({complex_name}): {e}")
+        return []
+
+
 def build_seoul_news(naver_id, naver_secret):
-    """관심단지 26곳 각각에 대해 실제 네이버 뉴스 검색 결과 1건씩 조회.
-    (이전 버전은 4곳 고정 + 하드코딩된 가짜 뉴스 텍스트였습니다.)"""
-    from urllib.parse import quote
-    news_list = []
+    """관심단지별로 최대 3건까지 엄격 매칭된 뉴스를 조회해 표(행) 단위로 펼쳐서 반환.
+    그날 관련 기사가 없는 단지는 행 자체가 안 생겨서 화면에도 자연히 안 보입니다."""
+    rows = []
     for c in COMPLEX_REGISTRY:
-        query = f"{c['name']} 재건축" if c["category"] in ("재건축", "재개발") else c["name"]
-        results = fetch_naver_news(query, naver_id, naver_secret, display=1)
-        if results:
-            item = {**c, "text": results[0]["title"], "link": results[0]["link"]}
-        else:
-            item = {**c, "text": "관련 뉴스를 찾지 못했습니다.",
-                    "link": f"https://search.naver.com/search.naver?query={quote(query)}"}
-        news_list.append(item)
-    return news_list
+        for a in fetch_complex_news(c["name"], naver_id, naver_secret, limit=3):
+            rows.append({
+                "gu": c["gu"], "dong": c["dong"], "name": c["name"], "category": c["category"],
+                "title": a["title"], "link": a["link"], "date": a["date"],
+            })
+    log.info(f"관심단지 뉴스: {len(rows)}건 확보 (단지 {len(COMPLEX_REGISTRY)}개 중 관련기사 있는 곳만)")
+    return rows
+
+
+def build_market_wide_estate_news(naver_id, naver_secret):
+    """개별 단지가 아닌 서울 부동산 시장 전반 뉴스 + 증권사/기관 리포트 관련 기사."""
+    return fetch_naver_news_multi(
+        ["서울 부동산 시장", "부동산 시장 전망 리포트"], naver_id, naver_secret, per_query=4, total_cap=5
+    )
 
 
 def run_seoul_estate_mode(molit_api_key, naver_id=None, naver_secret=None):
@@ -1095,6 +1225,7 @@ def run_seoul_estate_mode(molit_api_key, naver_id=None, naver_secret=None):
         return None
 
     new_data["news"] = build_seoul_news(naver_id, naver_secret)
+    new_data["market_wide_news"] = build_market_wide_estate_news(naver_id, naver_secret)
 
     ok = replace_marketdata_block(
         "seoul_estate.html", "// --- SEOUL_ESTATE_DATA_START ---", "// --- SEOUL_ESTATE_DATA_END ---", new_data
