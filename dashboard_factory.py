@@ -111,10 +111,13 @@ LAWD_CODES = {
     "강동구": "11740", "용산구": "11170", "성동구": "11200",
 }
 
-TARGET_APT = {  # 관심단지 (핵심 모니터링용, core 테이블)
-    "올림픽파크포레온": "강동구", "래미안원베일리": "서초구", "타워팰리스3차": "강남구",
-    "아크로리버파크": "서초구", "잠실엘스": "송파구", "헬리오시티": "송파구",
-}
+# 강남권 핵심 단지 16개동 (core 테이블 필터링 기준 - 동 단위)
+# 기존엔 제목은 "8개동"이라 해놓고 실제로는 특정 단지 6개로만 걸러지던 불일치가
+# 있어서, 이번에 진짜 동 단위 필터로 바로잡았습니다.
+CORE_DONGS = [
+    "반포동", "잠원동", "도곡동", "개포동", "잠실동", "신천동", "둔촌동", "가락동",
+    "방배동", "방이동", "서초동", "삼성동", "청담동", "대치동", "압구정동", "오금동",
+]
 
 
 # ---------------------------------------------------------------------------
@@ -886,21 +889,19 @@ def build_seoul_estate_data(molit_api_key):
             "link": _naver_land_search_link(t["apt"]),
         })
 
-    core = []
+    # 강남권 핵심 16개동: 동별 최고가 거래 1건씩 (동 단위 스냅샷)
+    by_dong = {}
     for t in all_trades:
-        if t["apt"] in TARGET_APT:
-            core.append({
-                "dong": t["dong"], "apt": t["apt"], "size": f"{float(t['area']):.2f}㎡",
-                "price": _fmt_eok(t["amount_manwon"]), "record": "보통",
-                "link": _naver_land_search_link(t["apt"]),
-            })
-    # 관심단지별 최고가 1건만 남기기
-    seen = set()
+        if t["dong"] in CORE_DONGS:
+            if t["dong"] not in by_dong or t["amount_manwon"] > by_dong[t["dong"]]["amount_manwon"]:
+                by_dong[t["dong"]] = t
     core_dedup = []
-    for c in sorted(core, key=lambda x: x["apt"]):
-        if c["apt"] not in seen:
-            core_dedup.append(c)
-            seen.add(c["apt"])
+    for dong, t in sorted(by_dong.items(), key=lambda kv: kv[1]["amount_manwon"], reverse=True):
+        core_dedup.append({
+            "dong": t["dong"], "apt": t["apt"], "size": f"{float(t['area']):.2f}㎡",
+            "price": _fmt_eok(t["amount_manwon"]), "record": "보통",
+            "link": _naver_land_search_link(t["apt"]),
+        })
 
     return {
         "top30": top30,
@@ -939,6 +940,23 @@ COMPLEX_REGISTRY = [
     {"key": "daechi_eunma", "name": "대치 은마아파트", "gu": "강남구", "category": "재건축"},
     {"key": "yeouido_sibeom", "name": "여의도 시범아파트", "gu": "영등포구", "category": "재건축"},
     {"key": "mokdong7", "name": "목동 신시가지 7단지", "gu": "양천구", "category": "재건축"},
+    {"key": "banpo_trinion", "name": "반포 트리니원", "gu": "서초구", "category": "신축"},
+    {"key": "seongsu_trimage", "name": "성수 트리마제", "gu": "성동구", "category": "신축"},
+    {"key": "ogeum_hyundai", "name": "오금 현대", "gu": "송파구", "category": "구축대단지"},
+    {"key": "godeok_gracium", "name": "고덕 그라시움", "gu": "강동구", "category": "신축"},
+    {"key": "myeongil_samik2", "name": "명일 삼익그린2차", "gu": "강동구", "category": "재건축"},
+    {"key": "acro_riverheim", "name": "아크로리버하임", "gu": "동작구", "category": "신축"},
+    {"key": "apgujeong3", "name": "압구정 3구역", "gu": "강남구", "category": "재건축"},
+    {"key": "apgujeong2", "name": "압구정 2구역", "gu": "강남구", "category": "재건축"},
+    {"key": "bangbae5", "name": "방배5구역(디에이치방배)", "gu": "서초구", "category": "재건축"},
+    {"key": "bangbae13", "name": "방배 13구역", "gu": "서초구", "category": "재건축"},
+    {"key": "bangbae15", "name": "방배15구역", "gu": "서초구", "category": "재건축"},
+    {"key": "bukahyeon2", "name": "북아현2구역", "gu": "서대문구", "category": "재개발"},
+    {"key": "bukahyeon3", "name": "북아현3구역", "gu": "서대문구", "category": "재개발"},
+    {"key": "ichon_hangang", "name": "이촌 한강맨션", "gu": "용산구", "category": "재건축"},
+    {"key": "seongsu_galleriaforet", "name": "성수 갤러리아포레", "gu": "성동구", "category": "구축대단지"},
+    {"key": "jamsil_asia", "name": "잠실 아시아선수촌", "gu": "송파구", "category": "구축대단지"},
+    {"key": "mapo_seongsan", "name": "마포 성산시영", "gu": "마포구", "category": "재건축"},
 ]
 
 
