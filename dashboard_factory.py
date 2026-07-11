@@ -1,22 +1,31 @@
 """
-Dashboard Factory (v2)
+Dashboard Factory (v3)
 =======================
-기존 스크립트는 BACKUP_*_DATA 하드코딩 값을 매번 그대로 재기록하는 구조였습니다.
-이 버전은 실제 외부 데이터 소스에서 값을 가져오고, 실패 시에는 "가짜 숫자로
-덮어쓰는" 대신 기존 파일 값을 그대로 보존하고 에러를 로그로 남깁니다.
+v2 -> v3 변경점:
+- REITs 종목코드 조회가 죽은 엔드포인트(ac.finance.naver.com)를 쓰고 있어 전부
+  실패했던 문제 수정 (m.stock.naver.com/front-api/search/autoComplete 로 교체)
+- 시가배당률을 항상 "N/A"로만 채우던 문제 수정 -> 최근 1년 지급 배당 합산으로 실제 계산
+- 시가총액이 비어 있던 종목을 위한 market_cap fallback 체인 추가
+- DART 공시가 시장 전체 피드에서 이름매칭만 하다 보니 페이지 밖으로 밀려 누락되던
+  문제 수정 -> 관심 종목별로 DART corp_code를 찾아 개별 조회, 표시 개수 제한도 완화
+- 실존 인물(워런 버핏 등)에게 가상의 발언을 붙인 "코멘트" 섹션을 전부 제거하고,
+  네이버 뉴스 검색 오픈API(공식) 기반 실제 뉴스 피드로 교체
+- KOSPI 대시보드의 국내식/해외식 색상 토글 제거 (국내식 고정)
 
 데이터 소스
 -----------
 - KOSPI 지수 / 국내 대형주 / ETF / 국내 REITs 시세 : yfinance (Yahoo Finance, .KS 티커)
-- REITs 공시 : DART Open API (실제 개별 공시 링크 생성)
+- REITs 공시 : DART Open API (종목별 corp_code 조회, 실제 개별 공시 링크 생성)
 - 미국 지수/금리/유가 / 미국 대형주 : yfinance
 - 서울 아파트 실거래가 : 공공데이터포털 국토교통부 아파트매매 실거래 상세자료 API
+- 시황 관련 뉴스 : 네이버 뉴스 검색 오픈API (공식, openapi.naver.com)
 
 필요한 GitHub Secrets
 ----------------------
 - KAKAO_CLIENT_ID, KAKAO_REFRESH_TOKEN   (기존과 동일)
 - DART_API_KEY                            (opendart.fss.or.kr 무료 발급)
 - MOLIT_API_KEY                           (data.go.kr 아파트매매 실거래가 상세자료, 무료 자동승인)
+- NAVER_CLIENT_ID, NAVER_CLIENT_SECRET    (developers.naver.com, 뉴스 검색 오픈API 무료 발급)
 
 발급 방법은 README_설치가이드.md 참고.
 """
@@ -70,8 +79,6 @@ REIT_ASSET_NAMES = [
     "NH올원리츠", "미래에셋맵스리츠", "이지스밸류플러스리츠", "이지스레지던스리츠",
     "NH프라임리츠", "대신밸류리츠",
 ]
-
-DART_WATCH_NAMES = ["맥쿼리인프라", "SK리츠", "신한알파리츠"]  # DART 검색 시 회사명 매칭용 (펀드/리츠 접미사 차이 대응)
 
 US_TOP_TICKERS = ["MSFT", "AAPL", "NVDA", "GOOGL", "AMZN", "META", "TSLA", "AVGO", "LLY", "V"]
 
@@ -199,8 +206,72 @@ def fmt_cap_usd(market_cap):
     return f"{tril:.2f}조달러" if tril >= 1 else f"{bil:,.0f}억달러"
 
 
-def yf_last_two(ticker):
-    """최근 2거래일 종가를 반환. 실패 시 None."""
+def _resolve_market_cap(t, price):
+    """market_cap 조회 fallback 체인: fast_info -> info['marketCap'] -> price*발행주식수.
+    yfinance의 fast_info는 국내(.KS) 종목에서 종종 비어 있어 3단계로 시도합니다."""
+    try:
+        mc = t.fast_info.get("market_cap")
+        if mc:
+            return mc
+    except Exception:
+        pass
+    try:
+        info = t.info  # 네트워크 호출 1회 추가 (fast_info 실패시에만 사용)
+        mc = info.get("marketCap")
+        if mc:
+            return mc
+        shares = info.get("sharesOutstanding")
+        if shares and price:
+            return shares * price
+    except Exception:
+        pass
+    return None
+
+
+def _detect_dividend_frequency(divs):
+    """최근 지급 이력의 간격(일)을 분석해 연간 지급 횟수를 추정.
+    분기(~90일)=4, 반기(~180일)=2, 연간(~365일)=1. 이력이 1건뿐이면 1로 가정.
+    지급 주기가 살짝 밀리거나 당겨져도(영업일 조정 등) 어느 구간에 속하는지로
+    판별하므로 캘린더 365일 창(window) 방식보다 배당 누락/중복 위험이 적습니다."""
+    if len(divs) < 2:
+        return 1
+    # 최근 6건(최대) 사이의 간격만 사용 - 오래된 이력에 배당정책 변경분이 섞이는 것 방지
+    recent_dates = divs.index[-7:]
+    gaps_days = [(recent_dates[i] - recent_dates[i - 1]).days for i in range(1, len(recent_dates))]
+    if not gaps_days:
+        return 1
+    gaps_days.sort()
+    median_gap = gaps_days[len(gaps_days) // 2]
+    if median_gap <= 45:
+        return 12  # 월 배당
+    elif median_gap <= 135:
+        return 4   # 분기 배당
+    elif median_gap <= 270:
+        return 2   # 반기 배당
+    else:
+        return 1   # 연간 배당
+
+
+def _resolve_trailing_dividend_yield(t, price):
+    """지급 주기(분기/반기/연간)를 자동 판별해 '최근 N회 지급분' 합계를 현재가로
+    나눈 시가배당률(%). 캘린더 365일 창 대신 지급 횟수 기준으로 세기 때문에,
+    지급일 사이 간격 때문에 1회가 걸치거나 빠지는 문제가 없습니다."""
+    try:
+        divs = t.dividends
+        if divs is None or len(divs) == 0 or not price:
+            return None
+        freq = _detect_dividend_frequency(divs)
+        recent_n = divs.iloc[-freq:]
+        total = float(recent_n.sum())
+        if total <= 0:
+            return None
+        return total / price * 100
+    except Exception:
+        return None
+
+
+def yf_snapshot(ticker, want_dividend=False):
+    """최근 2거래일 종가 + 시가총액(+옵션: 배당수익률)을 반환. 실패 시 None."""
     if yf is None:
         log.error("yfinance가 설치되어 있지 않습니다 (pip install yfinance).")
         return None
@@ -212,20 +283,58 @@ def yf_last_two(ticker):
             log.warning(f"{ticker}: 최근 시세 데이터 부족")
             return None
         last, prev = hist.iloc[-1], hist.iloc[-2]
-        market_cap = None
-        try:
-            market_cap = t.fast_info.get("market_cap")
-        except Exception:
-            pass
-        return {
-            "close": float(last["Close"]),
+        price = float(last["Close"])
+        result = {
+            "close": price,
             "prev_close": float(prev["Close"]),
             "date": hist.index[-1].strftime("%Y-%m-%d"),
-            "market_cap": market_cap,
+            "market_cap": _resolve_market_cap(t, price),
+            "dividend_yield": None,
         }
+        if want_dividend:
+            result["dividend_yield"] = _resolve_trailing_dividend_yield(t, price)
+        return result
     except Exception as e:
         log.warning(f"{ticker} 시세 조회 실패: {e}")
         return None
+
+
+# 하위 호환용 별칭 (기존 코드 곳곳에서 yf_last_two 이름으로 호출)
+yf_last_two = yf_snapshot
+
+
+# ---------------------------------------------------------------------------
+# 뉴스 (네이버 뉴스 검색 오픈API - 공식/문서화된 API)
+# ---------------------------------------------------------------------------
+def fetch_naver_news(query, client_id, client_secret, display=4):
+    """네이버 뉴스 검색 오픈API (공식). 실제 기사 제목/링크/날짜를 반환.
+    이전 버전의 '거장 코멘트'는 실존 인물에게 가상의 발언을 붙인 가짜 콘텐츠였어서
+    전면 제거하고, 실제 검색 결과 기반 뉴스로 교체했습니다."""
+    if not client_id or not client_secret:
+        return []
+    try:
+        resp = requests.get(
+            "https://openapi.naver.com/v1/search/news.json",
+            params={"query": query, "display": display, "sort": "date"},
+            headers={"X-Naver-Client-Id": client_id, "X-Naver-Client-Secret": client_secret},
+            timeout=8,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        results = []
+        for item in data.get("items", []):
+            title = re.sub(r"<.*?>", "", item.get("title", "")).replace("&quot;", '"').replace("&amp;", "&")
+            link = item.get("originallink") or item.get("link")
+            pub = item.get("pubDate", "")
+            try:
+                date_str = datetime.strptime(pub, "%a, %d %b %Y %H:%M:%S %z").strftime("%Y-%m-%d %H:%M")
+            except Exception:
+                date_str = pub
+            results.append({"title": title, "link": link, "date": date_str, "source": "네이버뉴스"})
+        return results
+    except Exception as e:
+        log.warning(f"네이버 뉴스 조회 실패 ({query}): {e}")
+        return []
 
 
 def replace_marketdata_block(file_path, start_marker, end_marker, new_data_obj):
@@ -259,7 +368,7 @@ def replace_marketdata_block(file_path, start_marker, end_marker, new_data_obj):
 # ---------------------------------------------------------------------------
 # KOSPI
 # ---------------------------------------------------------------------------
-def build_kospi_data():
+def build_kospi_data(naver_id=None, naver_secret=None):
     idx = yf_last_two("^KS11")
     if idx is None:
         return None
@@ -300,6 +409,8 @@ def build_kospi_data():
         log.error("KOSPI 종목 데이터를 하나도 가져오지 못했습니다.")
         return None
 
+    news = fetch_naver_news("코스피 마감 시황", naver_id, naver_secret, display=4)
+
     return {
         "kospi_index": f"{idx['close']:,.2f}",
         "kospi_change": fmt_won_change(change).replace("원", ""),
@@ -307,11 +418,12 @@ def build_kospi_data():
         "market_date": datetime.strptime(idx["date"], "%Y-%m-%d").strftime("%Y년 %-m월 %-d일") + " 장 마감",
         "etfs": etfs,
         "stocks": stocks,
+        "news": news,
     }
 
 
-def run_kospi_mode():
-    data = build_kospi_data()
+def run_kospi_mode(naver_id=None, naver_secret=None):
+    data = build_kospi_data(naver_id, naver_secret)
     ok = replace_marketdata_block(
         "index.html", "// --- KOSPI_DATA_START ---", "// --- KOSPI_DATA_END ---", data
     )
@@ -321,32 +433,36 @@ def run_kospi_mode():
 # ---------------------------------------------------------------------------
 # REITs
 # ---------------------------------------------------------------------------
-def build_reits_data(dart_api_key):
+def build_reits_data(dart_api_key, naver_id=None, naver_secret=None):
     etfs = []
     for name in REIT_ETF_NAMES:
         code = resolve_stock_code(name)
-        d = yf_last_two(f"{code}.KS") if code else None
+        d = yf_last_two(f"{code}.KS", want_dividend=True) if code else None
         if d is None:
             log.warning(f"REITs ETF 시세 누락(건너뜀): {name}")
             continue
         c = d["close"] - d["prev_close"]
         p = (c / d["prev_close"] * 100) if d["prev_close"] else 0
+        yld = d.get("dividend_yield")
         etfs.append({
             "name": name, "price": fmt_won(d["close"]), "change": fmt_won_change(c),
-            "pct": fmt_pct(p), "cap": fmt_cap_won(d["market_cap"]), "yield": "N/A",
+            "pct": fmt_pct(p), "cap": fmt_cap_won(d["market_cap"]),
+            "yield": f"{yld:.2f}%" if yld is not None else "N/A",
         })
 
     assets = []
     for name in REIT_ASSET_NAMES:
         code = resolve_stock_code(name)
-        d = yf_last_two(f"{code}.KS") if code else None
+        d = yf_last_two(f"{code}.KS", want_dividend=True) if code else None
         if d is None:
             log.warning(f"REITs 종목코드/시세 확인 필요(건너뜀): {name}")
             continue
         c = d["close"] - d["prev_close"]
+        yld = d.get("dividend_yield")
         assets.append({
             "name": name, "code": code, "price": fmt_won(d["close"]), "change": fmt_won_change(c),
-            "cap": fmt_cap_won(d["market_cap"]), "yield": "N/A",
+            "cap": fmt_cap_won(d["market_cap"]),
+            "yield": f"{yld:.2f}%" if yld is not None else "N/A",
             "link": f"https://finance.naver.com/item/main.naver?code={code}",
         })
 
@@ -354,51 +470,106 @@ def build_reits_data(dart_api_key):
         log.error("REITs 종목 데이터를 하나도 가져오지 못했습니다.")
         return None
 
-    disclosures = fetch_dart_disclosures(dart_api_key) if dart_api_key else []
+    disclosures = fetch_dart_disclosures(dart_api_key, limit=30) if dart_api_key else []
     if not disclosures:
         log.warning("DART 공시 데이터 없음 (DART_API_KEY 미설정 또는 조회 실패) - disclosures 비움")
 
-    return {"etfs": etfs, "assets": assets, "disclosures": disclosures}
+    news = fetch_naver_news("상장리츠", naver_id, naver_secret, display=4)
+
+    return {"etfs": etfs, "assets": assets, "disclosures": disclosures, "news": news}
 
 
-def fetch_dart_disclosures(api_key, days_back=5, limit=6):
-    """DART Open API 로 최근 리츠 관련 공시를 조회해 실제 rcept_no 기반 링크를 생성."""
-    end_de = datetime.now(KST).strftime("%Y%m%d")
-    bgn_de = (datetime.now(KST) - timedelta(days=days_back)).strftime("%Y%m%d")
+DART_CORPCODE_CACHE_FILE = "dart_corpcode_cache.json"
+
+
+def _load_dart_corpcode_map(api_key):
+    """DART corpCode.xml(전체 상장사 고유번호 목록)을 1회 내려받아 이름->corp_code 매핑 생성.
+    종목코드(6자리)와 DART 고유번호(8자리)는 다른 체계라 별도 매핑이 필요합니다."""
+    if os.path.exists(DART_CORPCODE_CACHE_FILE):
+        try:
+            with open(DART_CORPCODE_CACHE_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            pass
     try:
+        import io
+        import zipfile
         resp = requests.get(
-            "https://opendart.fss.or.kr/api/list.json",
-            params={
-                "crtfc_key": api_key, "bgn_de": bgn_de, "end_de": end_de,
-                "page_no": 1, "page_count": 100, "corp_cls": "Y",
-            },
-            timeout=10,
+            "https://opendart.fss.or.kr/api/corpCode.xml",
+            params={"crtfc_key": api_key}, timeout=20,
         )
         resp.raise_for_status()
-        data = resp.json()
-        if data.get("status") != "000":
-            log.warning(f"DART API 응답 이상: {data.get('status')} {data.get('message')}")
-            return []
-        results = []
-        watch_norm = [n.replace(" ", "") for n in REIT_ASSET_NAMES + REIT_ETF_NAMES + DART_WATCH_NAMES]
-        for item in data.get("list", []):
-            corp_name = item.get("corp_name", "")
-            if any(w in corp_name.replace(" ", "") or corp_name.replace(" ", "") in w for w in watch_norm):
-                rcp_no = item.get("rcept_no")
-                results.append({
-                    "name": corp_name,
-                    "title": item.get("report_nm", ""),
-                    "date": item.get("rcept_dt", ""),
-                    "link": f"https://dart.fss.or.kr/dsaf001/main.do?rcpNo={rcp_no}",
-                })
-        return results[:limit]
+        zf = zipfile.ZipFile(io.BytesIO(resp.content))
+        xml_bytes = zf.read("CORPCODE.xml")
+        root = ET.fromstring(xml_bytes)
+        mapping = {}
+        for el in root.findall(".//list"):
+            corp_name = (el.findtext("corp_name") or "").strip()
+            corp_code = (el.findtext("corp_code") or "").strip()
+            if corp_name and corp_code:
+                mapping[corp_name.replace(" ", "")] = corp_code
+        with open(DART_CORPCODE_CACHE_FILE, "w", encoding="utf-8") as f:
+            json.dump(mapping, f, ensure_ascii=False)
+        return mapping
     except Exception as e:
-        log.warning(f"DART 공시 조회 실패: {e}")
+        log.warning(f"DART corpCode 매핑 다운로드 실패: {e}")
+        return {}
+
+
+def fetch_dart_disclosures(api_key, days_back=7, limit=30):
+    """관심 리츠/인프라 종목별로 DART 고유번호(corp_code)를 찾아 개별 조회.
+    (이전 버전은 유가증권시장 전체 공시 피드에서 이름 문자열매칭으로 걸러냈는데,
+    하루 공시량이 많으면 페이지 1(100건) 밖으로 밀려 리츠 공시를 놓칠 수 있었습니다.
+    종목별로 직접 조회하면 개수 제한 걱정 없이 모두 잡힙니다.)"""
+    if not api_key:
         return []
+    corpcode_map = _load_dart_corpcode_map(api_key)
+    if not corpcode_map:
+        return []
+    end_de = datetime.now(KST).strftime("%Y%m%d")
+    bgn_de = (datetime.now(KST) - timedelta(days=days_back)).strftime("%Y%m%d")
+    results = []
+    for name in REIT_ASSET_NAMES + REIT_ETF_NAMES:
+        norm = name.replace(" ", "")
+        corp_code = corpcode_map.get(norm)
+        if not corp_code:
+            for k, v in corpcode_map.items():
+                if norm in k or k in norm:
+                    corp_code = v
+                    break
+        if not corp_code:
+            log.warning(f"DART 고유번호 매칭 실패(공시 건너뜀): {name}")
+            continue
+        try:
+            resp = requests.get(
+                "https://opendart.fss.or.kr/api/list.json",
+                params={
+                    "crtfc_key": api_key, "corp_code": corp_code,
+                    "bgn_de": bgn_de, "end_de": end_de, "page_no": 1, "page_count": 20,
+                },
+                timeout=10,
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            if data.get("status") == "000":
+                for item in data.get("list", []):
+                    rcp_no = item.get("rcept_no")
+                    results.append({
+                        "name": item.get("corp_name", name),
+                        "title": item.get("report_nm", ""),
+                        "date": item.get("rcept_dt", ""),
+                        "link": f"https://dart.fss.or.kr/dsaf001/main.do?rcpNo={rcp_no}",
+                    })
+            elif data.get("status") != "013":  # 013 = 조회 결과 없음(정상적인 무공시)
+                log.warning(f"DART 공시 조회 이상 ({name}): {data.get('status')} {data.get('message')}")
+        except Exception as e:
+            log.warning(f"DART 공시 조회 실패 ({name}): {e}")
+    results.sort(key=lambda x: x["date"], reverse=True)
+    return results[:limit]
 
 
-def run_reits_mode(dart_api_key):
-    data = build_reits_data(dart_api_key)
+def run_reits_mode(dart_api_key, naver_id=None, naver_secret=None):
+    data = build_reits_data(dart_api_key, naver_id, naver_secret)
     ok = replace_marketdata_block(
         "reits.html", "// --- REITS_DATA_START ---", "// --- REITS_DATA_END ---", data
     )
@@ -408,7 +579,7 @@ def run_reits_mode(dart_api_key):
 # ---------------------------------------------------------------------------
 # US Market
 # ---------------------------------------------------------------------------
-def build_us_market_data():
+def build_us_market_data(naver_id=None, naver_secret=None):
     macro = []
     for ticker, name in US_MACRO_TICKERS:
         d = yf_last_two(ticker)
@@ -441,11 +612,13 @@ def build_us_market_data():
 
     if not macro and not top30:
         return None
-    return {"macro": macro, "top30": top30}
+
+    news = fetch_naver_news("뉴욕증시 마감", naver_id, naver_secret, display=4)
+    return {"macro": macro, "top30": top30, "news": news}
 
 
-def run_us_market_mode():
-    data = build_us_market_data()
+def run_us_market_mode(naver_id=None, naver_secret=None):
+    data = build_us_market_data(naver_id, naver_secret)
     ok = replace_marketdata_block(
         "us_market.html", "// --- US_DATA_START ---", "// --- US_DATA_END ---", data
     )
@@ -559,14 +732,35 @@ def build_seoul_estate_data(molit_api_key):
     }
 
 
-def run_seoul_estate_mode(molit_api_key):
+REDEV_NEWS_TOPICS = {
+    "jamsil_jugong5": "잠실주공5단지 재건축",
+    "jamsil_rose": "잠실 장미아파트 재건축",
+    "olympic_seonsu": "올림픽선수촌 재건축",
+    "olympic_park_foreon": "올림픽파크포레온",
+}
+
+
+def build_seoul_news(naver_id, naver_secret):
+    """이전 버전은 재건축 뉴스 텍스트가 전부 하드코딩된 가짜 내용이었습니다.
+    (예: 없는 날짜의 조합 의결 내용 등) - 실제 네이버 뉴스 검색 결과로 교체."""
+    news = {}
+    for key, query in REDEV_NEWS_TOPICS.items():
+        results = fetch_naver_news(query, naver_id, naver_secret, display=1)
+        if results:
+            news[key] = {"text": results[0]["title"], "link": results[0]["link"]}
+        else:
+            news[key] = {"text": "관련 뉴스를 찾지 못했습니다.", "link": f"https://search.naver.com/search.naver?query={query}"}
+    return news
+
+
+def run_seoul_estate_mode(molit_api_key, naver_id=None, naver_secret=None):
     new_data = build_seoul_estate_data(molit_api_key)
     if new_data is None:
         replace_marketdata_block("seoul_estate.html", "// --- SEOUL_ESTATE_DATA_START ---",
                                   "// --- SEOUL_ESTATE_DATA_END ---", None)
         return None
 
-    # rose_shops / news는 자동 수집 대상이 아니므로 기존 파일에서 그대로 가져와 보존
+    # rose_shops(장미상가)는 아직 자동 수집 대상이 아니므로 기존 파일 값을 보존
     file_path = "seoul_estate.html"
     if os.path.exists(file_path):
         with open(file_path, "r", encoding="utf-8") as f:
@@ -576,14 +770,13 @@ def run_seoul_estate_mode(molit_api_key):
             try:
                 old_data = json.loads(m.group(1))
                 new_data["rose_shops"] = old_data.get("rose_shops", [])
-                new_data["news"] = old_data.get("news", {})
             except Exception as e:
-                log.warning(f"기존 seoul_estate.html 파싱 실패 (rose_shops/news 보존 불가): {e}")
+                log.warning(f"기존 seoul_estate.html 파싱 실패 (rose_shops 보존 불가): {e}")
                 new_data["rose_shops"] = []
-                new_data["news"] = {}
     else:
         new_data["rose_shops"] = []
-        new_data["news"] = {}
+
+    new_data["news"] = build_seoul_news(naver_id, naver_secret)
 
     ok = replace_marketdata_block(
         file_path, "// --- SEOUL_ESTATE_DATA_START ---", "// --- SEOUL_ESTATE_DATA_END ---", new_data
@@ -692,23 +885,27 @@ if __name__ == "__main__":
 
     dart_key = os.environ.get("DART_API_KEY")
     molit_key = os.environ.get("MOLIT_API_KEY")
+    naver_id = os.environ.get("NAVER_CLIENT_ID")
+    naver_secret = os.environ.get("NAVER_CLIENT_SECRET")
+    if not naver_id or not naver_secret:
+        log.warning("NAVER_CLIENT_ID / NAVER_CLIENT_SECRET 미설정 - 뉴스 섹션은 비워집니다.")
 
     kakao_token = get_kakao_access_token()
 
     if mode_to_run in ("kospi", "kospi_reits", "all"):
-        d = run_kospi_mode()
+        d = run_kospi_mode(naver_id, naver_secret)
         send_kakao_notification(kakao_token, "kospi", d)
 
     if mode_to_run in ("reits", "kospi_reits", "all"):
-        d = run_reits_mode(dart_key)
+        d = run_reits_mode(dart_key, naver_id, naver_secret)
         send_kakao_notification(kakao_token, "reits", d)
 
     if mode_to_run in ("us_market", "all"):
-        d = run_us_market_mode()
+        d = run_us_market_mode(naver_id, naver_secret)
         send_kakao_notification(kakao_token, "us_market", d)
 
     if mode_to_run in ("seoul_estate", "all"):
-        d = run_seoul_estate_mode(molit_key)
+        d = run_seoul_estate_mode(molit_key, naver_id, naver_secret)
         send_kakao_notification(kakao_token, "seoul_estate", d)
 
     log.info("실행 완료")
