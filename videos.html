@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>추천 투자 동영상</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', 'Noto Sans KR', sans-serif; }
+        .glow-card {
+            box-shadow: 0 10px 30px -15px rgba(0, 0, 0, 0.3);
+            transition: all 0.25s ease;
+        }
+        .glow-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 18px 35px -12px rgba(0, 0, 0, 0.45);
+        }
+        .video-frame { aspect-ratio: 16 / 9; background: #0f172a; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+
+    <!-- Header -->
+    <header class="border-b border-slate-800/80 bg-slate-900/50 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-gradient-to-tr from-rose-500 to-indigo-600 p-2 rounded-xl text-white shadow-lg shadow-indigo-500/20">
+                    <i class="fa-brands fa-youtube text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg tracking-tight bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">추천 투자 동영상</h1>
+                    <p class="text-[10px] text-slate-500 uppercase tracking-widest font-semibold">Weekly Curated Picks</p>
+                </div>
+            </div>
+            <span id="week-label" class="text-xs text-slate-400 font-mono"></span>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-grow w-full">
+        <div class="mb-8">
+            <h2 class="text-2xl font-bold text-slate-100">이번 주 추천 영상</h2>
+            <p class="text-sm text-slate-400 mt-1">매주 엄선한 재테크·투자 관련 영상 3~5개를 소개합니다.</p>
+        </div>
+
+        <div id="video-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- JS Dynamic -->
+        </div>
+    </main>
+
+    <footer class="border-t border-slate-800/60 py-6 mt-10">
+        <p class="text-center text-[11px] text-slate-600">영상 저작권은 각 채널에 있습니다.</p>
+    </footer>
+
+    <script>
+        // ---------------------------------------------------------------
+        // 매주 아래 배열 내용만 교체하면 됩니다 (신규 항목은 맨 위에 추가 권장).
+        // youtubeId: 영상 URL의 watch?v= 뒤에 오는 11자리 코드
+        //   예) https://www.youtube.com/watch?v=dQw4w9WgXcQ -> "dQw4w9WgXcQ"
+        // weekLabel: 헤더 우측에 표시될 주차 텍스트 (예: "2026년 7월 3주차")
+        // ---------------------------------------------------------------
+        const WEEK_LABEL = "[예시] 2026년 7월 3주차";
+
+        const VIDEOS_DATA = [
+            {
+                title: "[예시] 영상 제목을 입력하세요",
+                channel: "채널명",
+                youtubeId: "",
+                description: "이 영상을 추천하는 이유를 1~2문장으로 적어주세요. youtubeId를 비워두면 재생 영역 대신 안내 문구가 표시됩니다.",
+                dateAdded: "2026-07-11",
+            },
+            {
+                title: "[예시] 두 번째 추천 영상",
+                channel: "채널명",
+                youtubeId: "",
+                description: "실제 영상으로 교체 전까지는 예시 항목으로 표시됩니다.",
+                dateAdded: "2026-07-11",
+            },
+            {
+                title: "[예시] 세 번째 추천 영상",
+                channel: "채널명",
+                youtubeId: "",
+                description: "매주 3~5개씩 이 배열만 갱신하면 됩니다.",
+                dateAdded: "2026-07-11",
+            },
+        ];
+
+        function render() {
+            document.getElementById('week-label').innerText = WEEK_LABEL;
+            const grid = document.getElementById('video-grid');
+            grid.innerHTML = '';
+            VIDEOS_DATA.forEach(v => {
+                const playerHtml = v.youtubeId
+                    ? `<iframe class="w-full h-full" src="https://www.youtube.com/embed/${v.youtubeId}" title="${v.title}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`
+                    : `<div class="w-full h-full flex items-center justify-center"><i class="fa-brands fa-youtube text-4xl text-slate-700"></i></div>`;
+                grid.innerHTML += `
+                    <div class="bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden glow-card flex flex-col">
+                        <div class="video-frame w-full">${playerHtml}</div>
+                        <div class="p-5">
+                            <div class="flex items-center justify-between mb-1.5">
+                                <span class="text-[10px] bg-rose-500/10 text-rose-400 px-2 py-0.5 rounded border border-rose-500/20 font-bold">${v.channel}</span>
+                                <span class="text-[10px] text-slate-500">${v.dateAdded || ''}</span>
+                            </div>
+                            <h3 class="font-bold text-sm text-slate-100 leading-snug">${v.title}</h3>
+                            <p class="text-xs text-slate-400 leading-relaxed mt-2">${v.description}</p>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        window.onload = render;
+    </script>
+</body>
+</html>
