@@ -820,11 +820,241 @@ def run_seoul_estate_mode(molit_api_key, naver_id=None, naver_secret=None):
 # ---------------------------------------------------------------------------
 # 잠실 장미상가 실거래가 (비공개 모니터링 전용 페이지)
 # ---------------------------------------------------------------------------
-def run_rose_watch_mode():
-    """장미상가는 아직 정확한 네이버부동산 단지코드를 확인 중이라 실거래 자동
-    수집 대상이 아닙니다. 기존 파일의 데이터를 그대로 보존하면서 날짜만 매일
-    갱신합니다 (날짜가 안 바뀌는 문제를 다시 만들지 않기 위함) - 단지코드가
-    확인되면 이 함수를 실거래 API/스크래핑 연동으로 교체하면 됩니다."""
+def fetch_commercial_trades_songpa(molit_api_key, deal_ymd):
+    """국토부 상업업무용 부동산 매매 실거래가 API (RTMSDataSvcNrgTrade).
+    이 데이터셋은 아파트용과 별개 API라 정확한 응답 필드명을 아직 검증하지
+    못했습니다 - 모든 필드를 그대로 dict로 담아 반환하고, 첫 매칭 건의 필드
+    목록을 로그로 남겨 실제 스키마를 확인할 수 있게 했습니다."""
+    if not molit_api_key:
+        return []
+    url = "http://apis.data.go.kr/1613000/RTMSDataSvcNrgTrade/getRTMSDataSvcNrgTrade"
+    try:
+        resp = requests.get(url, params={
+            "serviceKey": molit_api_key, "LAWD_CD": LAWD_CODES["송파구"],
+            "DEAL_YMD": deal_ymd, "numOfRows": 500, "pageNo": 1,
+        }, timeout=15)
+        resp.raise_for_status()
+        root = ET.fromstring(resp.content)
+        header_msg = root.findtext(".//resultMsg", default="")
+        if header_msg and header_msg not in ("OK", "NORMAL SERVICE", ""):
+            log.warning(f"상업용 실거래가 API 메시지 ({deal_ymd}): {header_msg}")
+        items = root.findall(".//item")
+        return [{child.tag: (child.text.strip() if child.text else "") for child in it} for it in items]
+    except Exception as e:
+        log.warning(f"상업용 실거래가 조회 실패 ({deal_ymd}): {e}")
+        return []
+
+
+def _format_floor_label(raw):
+    """MOLIT 데이터의 층 표기는 지하를 음수(-1 등)로 주는 경우가 많아 이를
+    '지하n층' / '지상n층'으로 변환. 형식이 다르면 원본 값을 그대로 보여줌."""
+    if raw is None or raw == "":
+        return "-"
+    try:
+        f = int(raw)
+    except (ValueError, TypeError):
+        return str(raw)
+    if f < 0:
+        return f"지하{abs(f)}층"
+    return f"지상{f}층"
+
+
+def _to_float(v):
+    try:
+        return float(str(v).replace(",", "").strip())
+    except (ValueError, TypeError, AttributeError):
+        return None
+
+
+def _format_commercial_row(row):
+    name = row.get("bldNm") or row.get("mhouseNm") or row.get("offiNm") or row.get("buildingName") or "장미상가(재건축 장미1,2,3차)"
+    amount_manwon = _to_float(row.get("dealAmount"))
+    price = _fmt_eok(int(amount_manwon)) if amount_manwon else (row.get("dealAmount") or "N/A")
+
+    floor_raw = row.get("flr") or row.get("floor")
+    floor_label = _format_floor_label(floor_raw)
+
+    area_raw = row.get("totFlrAr") or row.get("area") or row.get("dealArea")
+    area_sqm = _to_float(area_raw)
+    area_label = f"{area_sqm:.2f}㎡" if area_sqm else (str(area_raw) if area_raw else "-")
+
+    pyeong_price = None
+    pyeong_label = "-"
+    if amount_manwon and area_sqm and area_sqm > 0:
+        pyeong = area_sqm / 3.3058
+        pyeong_price = amount_manwon / pyeong  # 만원/평
+        pyeong_label = f"{pyeong_price:,.0f}만원/평"
+
+    y, mo, d = row.get("dealYear", ""), row.get("dealMonth", ""), row.get("dealDay", "")
+    date_label = f"{y}-{mo.zfill(2) if mo else ''}-{d.zfill(2) if d else ''}" if y else ""
+    deal_dt = None
+    try:
+        deal_dt = datetime(int(y), int(mo), int(d or "1"), tzinfo=KST)
+    except (ValueError, TypeError):
+        pass
+
+    return {
+        "name": name, "floor": floor_label, "area": area_label, "price": price,
+        "pyeong_price": pyeong_label, "date": date_label,
+        "_pyeong_price_raw": pyeong_price, "_deal_dt": deal_dt,  # 통계 계산용 (JSON에도 포함되지만 화면에서는 안 씀)
+    }
+
+
+ROSE_TARGET_DONG = "신천동"
+ROSE_TARGET_JIBUN = {"7", "11"}  # 아실 확인: 재건축 장미1,2,3차 상가 - 서울시 송파구 신천동 7 / 11
+
+
+def _row_matches_rose(row):
+    """이름에 '장미'가 들어간 행 OR (법정동=신천동 AND 지번=7|11)인 행을 매칭.
+    정확한 MOLIT 필드 태그명이 아직 검증 전이라, 키 이름에 'umd'(법정동)나
+    'jibun'/'bonbun'(지번)이 들어간 필드를 유연하게 찾아서 비교합니다."""
+    values = [v for v in row.values() if isinstance(v, str)]
+    if any("장미" in v for v in values):
+        return True
+    dong_val, jibun_val = None, None
+    for k, v in row.items():
+        kl = k.lower()
+        if "umd" in kl or "dong" in kl:
+            dong_val = v
+        if "jibun" in kl or "bonbun" in kl:
+            jibun_val = v
+    if dong_val == ROSE_TARGET_DONG and jibun_val in ROSE_TARGET_JIBUN:
+        return True
+    return False
+
+
+def _months_back(base_dt, n):
+    """base_dt로부터 n개월 전의 1일(day=1)을 반환."""
+    year, month = base_dt.year, base_dt.month - n
+    while month <= 0:
+        month += 12
+        year -= 1
+    return base_dt.replace(year=year, month=month, day=1)
+
+
+def build_rose_real_trades(molit_api_key):
+    """잠실(신천동) 소재 상업용 부동산 실거래 중 장미상가로 추정되는 행만 필터링.
+    매칭 기준: ① 건물명 등에 '장미' 포함, ② 법정동=신천동 + 지번=7 또는 11
+    (아실에서 확인한 '재건축 장미1,2,3차' 주소 기준). 최근 12개월 조회
+    (1개월/3개월/6개월/1년 통계를 내려면 1년치 데이터가 필요합니다)."""
+    if not molit_api_key:
+        log.warning("MOLIT_API_KEY 없음 - 장미상가 실거래가 조회 생략")
+        return []
+    now = datetime.now(KST)
+    matched, logged_schema = [], False
+    for i in range(12):
+        ymd = _months_back(now, i).strftime("%Y%m")
+        rows = fetch_commercial_trades_songpa(molit_api_key, ymd)
+        for row in rows:
+            if not logged_schema and row:
+                log.info(f"상업용 실거래가 응답 필드 예시({ymd}): {list(row.keys())}")
+                logged_schema = True
+            if _row_matches_rose(row):
+                matched.append(_format_commercial_row(row))
+    return matched
+
+
+def build_rose_stats(matched_rows, now):
+    """평단가(거래가/평) 기준 최근 1개월/3개월/6개월/1년 최고·최저·평균 통계."""
+    windows = [("1개월", 30), ("3개월", 90), ("6개월", 180), ("1년", 365)]
+    stats = []
+    for label, days in windows:
+        cutoff = now - timedelta(days=days)
+        vals = [
+            r["_pyeong_price_raw"] for r in matched_rows
+            if r.get("_deal_dt") and r["_deal_dt"] >= cutoff and r.get("_pyeong_price_raw")
+        ]
+        if vals:
+            stats.append({
+                "label": label, "count": len(vals),
+                "max": f"{max(vals):,.0f}만원/평", "min": f"{min(vals):,.0f}만원/평",
+                "avg": f"{sum(vals) / len(vals):,.0f}만원/평",
+            })
+        else:
+            stats.append({"label": label, "count": 0, "max": "-", "min": "-", "avg": "-"})
+    return stats
+
+
+# 신이사님이 네이버부동산에서 직접 확인해주신 장미상가 매물 11건의 articleId.
+# 리스트/검색 API는 막혀 있어 자동 발견은 안 되고, 이 목록에 있는 매물의
+# 상세정보만 매일 갱신합니다. 매물이 추가/삭제되면 이 리스트를 수동으로 갱신해야 합니다.
+ROSE_ARTICLE_IDS = [
+    "2637267879", "2635413456", "2632272074", "2632270827", "2633793700",
+    "2636884585", "2637305176", "2632027465", "2632271578", "2632914018", "2635413792",
+]
+
+
+def fetch_naver_article_detail(article_id):
+    """fin.land.naver.com 개별 매물 상세 조회 (비공식 API).
+    브라우저로 직접 접속하면 Referer가 없어 {"detailCode":"Error"}가 뜨는 걸
+    확인했습니다 - 매물 상세페이지 URL을 Referer로 넣어 우회를 시도합니다.
+    그래도 막히면 None을 반환하고 상위 로직에서 기존 값을 보존합니다."""
+    url = "https://fin.land.naver.com/front-api/v1/article/basicInfo"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                       "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        "Referer": f"https://fin.land.naver.com/articles/{article_id}",
+        "Accept": "application/json, text/plain, */*",
+    }
+    try:
+        resp = requests.get(
+            url, params={"articleId": article_id, "realEstateType": "D02", "tradeType": "A1"},
+            headers=headers, timeout=10,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        if not data or data.get("detailCode") == "Error":
+            log.warning(f"매물 {article_id} 조회 거부됨 (Referer 우회 실패 가능성)")
+            return None
+        return data
+    except Exception as e:
+        log.warning(f"매물 {article_id} 조회 실패: {e}")
+        return None
+
+
+def _format_naver_shop(article_id, data):
+    """정확한 응답 필드명이 검증 전이라, 흔한 후보 키들을 순서대로 시도.
+    전부 실패하면 최소한 링크는 살아있도록 '정보없음'으로 채웁니다."""
+    name = data.get("articleName") or data.get("atclNm") or "장미상가"
+    floor_raw = data.get("floorInfo") or data.get("flrInfo") or data.get("floor") or data.get("flrInfoNm")
+    price_raw = (data.get("dealOrWarrantPrc") or data.get("price") or data.get("dealPrice")
+                 or data.get("priceInfo"))
+    area2 = data.get("area2") or data.get("spc2") or data.get("exclusiveArea")  # 전용면적 추정
+    area1 = data.get("area1") or data.get("spc1") or data.get("supplyArea")     # 공급면적 추정
+    size = f"{area2}㎡(전용)" if area2 else (f"{area1}㎡(공급)" if area1 else "정보없음")
+    return {
+        "name": name,
+        "floor": str(floor_raw) if floor_raw else "정보없음",
+        "size": size,
+        "price": str(price_raw) if price_raw else "정보없음",
+        "link": f"https://fin.land.naver.com/articles/{article_id}",
+    }
+
+
+def build_rose_shops():
+    """확보된 articleId 11건의 매물 호가를 자동 조회. 실패한 건은 건너뛰고,
+    전부 실패하면 None을 반환해 run_rose_watch_mode()에서 기존 값을 보존합니다."""
+    results = []
+    logged_schema = False
+    for aid in ROSE_ARTICLE_IDS:
+        data = fetch_naver_article_detail(aid)
+        if data is None:
+            continue
+        if not logged_schema:
+            log.info(f"네이버 매물 상세 응답 필드 예시(articleId={aid}): {list(data.keys())}")
+            logged_schema = True
+        results.append(_format_naver_shop(aid, data))
+    if not results:
+        log.warning("네이버 매물 11건 전부 조회 실패 - 기존 shops 값 보존")
+        return None
+    if len(results) < len(ROSE_ARTICLE_IDS):
+        log.warning(f"네이버 매물 일부만 조회 성공: {len(results)}/{len(ROSE_ARTICLE_IDS)}건")
+    return results
+
+
+def run_rose_watch_mode(molit_api_key=None):
+    """장미상가 페이지: 실거래가(국토부 상업용 실거래 API, 자동) + 호가(네이버
+    개별 매물 11건, articleId 기반 자동) 두 섹션을 함께 관리."""
     file_path = "rose_watch.html"
     if not os.path.exists(file_path):
         log.warning(f"{file_path} 없음 - 장미상가 페이지 업데이트 생략 (파일을 저장소에 올려주세요)")
@@ -838,10 +1068,24 @@ def run_rose_watch_mode():
             old_data = json.loads(m.group(1))
         except Exception as e:
             log.warning(f"{file_path} 기존 데이터 파싱 실패: {e}")
+
+    real_trades = build_rose_real_trades(molit_api_key)
+    real_trade_stats = build_rose_stats(real_trades, datetime.now(KST))
+    # 통계 계산에만 쓰인 내부 필드는 JSON 직렬화 전에 제거 (datetime은 직렬화 불가)
+    for r in real_trades:
+        r.pop("_pyeong_price_raw", None)
+        r.pop("_deal_dt", None)
+
+    shops = build_rose_shops()
+    if shops is None:
+        shops = old_data.get("shops", [])  # 전부 실패 시 기존 값 보존
+
     new_data = {
         "market_date": kst_date_label(),
-        "shops": old_data.get("shops", []),
-        "note": "네이버부동산 단지코드 확인 후 실거래 자동 연동 예정 (현재는 수동 값 유지)",
+        "shops": shops,  # 호가(네이버 개별 매물 11건) - articleId 기반 자동 수집
+        "real_trades": real_trades,  # 실거래가(국토부 상업용 부동산 API) - 자동 수집
+        "real_trade_stats": real_trade_stats,  # 기간별(1/3/6/12개월) 평단가 최고·최저·평균
+        "note": "실거래가·호가 모두 자동 갱신됩니다. 호가는 확보된 매물 11건 기준이며, 신규 매물은 articleId를 추가해야 반영됩니다.",
     }
     ok = replace_marketdata_block(
         file_path, "// --- ROSE_WATCH_DATA_START ---", "// --- ROSE_WATCH_DATA_END ---", new_data
@@ -919,7 +1163,8 @@ def send_kakao_notification(token, mode, data):
             target_url = base_url + "seoul_estate.html"
         elif mode == "rose_watch":
             title = "잠실 장미상가 모니터링 (비공개)"
-            summary = data.get("note", "업데이트 완료")
+            n = len(data.get("real_trades", []))
+            summary = f"이번 실행에서 실거래 {n}건 확인됨" if n else "이번 기간 신규 실거래 없음 (매물 호가는 페이지에서 확인)"
             target_url = base_url + "rose_watch.html"
         else:
             return
@@ -1010,7 +1255,7 @@ if __name__ == "__main__":
 
         # 매일 07:10 KST에 도는 이 트리거에 허브 알림 + 장미상가(비공개) 알림도 함께 발송
         send_hub_notification(kakao_token)
-        rose_d = run_rose_watch_mode()
+        rose_d = run_rose_watch_mode(molit_key)
         send_kakao_notification(kakao_token, "rose_watch", rose_d)
 
     log.info("실행 완료")
