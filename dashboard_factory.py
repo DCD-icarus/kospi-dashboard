@@ -1032,7 +1032,7 @@ def fetch_naver_article_detail(article_id, max_retries=3):
                 headers=headers, timeout=10,
             )
             if resp.status_code == 429:
-                wait = (2 ** attempt) * 3 + random.uniform(0, 2)  # 3s, 6s, 12s(+jitter)
+                wait = (2 ** attempt) * 8 + random.uniform(0, 3)  # 8s, 16s, 32s(+jitter)
                 log.warning(f"매물 {article_id} 429(Too Many Requests) - {wait:.1f}초 대기 후 재시도 ({attempt+1}/{max_retries})")
                 time.sleep(wait)
                 continue
@@ -1077,7 +1077,7 @@ def build_rose_shops():
     logged_schema = False
     for i, aid in enumerate(ROSE_ARTICLE_IDS):
         if i > 0:
-            time.sleep(random.uniform(2.0, 3.5))  # 요청 간 텀 (429 방지)
+            time.sleep(random.uniform(4.0, 6.0))  # 요청 간 텀 (429 방지, 이전보다 더 늘림)
         data = fetch_naver_article_detail(aid)
         if data is None:
             continue
@@ -1086,7 +1086,11 @@ def build_rose_shops():
             logged_schema = True
         results.append(_format_naver_shop(aid, data))
     if not results:
-        log.warning("네이버 매물 11건 전부 조회 실패 - 기존 shops 값 보존")
+        log.warning(
+            "네이버 매물 11건 전부 조회 실패 - 기존 shops 값 보존 "
+            "(대기시간을 늘려도 계속 실패하면 요청 빈도 문제가 아니라 "
+            "GitHub Actions IP 자체가 차단된 것일 수 있습니다 - 이 경우 자동화가 어려울 수 있음)"
+        )
         return None
     if len(results) < len(ROSE_ARTICLE_IDS):
         log.warning(f"네이버 매물 일부만 조회 성공: {len(results)}/{len(ROSE_ARTICLE_IDS)}건")
@@ -1257,34 +1261,36 @@ def send_hub_notification(token):
 
 
 # ---------------------------------------------------------------------------
-# SPI(seoulpi.io) 신규 아티클 알림
+# SPI(seoulpi.io) 신규 아티클 알림 + 전용 페이지
 # ---------------------------------------------------------------------------
-# 로그인 없이 공개된 아티클 목록 페이지에서 "제목 + 링크"만 가져옵니다.
-# SPI 이용약관상 본문 등 콘텐츠의 무단 복제·배포가 금지되어 있어, 본문은
-# 절대 수집하지 않고 새 글이 올라왔다는 사실과 원문 링크만 안내합니다.
-SPI_SEEN_FILE = "spi_seen_articles.json"
+# 로그인 없이 공개된 아티클 목록 페이지에서 "제목 + 링크"만 가져오고, 신규
+# 아티클에 한해 개별 페이지의 og:title/description(검색엔진 미리보기용 공개
+# 메타데이터)에서 깔끔한 제목과 짧은 요약만 추가로 가져옵니다. 본문 전체는
+# SPI 이용약관상 무단 복제·배포가 금지되어 있어 절대 수집하지 않습니다.
+SPI_CACHE_FILE = "spi_articles_cache.json"
+SPI_PAGE_MAX_ITEMS = 30
 
 
-def _load_spi_seen():
-    if os.path.exists(SPI_SEEN_FILE):
+def _load_spi_cache():
+    if os.path.exists(SPI_CACHE_FILE):
         try:
-            with open(SPI_SEEN_FILE, "r", encoding="utf-8") as f:
-                return set(json.load(f))
+            with open(SPI_CACHE_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)  # {article_id: {title, summary, link, first_seen}}
         except Exception:
-            return set()
-    return set()
+            return {}
+    return {}
 
 
-def _save_spi_seen(seen_ids):
+def _save_spi_cache(cache):
     try:
-        with open(SPI_SEEN_FILE, "w", encoding="utf-8") as f:
-            json.dump(sorted(seen_ids), f, ensure_ascii=False)
+        with open(SPI_CACHE_FILE, "w", encoding="utf-8") as f:
+            json.dump(cache, f, ensure_ascii=False, indent=2)
     except Exception as e:
-        log.warning(f"SPI 열람기록 저장 실패: {e}")
+        log.warning(f"SPI 캐시 저장 실패: {e}")
 
 
 def fetch_spi_articles(limit=15):
-    """SPI 공개 아티클 목록에서 제목/링크만 추출 (본문 미수집, 로그인 불필요).
+    """SPI 공개 아티클 목록에서 id/제목(원문)/링크만 추출 (본문 미수집, 로그인 불필요).
     공식 API가 아니라 페이지 HTML에서 /article/<id> 링크와 그 안의 텍스트를
     정규식으로 뽑는 방식이라, SPI가 페이지 구조를 바꾸면 깨질 수 있습니다."""
     url = "https://seoulpi.io/article/all"
@@ -1307,7 +1313,7 @@ def fetch_spi_articles(limit=15):
         title_text = re.sub(r"<[^>]+>", " ", inner_html)
         title_text = re.sub(r"\s+", " ", title_text).strip()
         if title_text:
-            articles.append({"id": art_id, "title": title_text, "link": f"https://seoulpi.io{link_path}"})
+            articles.append({"id": art_id, "raw_title": title_text, "link": f"https://seoulpi.io{link_path}"})
 
     seen_ids, dedup = set(), []
     for a in articles:
@@ -1319,22 +1325,92 @@ def fetch_spi_articles(limit=15):
     return dedup[:limit]
 
 
+def fetch_spi_article_meta(link):
+    """개별 아티클 페이지의 공개 메타데이터(og:title, og:description)만 추출.
+    이건 SPI가 검색엔진·SNS 미리보기용으로 이미 공개해둔 정보라, 본문을
+    긁는 것과 달리 저작권/약관 문제에서 자유롭습니다."""
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                       "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+    }
+    try:
+        resp = requests.get(link, headers=headers, timeout=10)
+        resp.raise_for_status()
+        html = resp.text
+        title_m = (re.search(r'<meta property="og:title" content="([^"]*)"', html)
+                   or re.search(r'<title>([^<]*)</title>', html))
+        desc_m = (re.search(r'<meta property="og:description" content="([^"]*)"', html)
+                  or re.search(r'<meta name="description" content="([^"]*)"', html))
+        title = title_m.group(1).strip() if title_m else None
+        summary = desc_m.group(1).strip() if desc_m else None
+        return title, summary
+    except Exception as e:
+        log.warning(f"SPI 아티클 메타 조회 실패: {e}")
+        return None, None
+
+
+def build_spi_news():
+    """목록에서 아티클을 가져오고, 캐시에 없는(신규) 아티클만 상세 메타를
+    추가로 조회해 캐시에 누적. 반환값은 화면 표시용 최신 N개 리스트."""
+    listing = fetch_spi_articles(limit=15)
+    cache = _load_spi_cache()
+    new_ids = []
+
+    for a in listing:
+        if a["id"] in cache:
+            continue
+        title, summary = fetch_spi_article_meta(a["link"])
+        cache[a["id"]] = {
+            "title": title or a["raw_title"][:80],
+            "summary": summary or "",
+            "link": a["link"],
+            "first_seen": kst_date_label(""),
+        }
+        new_ids.append(a["id"])
+        time.sleep(random.uniform(1.0, 2.0))  # SPI 서버 배려 차원의 텀
+
+    # 캐시가 무한정 커지지 않도록 최근 N개만 유지 (첫 발견 순 정렬)
+    ordered = sorted(cache.items(), key=lambda kv: kv[1].get("first_seen", ""), reverse=True)
+    trimmed = dict(ordered[:SPI_PAGE_MAX_ITEMS])
+    _save_spi_cache(trimmed)
+
+    display_list = [{"id": k, **v} for k, v in ordered[:SPI_PAGE_MAX_ITEMS]]
+    return display_list, new_ids
+
+
+def run_spi_notify_mode(kakao_token):
+    file_path = "spi_news.html"
+    if not os.path.exists(file_path):
+        log.warning(f"{file_path} 없음 - SPI 뉴스 페이지 업데이트 생략 (파일을 저장소에 올려주세요)")
+        return
+
+    display_list, new_ids = build_spi_news()
+    new_data = {"market_date": kst_date_label(), "articles": display_list}
+    replace_marketdata_block(file_path, "// --- SPI_NEWS_DATA_START ---", "// --- SPI_NEWS_DATA_END ---", new_data)
+
+    if new_ids:
+        log.info(f"SPI 신규 아티클 {len(new_ids)}건 발견")
+        new_items = [a for a in display_list if a["id"] in new_ids]
+        send_spi_notification(kakao_token, new_items)
+    else:
+        log.info("SPI 신규 아티클 없음")
+
+
 def send_spi_notification(token, new_articles):
     if not token or not new_articles:
         return
     top = new_articles[:3]
     lines = [f"• {a['title'][:45]}" for a in top]
     extra = f" 외 {len(new_articles) - 3}건" if len(new_articles) > 3 else ""
+    owner = os.environ.get("GITHUB_REPOSITORY_OWNER", "username").lower()
+    target_url = f"https://{owner}.github.io/kospi-dashboard/spi_news.html"
     text = f"📰 SPI 신규 아티클 {len(new_articles)}건{extra}\n\n" + "\n".join(lines)
-    target_url = top[0]["link"]
     try:
         template_object = {
             "object_type": "text",
             "text": text[:190],
             "link": {"web_url": target_url, "mobile_web_url": target_url},
-            "buttons": [{"title": "SPI에서 확인하기",
-                         "link": {"web_url": "https://seoulpi.io/article/all",
-                                  "mobile_web_url": "https://seoulpi.io/article/all"}}],
+            "buttons": [{"title": "SPI 뉴스 페이지 보기", "link": {"web_url": target_url, "mobile_web_url": target_url}}],
         }
         resp = requests.post(
             "https://kapi.kakao.com/v2/api/talk/memo/default/send",
@@ -1350,19 +1426,6 @@ def send_spi_notification(token, new_articles):
         log.error(f"[spi] 카카오 알림 전송 중 예외: {e}")
 
 
-def run_spi_notify_mode(kakao_token):
-    articles = fetch_spi_articles(limit=15)
-    if not articles:
-        return
-    seen = _load_spi_seen()
-    new_articles = [a for a in articles if a["id"] not in seen]
-    if new_articles:
-        log.info(f"SPI 신규 아티클 {len(new_articles)}건 발견")
-        send_spi_notification(kakao_token, new_articles)
-    else:
-        log.info("SPI 신규 아티클 없음")
-    seen.update(a["id"] for a in articles)
-    _save_spi_seen(seen)
 
 
 # ---------------------------------------------------------------------------
