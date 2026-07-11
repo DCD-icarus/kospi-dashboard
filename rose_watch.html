@@ -118,23 +118,391 @@
     <script>
         // --- ROSE_WATCH_DATA_START ---
         const marketData = {
-            "market_date": "2026년 7월 3일 (금) 기준",
-            "note": "실거래가는 국토부 공식 데이터로 자동 갱신됩니다. 호가(매물)는 네이버 개별 매물 링크를 확보하는 대로 자동화 예정입니다.",
-            "real_trades": [],
-            "real_trade_stats": [],
+            "market_date": "2026년 7월 11일 (토) 기준",
             "shops": [
-                { "floor": "3층", "size": "14.20㎡", "price": "2억 4,000만원", "link": "https://m.land.naver.com/complex/info/144?tradTpCd=A1" },
-                { "floor": "지하 1층", "size": "11.50㎡", "price": "2억 5,000만원", "link": "https://m.land.naver.com/complex/info/144?tradTpCd=A1" },
-                { "floor": "2층", "size": "12.80㎡", "price": "2억 8,000만원", "link": "https://m.land.naver.com/complex/info/144?tradTpCd=A1" },
-                { "floor": "1층", "size": "10.20㎡", "price": "3억 1,000만원", "link": "https://m.land.naver.com/complex/info/144?tradTpCd=A1" },
-                { "floor": "지하 1층", "size": "18.40㎡", "price": "3억 4,000만원", "link": "https://m.land.naver.com/complex/info/144?tradTpCd=A1" },
-                { "floor": "3층", "size": "22.10㎡", "price": "3억 9,000만원", "link": "https://m.land.naver.com/complex/info/144?tradTpCd=A1" },
-                { "floor": "2층", "size": "19.50㎡", "price": "4억 2,000만원", "link": "https://m.land.naver.com/complex/info/144?tradTpCd=A1" },
-                { "floor": "1층", "size": "15.30㎡", "price": "4억 8,000만원", "link": "https://m.land.naver.com/complex/info/144?tradTpCd=A1" },
-                { "floor": "1층", "size": "18.60㎡", "price": "5억 5,000만원", "link": "https://m.land.naver.com/complex/info/144?tradTpCd=A1" },
-                { "floor": "2층", "size": "28.40㎡", "price": "6억 2,000만원", "link": "https://m.land.naver.com/complex/info/144?tradTpCd=A1" }
-            ]
-        };
+                        {
+                                    "floor": "3층",
+                                    "size": "14.20㎡",
+                                    "price": "2억 4,000만원",
+                                    "link": "https://m.land.naver.com/complex/info/144?tradTpCd=A1"
+                        },
+                        {
+                                    "floor": "지하 1층",
+                                    "size": "11.50㎡",
+                                    "price": "2억 5,000만원",
+                                    "link": "https://m.land.naver.com/complex/info/144?tradTpCd=A1"
+                        },
+                        {
+                                    "floor": "2층",
+                                    "size": "12.80㎡",
+                                    "price": "2억 8,000만원",
+                                    "link": "https://m.land.naver.com/complex/info/144?tradTpCd=A1"
+                        },
+                        {
+                                    "floor": "1층",
+                                    "size": "10.20㎡",
+                                    "price": "3억 1,000만원",
+                                    "link": "https://m.land.naver.com/complex/info/144?tradTpCd=A1"
+                        },
+                        {
+                                    "floor": "지하 1층",
+                                    "size": "18.40㎡",
+                                    "price": "3억 4,000만원",
+                                    "link": "https://m.land.naver.com/complex/info/144?tradTpCd=A1"
+                        },
+                        {
+                                    "floor": "3층",
+                                    "size": "22.10㎡",
+                                    "price": "3억 9,000만원",
+                                    "link": "https://m.land.naver.com/complex/info/144?tradTpCd=A1"
+                        },
+                        {
+                                    "floor": "2층",
+                                    "size": "19.50㎡",
+                                    "price": "4억 2,000만원",
+                                    "link": "https://m.land.naver.com/complex/info/144?tradTpCd=A1"
+                        },
+                        {
+                                    "floor": "1층",
+                                    "size": "15.30㎡",
+                                    "price": "4억 8,000만원",
+                                    "link": "https://m.land.naver.com/complex/info/144?tradTpCd=A1"
+                        },
+                        {
+                                    "floor": "1층",
+                                    "size": "18.60㎡",
+                                    "price": "5억 5,000만원",
+                                    "link": "https://m.land.naver.com/complex/info/144?tradTpCd=A1"
+                        },
+                        {
+                                    "floor": "2층",
+                                    "size": "28.40㎡",
+                                    "price": "6억 2,000만원",
+                                    "link": "https://m.land.naver.com/complex/info/144?tradTpCd=A1"
+                        }
+            ],
+            "real_trades": [
+                        {
+                                    "name": "장미상가(재건축 장미1,2,3차)",
+                                    "floor": "-",
+                                    "area": "-",
+                                    "price": "8억 8,400만원",
+                                    "pyeong_price": "-",
+                                    "date": "2026-06-26"
+                        },
+                        {
+                                    "name": "장미상가(재건축 장미1,2,3차)",
+                                    "floor": "-",
+                                    "area": "-",
+                                    "price": "15억 8,180만원",
+                                    "pyeong_price": "-",
+                                    "date": "2026-06-13"
+                        },
+                        {
+                                    "name": "장미상가(재건축 장미1,2,3차)",
+                                    "floor": "지상1층",
+                                    "area": "-",
+                                    "price": "10억 2,500만원",
+                                    "pyeong_price": "-",
+                                    "date": "2026-05-27"
+                        },
+                        {
+                                    "name": "장미상가(재건축 장미1,2,3차)",
+                                    "floor": "-",
+                                    "area": "-",
+                                    "price": "4억 5,000만원",
+                                    "pyeong_price": "-",
+                                    "date": "2026-05-27"
+                        },
+                        {
+                                    "name": "장미상가(재건축 장미1,2,3차)",
+                                    "floor": "지상4층",
+                                    "area": "-",
+                                    "price": "22억 5,000만원",
+                                    "pyeong_price": "-",
+                                    "date": "2026-04-20"
+                        },
+                        {
+                                    "name": "장미상가(재건축 장미1,2,3차)",
+                                    "floor": "지상4층",
+                                    "area": "-",
+                                    "price": "22억원",
+                                    "pyeong_price": "-",
+                                    "date": "2026-04-09"
+                        },
+                        {
+                                    "name": "장미상가(재건축 장미1,2,3차)",
+                                    "floor": "-",
+                                    "area": "-",
+                                    "price": "22억원",
+                                    "pyeong_price": "-",
+                                    "date": "2026-04-09"
+                        },
+                        {
+                                    "name": "장미상가(재건축 장미1,2,3차)",
+                                    "floor": "-",
+                                    "area": "-",
+                                    "price": "3억 800만원",
+                                    "pyeong_price": "-",
+                                    "date": "2026-03-31"
+                        },
+                        {
+                                    "name": "장미상가(재건축 장미1,2,3차)",
+                                    "floor": "-",
+                                    "area": "-",
+                                    "price": "13억 6,000만원",
+                                    "pyeong_price": "-",
+                                    "date": "2026-02-05"
+                        },
+                        {
+                                    "name": "장미상가(재건축 장미1,2,3차)",
+                                    "floor": "-",
+                                    "area": "-",
+                                    "price": "8억 4,500만원",
+                                    "pyeong_price": "-",
+                                    "date": "2026-02-23"
+                        },
+                        {
+                                    "name": "장미상가(재건축 장미1,2,3차)",
+                                    "floor": "-",
+                                    "area": "-",
+                                    "price": "11억 1,000만원",
+                                    "pyeong_price": "-",
+                                    "date": "2026-02-13"
+                        },
+                        {
+                                    "name": "장미상가(재건축 장미1,2,3차)",
+                                    "floor": "-",
+                                    "area": "-",
+                                    "price": "11억 1,000만원",
+                                    "pyeong_price": "-",
+                                    "date": "2026-02-13"
+                        },
+                        {
+                                    "name": "장미상가(재건축 장미1,2,3차)",
+                                    "floor": "-",
+                                    "area": "-",
+                                    "price": "13억 6,000만원",
+                                    "pyeong_price": "-",
+                                    "date": "2026-02-05"
+                        },
+                        {
+                                    "name": "장미상가(재건축 장미1,2,3차)",
+                                    "floor": "-",
+                                    "area": "-",
+                                    "price": "8억원",
+                                    "pyeong_price": "-",
+                                    "date": "2026-01-10"
+                        },
+                        {
+                                    "name": "장미상가(재건축 장미1,2,3차)",
+                                    "floor": "지상1층",
+                                    "area": "-",
+                                    "price": "34억 1,000만원",
+                                    "pyeong_price": "-",
+                                    "date": "2025-12-26"
+                        },
+                        {
+                                    "name": "장미상가(재건축 장미1,2,3차)",
+                                    "floor": "지상1층",
+                                    "area": "-",
+                                    "price": "34억 1,000만원",
+                                    "pyeong_price": "-",
+                                    "date": "2025-12-26"
+                        },
+                        {
+                                    "name": "장미상가(재건축 장미1,2,3차)",
+                                    "floor": "지상3층",
+                                    "area": "-",
+                                    "price": "13억 2,240만원",
+                                    "pyeong_price": "-",
+                                    "date": "2025-12-11"
+                        },
+                        {
+                                    "name": "장미상가(재건축 장미1,2,3차)",
+                                    "floor": "-",
+                                    "area": "-",
+                                    "price": "5억원",
+                                    "pyeong_price": "-",
+                                    "date": "2025-12-10"
+                        },
+                        {
+                                    "name": "장미상가(재건축 장미1,2,3차)",
+                                    "floor": "지상3층",
+                                    "area": "-",
+                                    "price": "16억 5,000만원",
+                                    "pyeong_price": "-",
+                                    "date": "2025-12-06"
+                        },
+                        {
+                                    "name": "장미상가(재건축 장미1,2,3차)",
+                                    "floor": "-",
+                                    "area": "-",
+                                    "price": "6억 8,700만원",
+                                    "pyeong_price": "-",
+                                    "date": "2025-11-07"
+                        },
+                        {
+                                    "name": "장미상가(재건축 장미1,2,3차)",
+                                    "floor": "-",
+                                    "area": "-",
+                                    "price": "5억 5,300만원",
+                                    "pyeong_price": "-",
+                                    "date": "2025-11-03"
+                        },
+                        {
+                                    "name": "장미상가(재건축 장미1,2,3차)",
+                                    "floor": "-",
+                                    "area": "-",
+                                    "price": "5억 5,300만원",
+                                    "pyeong_price": "-",
+                                    "date": "2025-11-03"
+                        },
+                        {
+                                    "name": "장미상가(재건축 장미1,2,3차)",
+                                    "floor": "-",
+                                    "area": "-",
+                                    "price": "5억 5,400만원",
+                                    "pyeong_price": "-",
+                                    "date": "2025-11-03"
+                        },
+                        {
+                                    "name": "장미상가(재건축 장미1,2,3차)",
+                                    "floor": "지상3층",
+                                    "area": "-",
+                                    "price": "6억 8,700만원",
+                                    "pyeong_price": "-",
+                                    "date": "2025-11-07"
+                        },
+                        {
+                                    "name": "장미상가(재건축 장미1,2,3차)",
+                                    "floor": "-",
+                                    "area": "-",
+                                    "price": "3억원",
+                                    "pyeong_price": "-",
+                                    "date": "2025-10-16"
+                        },
+                        {
+                                    "name": "장미상가(재건축 장미1,2,3차)",
+                                    "floor": "-",
+                                    "area": "-",
+                                    "price": "8억 5,000만원",
+                                    "pyeong_price": "-",
+                                    "date": "2025-10-27"
+                        },
+                        {
+                                    "name": "장미상가(재건축 장미1,2,3차)",
+                                    "floor": "지상4층",
+                                    "area": "-",
+                                    "price": "25억 3,500만원",
+                                    "pyeong_price": "-",
+                                    "date": "2025-10-25"
+                        },
+                        {
+                                    "name": "장미상가(재건축 장미1,2,3차)",
+                                    "floor": "-",
+                                    "area": "-",
+                                    "price": "6억 4,125만원",
+                                    "pyeong_price": "-",
+                                    "date": "2025-10-24"
+                        },
+                        {
+                                    "name": "장미상가(재건축 장미1,2,3차)",
+                                    "floor": "-",
+                                    "area": "-",
+                                    "price": "3억원",
+                                    "pyeong_price": "-",
+                                    "date": "2025-10-16"
+                        },
+                        {
+                                    "name": "장미상가(재건축 장미1,2,3차)",
+                                    "floor": "-",
+                                    "area": "-",
+                                    "price": "3억 7,000만원",
+                                    "pyeong_price": "-",
+                                    "date": "2025-09-19"
+                        },
+                        {
+                                    "name": "장미상가(재건축 장미1,2,3차)",
+                                    "floor": "-",
+                                    "area": "-",
+                                    "price": "4억 5,000만원",
+                                    "pyeong_price": "-",
+                                    "date": "2025-09-19"
+                        },
+                        {
+                                    "name": "장미상가(재건축 장미1,2,3차)",
+                                    "floor": "-",
+                                    "area": "-",
+                                    "price": "5억 4,000만원",
+                                    "pyeong_price": "-",
+                                    "date": "2025-08-13"
+                        },
+                        {
+                                    "name": "장미상가(재건축 장미1,2,3차)",
+                                    "floor": "-",
+                                    "area": "-",
+                                    "price": "5억 4,000만원",
+                                    "pyeong_price": "-",
+                                    "date": "2025-08-13"
+                        },
+                        {
+                                    "name": "장미상가(재건축 장미1,2,3차)",
+                                    "floor": "-",
+                                    "area": "-",
+                                    "price": "7억 5,000만원",
+                                    "pyeong_price": "-",
+                                    "date": "2025-08-20"
+                        },
+                        {
+                                    "name": "장미상가(재건축 장미1,2,3차)",
+                                    "floor": "-",
+                                    "area": "-",
+                                    "price": "5억 4,000만원",
+                                    "pyeong_price": "-",
+                                    "date": "2025-08-13"
+                        },
+                        {
+                                    "name": "장미상가(재건축 장미1,2,3차)",
+                                    "floor": "-",
+                                    "area": "-",
+                                    "price": "5억 4,000만원",
+                                    "pyeong_price": "-",
+                                    "date": "2025-08-13"
+                        }
+            ],
+            "real_trade_stats": [
+                        {
+                                    "label": "1개월",
+                                    "count": 0,
+                                    "max": "-",
+                                    "min": "-",
+                                    "avg": "-"
+                        },
+                        {
+                                    "label": "3개월",
+                                    "count": 0,
+                                    "max": "-",
+                                    "min": "-",
+                                    "avg": "-"
+                        },
+                        {
+                                    "label": "6개월",
+                                    "count": 0,
+                                    "max": "-",
+                                    "min": "-",
+                                    "avg": "-"
+                        },
+                        {
+                                    "label": "1년",
+                                    "count": 0,
+                                    "max": "-",
+                                    "min": "-",
+                                    "avg": "-"
+                        }
+            ],
+            "note": "실거래가·호가 모두 자동 갱신됩니다. 호가는 확보된 매물 11건 기준이며, 신규 매물은 articleId를 추가해야 반영됩니다."
+};
         // --- ROSE_WATCH_DATA_END ---
 
         function parsePrice(p) {
