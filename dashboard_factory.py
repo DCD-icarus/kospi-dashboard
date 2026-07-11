@@ -122,31 +122,42 @@ _code_cache = _load_cache()
 
 def resolve_stock_code(name):
     """종목명 -> 코드. KNOWN_CODES 우선, 없으면 캐시, 없으면 네이버 검색 API로 조회.
-    네이버 검색 API는 비공식(undocumented) 엔드포인트이므로 응답 스키마가
-    바뀔 수 있습니다 - 실패 시 None을 반환하고 상위 로직에서 해당 항목만 건너뜁니다."""
+    (구) ac.finance.naver.com 은 네이버가 '네이버페이 증권'으로 개편되며 폐기되어
+    DNS 조회 자체가 실패했음 - 현재는 m.stock.naver.com/front-api/search/autoComplete
+    를 사용. 이 역시 비공식(undocumented) 엔드포인트이므로 스키마가 또 바뀔 수 있어
+    실패 시 None을 반환하고 상위 로직에서 해당 항목만 건너뜁니다."""
     if name in KNOWN_CODES:
         return KNOWN_CODES[name]
     if name in _code_cache:
         return _code_cache[name]
     try:
         resp = requests.get(
-            "https://ac.finance.naver.com/ac",
-            params={"q": name, "target": "stock,index", "q_enc": "UTF-8"},
+            "https://m.stock.naver.com/front-api/search/autoComplete",
+            params={"query": name, "target": "stock,index,marketindicator,coin,ipo"},
             timeout=5,
             headers={"User-Agent": "Mozilla/5.0"},
         )
         resp.raise_for_status()
         data = resp.json()
-        for group in data.get("items", []):
-            for it in group:
-                if isinstance(it, list) and len(it) >= 2:
-                    code, item_name = it[0], it[1]
-                    norm_a = item_name.replace(" ", "")
-                    norm_b = name.replace(" ", "")
-                    if norm_a == norm_b or norm_a in norm_b or norm_b in norm_a:
-                        _code_cache[name] = code
-                        _save_cache(_code_cache)
-                        return code
+        items = (data.get("result") or {}).get("items", [])
+        norm_target = name.replace(" ", "")
+        for it in items:
+            code = it.get("code")
+            item_name = it.get("name", "")
+            if not code:
+                continue
+            norm_a = item_name.replace(" ", "")
+            if norm_a == norm_target or norm_a in norm_target or norm_target in norm_a:
+                _code_cache[name] = code
+                _save_cache(_code_cache)
+                return code
+        if items:  # 정확히 일치하는 항목이 없으면 최상위 추천 결과를 차선책으로 사용
+            code = items[0].get("code")
+            if code:
+                log.warning(f"'{name}' 정확히 일치하는 종목명 없음 - 최상위 결과 '{items[0].get('name')}'({code}) 사용")
+                _code_cache[name] = code
+                _save_cache(_code_cache)
+                return code
     except Exception as e:
         log.warning(f"종목코드 자동조회 실패 ({name}): {e}")
     return None
