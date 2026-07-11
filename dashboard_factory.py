@@ -53,6 +53,18 @@ logging.basicConfig(
 log = logging.getLogger("dashboard_factory")
 
 KST = timezone(timedelta(hours=9))
+_WEEKDAYS_KO = ["월", "화", "수", "목", "금", "토", "일"]
+
+
+def kst_date_label(suffix="기준"):
+    """실행 시점(KST) 날짜를 'YYYY년 M월 D일 (요일) {suffix}' 형태로 반환.
+    이전 버전은 이 문자열이 화면에 하드코딩되어 있어 실제로는 절대 갱신되지
+    않았던 게 '날짜가 항상 옛날로 보이는' 버그의 원인이었습니다."""
+    now = datetime.now(KST)
+    wd = _WEEKDAYS_KO[now.weekday()]
+    return f"{now.year}년 {now.month}월 {now.day}일 ({wd}) {suffix}"
+
+
 CODE_CACHE_FILE = "stock_code_cache.json"
 
 # ---------------------------------------------------------------------------
@@ -476,7 +488,7 @@ def build_reits_data(dart_api_key, naver_id=None, naver_secret=None):
 
     news = fetch_naver_news("상장리츠", naver_id, naver_secret, display=4)
 
-    return {"etfs": etfs, "assets": assets, "disclosures": disclosures, "news": news}
+    return {"etfs": etfs, "assets": assets, "disclosures": disclosures, "news": news, "market_date": kst_date_label()}
 
 
 DART_CORPCODE_CACHE_FILE = "dart_corpcode_cache.json"
@@ -614,7 +626,7 @@ def build_us_market_data(naver_id=None, naver_secret=None):
         return None
 
     news = fetch_naver_news("뉴욕증시 마감", naver_id, naver_secret, display=4)
-    return {"macro": macro, "top30": top30, "news": news}
+    return {"macro": macro, "top30": top30, "news": news, "market_date": kst_date_label("NY 마감 기준")}
 
 
 def run_us_market_mode(naver_id=None, naver_secret=None):
@@ -724,33 +736,58 @@ def build_seoul_estate_data(molit_api_key):
     return {
         "top30": top30,
         "core": core_dedup,
-        # 장미상가(구분상가)는 별도의 상업용 부동산 실거래 API/수동 데이터가 필요해
-        # 이번 자동화 범위에서 제외했습니다. 아래는 기존 값 유지용 placeholder이며,
-        # 실제로는 run_seoul_estate_mode()에서 기존 파일 값을 보존합니다.
-        "rose_shops": None,
-        "news": None,
+        "market_date": kst_date_label(),
+        "news": None,  # run_seoul_estate_mode()에서 채움
     }
 
 
-REDEV_NEWS_TOPICS = {
-    "jamsil_jugong5": "잠실주공5단지 재건축",
-    "jamsil_rose": "잠실 장미아파트 재건축",
-    "olympic_seonsu": "올림픽선수촌 재건축",
-    "olympic_park_foreon": "올림픽파크포레온",
-}
+# 관심단지 뉴스 registry: 구(gu)별 그룹핑 + 성격(category)별 색상 표기용 메타데이터.
+# category: 재건축 / 재개발 / 신축(준공 10년 미만) / 구축대단지
+COMPLEX_REGISTRY = [
+    {"key": "jamsil_jugong5", "name": "잠실주공5단지", "gu": "송파구", "category": "재건축"},
+    {"key": "jamsil_rose", "name": "잠실 장미아파트", "gu": "송파구", "category": "재건축"},
+    {"key": "bangi_seonsuchon", "name": "방이 올림픽선수촌", "gu": "송파구", "category": "구축대단지"},
+    {"key": "dunchon_foreon", "name": "둔촌 올림픽파크포레온", "gu": "강동구", "category": "신축"},
+    {"key": "garak_helio", "name": "가락 헬리오시티", "gu": "송파구", "category": "신축"},
+    {"key": "jamsil_els", "name": "잠실 엘스", "gu": "송파구", "category": "구축대단지"},
+    {"key": "jamsil_riesens", "name": "잠실 리센츠", "gu": "송파구", "category": "구축대단지"},
+    {"key": "sincheon_parkrio", "name": "신천 파크리오", "gu": "송파구", "category": "구축대단지"},
+    {"key": "banpo_onebailey", "name": "반포 원베일리", "gu": "서초구", "category": "신축"},
+    {"key": "banpo_124", "name": "반포 124주구(반디클)", "gu": "서초구", "category": "재건축"},
+    {"key": "banpo_acro", "name": "반포 아크로리버파크", "gu": "서초구", "category": "구축대단지"},
+    {"key": "banpo_xi", "name": "반포자이", "gu": "서초구", "category": "구축대단지"},
+    {"key": "banpo_firstige", "name": "반포 래미안퍼스티지", "gu": "서초구", "category": "구축대단지"},
+    {"key": "hannam3", "name": "한남3구역(디에이치한남)", "gu": "용산구", "category": "재개발"},
+    {"key": "hannam5", "name": "한남5구역", "gu": "용산구", "category": "재개발"},
+    {"key": "noryangjin1", "name": "노량진1구역", "gu": "동작구", "category": "재개발"},
+    {"key": "noryangjin3", "name": "노량진3구역", "gu": "동작구", "category": "재개발"},
+    {"key": "acro_seoulforest", "name": "아크로서울포레스트", "gu": "성동구", "category": "신축"},
+    {"key": "seongsu1", "name": "성수전략정비구역 1지구", "gu": "성동구", "category": "재개발"},
+    {"key": "hannam_the_hill", "name": "한남더힐", "gu": "용산구", "category": "구축대단지"},
+    {"key": "nineone_hannam", "name": "나인원한남", "gu": "용산구", "category": "신축"},
+    {"key": "dogok_towerpalace", "name": "도곡동 타워팰리스 1/2/3차", "gu": "강남구", "category": "구축대단지"},
+    {"key": "gaepo_firstier", "name": "개포동 디에이치 퍼스티어 아이파크", "gu": "강남구", "category": "신축"},
+    {"key": "daechi_eunma", "name": "대치 은마아파트", "gu": "강남구", "category": "재건축"},
+    {"key": "yeouido_sibeom", "name": "여의도 시범아파트", "gu": "영등포구", "category": "재건축"},
+    {"key": "mokdong7", "name": "목동 신시가지 7단지", "gu": "양천구", "category": "재건축"},
+]
 
 
 def build_seoul_news(naver_id, naver_secret):
-    """이전 버전은 재건축 뉴스 텍스트가 전부 하드코딩된 가짜 내용이었습니다.
-    (예: 없는 날짜의 조합 의결 내용 등) - 실제 네이버 뉴스 검색 결과로 교체."""
-    news = {}
-    for key, query in REDEV_NEWS_TOPICS.items():
+    """관심단지 26곳 각각에 대해 실제 네이버 뉴스 검색 결과 1건씩 조회.
+    (이전 버전은 4곳 고정 + 하드코딩된 가짜 뉴스 텍스트였습니다.)"""
+    from urllib.parse import quote
+    news_list = []
+    for c in COMPLEX_REGISTRY:
+        query = f"{c['name']} 재건축" if c["category"] in ("재건축", "재개발") else c["name"]
         results = fetch_naver_news(query, naver_id, naver_secret, display=1)
         if results:
-            news[key] = {"text": results[0]["title"], "link": results[0]["link"]}
+            item = {**c, "text": results[0]["title"], "link": results[0]["link"]}
         else:
-            news[key] = {"text": "관련 뉴스를 찾지 못했습니다.", "link": f"https://search.naver.com/search.naver?query={query}"}
-    return news
+            item = {**c, "text": "관련 뉴스를 찾지 못했습니다.",
+                    "link": f"https://search.naver.com/search.naver?query={quote(query)}"}
+        news_list.append(item)
+    return news_list
 
 
 def run_seoul_estate_mode(molit_api_key, naver_id=None, naver_secret=None):
@@ -760,26 +797,42 @@ def run_seoul_estate_mode(molit_api_key, naver_id=None, naver_secret=None):
                                   "// --- SEOUL_ESTATE_DATA_END ---", None)
         return None
 
-    # rose_shops(장미상가)는 아직 자동 수집 대상이 아니므로 기존 파일 값을 보존
-    file_path = "seoul_estate.html"
-    if os.path.exists(file_path):
-        with open(file_path, "r", encoding="utf-8") as f:
-            old_content = f.read()
-        m = re.search(r"const marketData = (\{.*?\});", old_content, re.DOTALL)
-        if m:
-            try:
-                old_data = json.loads(m.group(1))
-                new_data["rose_shops"] = old_data.get("rose_shops", [])
-            except Exception as e:
-                log.warning(f"기존 seoul_estate.html 파싱 실패 (rose_shops 보존 불가): {e}")
-                new_data["rose_shops"] = []
-    else:
-        new_data["rose_shops"] = []
-
     new_data["news"] = build_seoul_news(naver_id, naver_secret)
 
     ok = replace_marketdata_block(
-        file_path, "// --- SEOUL_ESTATE_DATA_START ---", "// --- SEOUL_ESTATE_DATA_END ---", new_data
+        "seoul_estate.html", "// --- SEOUL_ESTATE_DATA_START ---", "// --- SEOUL_ESTATE_DATA_END ---", new_data
+    )
+    return new_data if ok else None
+
+
+# ---------------------------------------------------------------------------
+# 잠실 장미상가 실거래가 (비공개 모니터링 전용 페이지)
+# ---------------------------------------------------------------------------
+def run_rose_watch_mode():
+    """장미상가는 아직 정확한 네이버부동산 단지코드를 확인 중이라 실거래 자동
+    수집 대상이 아닙니다. 기존 파일의 데이터를 그대로 보존하면서 날짜만 매일
+    갱신합니다 (날짜가 안 바뀌는 문제를 다시 만들지 않기 위함) - 단지코드가
+    확인되면 이 함수를 실거래 API/스크래핑 연동으로 교체하면 됩니다."""
+    file_path = "rose_watch.html"
+    if not os.path.exists(file_path):
+        log.warning(f"{file_path} 없음 - 장미상가 페이지 업데이트 생략 (파일을 저장소에 올려주세요)")
+        return None
+    with open(file_path, "r", encoding="utf-8") as f:
+        content = f.read()
+    m = re.search(r"const marketData = (\{.*?\});", content, re.DOTALL)
+    old_data = {}
+    if m:
+        try:
+            old_data = json.loads(m.group(1))
+        except Exception as e:
+            log.warning(f"{file_path} 기존 데이터 파싱 실패: {e}")
+    new_data = {
+        "market_date": kst_date_label(),
+        "shops": old_data.get("shops", []),
+        "note": "네이버부동산 단지코드 확인 후 실거래 자동 연동 예정 (현재는 수동 값 유지)",
+    }
+    ok = replace_marketdata_block(
+        file_path, "// --- ROSE_WATCH_DATA_START ---", "// --- ROSE_WATCH_DATA_END ---", new_data
     )
     return new_data if ok else None
 
@@ -814,6 +867,11 @@ def get_kakao_access_token():
         return None
 
 
+def _dashboard_base_url():
+    owner = os.environ.get("GITHUB_REPOSITORY_OWNER", "username").lower()
+    return f"https://{owner}.github.io/kospi-dashboard/"
+
+
 def send_kakao_notification(token, mode, data):
     if not token:
         log.warning(f"[{mode}] 카카오 토큰 없음 - 알림 전송 생략")
@@ -821,8 +879,7 @@ def send_kakao_notification(token, mode, data):
     if not data:
         log.warning(f"[{mode}] 전송할 데이터 없음 - 알림 전송 생략")
         return
-    owner = os.environ.get("GITHUB_REPOSITORY_OWNER", "username").lower()
-    base_url = f"https://{owner}.github.io/kospi-dashboard/"
+    base_url = _dashboard_base_url()
     try:
         if mode == "kospi":
             title = "KOSPI 마감 시황 보고"
@@ -848,6 +905,10 @@ def send_kakao_notification(token, mode, data):
             if data.get("core"):
                 summary = f"{data['core'][0]['apt']}: {data['core'][0]['price']}"
             target_url = base_url + "seoul_estate.html"
+        elif mode == "rose_watch":
+            title = "잠실 장미상가 모니터링 (비공개)"
+            summary = data.get("note", "업데이트 완료")
+            target_url = base_url + "rose_watch.html"
         else:
             return
         template_object = {
@@ -868,6 +929,33 @@ def send_kakao_notification(token, mode, data):
             log.info(f"[{mode}] 카카오 알림 전송 완료")
     except Exception as e:
         log.error(f"[{mode}] 카카오 알림 전송 중 예외: {e}")
+
+
+def send_hub_notification(token):
+    """통합 허브 페이지 링크를 매일 07:10 발송. 데이터 의존성이 없는 단순 링크 알림."""
+    if not token:
+        log.warning("[hub] 카카오 토큰 없음 - 알림 전송 생략")
+        return
+    target_url = _dashboard_base_url() + "hub.html"
+    try:
+        template_object = {
+            "object_type": "text",
+            "text": f"📊 DCD Icarus 통합 대시보드\n\n{kst_date_label('업데이트')}\nKOSPI · REITs · 미국증시 · 서울부동산을 한 곳에서 확인하세요.\n\n바로가기: {target_url}",
+            "link": {"web_url": target_url, "mobile_web_url": target_url},
+            "buttons": [{"title": "통합 대시보드 열기", "link": {"web_url": target_url, "mobile_web_url": target_url}}],
+        }
+        resp = requests.post(
+            "https://kapi.kakao.com/v2/api/talk/memo/default/send",
+            data={"template_object": json.dumps(template_object, ensure_ascii=False)},
+            headers={"Authorization": f"Bearer {token}", "Content-Type": "application/x-www-form-urlencoded"},
+            timeout=10,
+        )
+        if resp.status_code != 200:
+            log.error(f"[hub] 카카오 알림 전송 실패 ({resp.status_code}): {resp.text}")
+        else:
+            log.info("[hub] 카카오 알림 전송 완료")
+    except Exception as e:
+        log.error(f"[hub] 카카오 알림 전송 중 예외: {e}")
 
 
 # ---------------------------------------------------------------------------
@@ -907,5 +995,10 @@ if __name__ == "__main__":
     if mode_to_run in ("seoul_estate", "all"):
         d = run_seoul_estate_mode(molit_key, naver_id, naver_secret)
         send_kakao_notification(kakao_token, "seoul_estate", d)
+
+        # 매일 07:10 KST에 도는 이 트리거에 허브 알림 + 장미상가(비공개) 알림도 함께 발송
+        send_hub_notification(kakao_token)
+        rose_d = run_rose_watch_mode()
+        send_kakao_notification(kakao_token, "rose_watch", rose_d)
 
     log.info("실행 완료")
