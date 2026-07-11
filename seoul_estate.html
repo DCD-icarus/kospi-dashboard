@@ -395,7 +395,7 @@
                 tr.innerHTML = `
                     <td class="py-3 px-2 text-slate-300 font-semibold">${item.gu} ${item.dong}</td>
                     <td class="py-3 px-2 text-slate-100 font-bold flex items-center">
-                        ${item.apt}
+                        ${item.link ? `<a href="${item.link}" target="_blank" class="hover:underline hover:text-emerald-400">${item.apt}</a>` : item.apt}
                         ${isNewRecord ? '<span class="ml-1.5 px-1 bg-rose-500/10 text-rose-500 border border-rose-500/20 text-[9px] rounded font-extrabold shrink-0">신고가</span>' : ''}
                     </td>
                     <td class="py-3 px-2 text-slate-400 font-mono">${item.size}</td>
@@ -415,7 +415,7 @@
                 tr.innerHTML = `
                     <td class="py-3 px-2 text-slate-300 font-semibold">${item.dong}</td>
                     <td class="py-3 px-2 text-slate-100 font-bold flex items-center flex-wrap">
-                        <span class="truncate max-w-[150px] sm:max-w-none mr-1">${item.apt}</span>
+                        ${item.link ? `<a href="${item.link}" target="_blank" class="truncate max-w-[150px] sm:max-w-none mr-1 hover:underline hover:text-emerald-400">${item.apt}</a>` : `<span class="truncate max-w-[150px] sm:max-w-none mr-1">${item.apt}</span>`}
                         ${isNewRecord ? '<span class="px-1 bg-rose-500/10 text-rose-500 border border-rose-500/20 text-[9px] rounded font-extrabold shrink-0">신고가</span>' : ''}
                     </td>
                     <td class="py-3 px-2 text-slate-400 font-mono">${item.size}</td>
