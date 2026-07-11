@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DCD Icarus 통합 대시보드</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+    * { font-family: 'Inter', 'Noto Sans KR', sans-serif; box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; height: 100%; background: #020617; }
+    .tabbar {
+        position: sticky; top: 0; z-index: 50;
+        display: flex; align-items: center; gap: 8px;
+        padding: 12px 16px;
+        background: rgba(15, 23, 42, 0.85);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid rgba(30, 41, 59, 0.8);
+        overflow-x: auto;
+    }
+    .tabbar .brand {
+        display: flex; align-items: center; gap: 10px;
+        margin-right: 8px; white-space: nowrap;
+    }
+    .tabbar .brand .logo {
+        background: linear-gradient(135deg, #f43f5e, #4f46e5);
+        padding: 8px; border-radius: 10px; color: white;
+        display: flex; align-items: center; justify-content: center;
+        box-shadow: 0 4px 14px rgba(79,70,229,0.3);
+    }
+    .tabbar .brand span {
+        color: #e2e8f0; font-weight: 700; font-size: 14px; letter-spacing: -0.02em;
+    }
+    .tab-btn {
+        display: flex; align-items: center; gap: 6px;
+        padding: 9px 16px; border-radius: 10px;
+        font-size: 13px; font-weight: 600; white-space: nowrap;
+        color: #94a3b8; background: transparent; border: 1px solid transparent;
+        cursor: pointer; transition: all 0.15s ease;
+    }
+    .tab-btn:hover { color: #e2e8f0; background: rgba(51, 65, 85, 0.4); }
+    .tab-btn.active {
+        color: white; background: rgba(79, 70, 229, 0.9);
+        border-color: rgba(99, 102, 241, 0.5);
+        box-shadow: 0 2px 10px rgba(79,70,229,0.35);
+    }
+    .frame-wrap { position: relative; width: 100%; height: calc(100vh - 60px); }
+    iframe {
+        position: absolute; inset: 0; width: 100%; height: 100%;
+        border: 0; background: #020617;
+    }
+    .loading {
+        position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+        color: #64748b; font-size: 13px; background: #020617;
+        pointer-events: none; transition: opacity 0.2s ease;
+    }
+    .loading.hidden { opacity: 0; }
+</style>
+</head>
+<body>
+    <nav class="tabbar">
+        <div class="brand">
+            <div class="logo"><i class="fa-solid fa-layer-group"></i></div>
+            <span>DCD Icarus의 시장 실시간 모니터링 대시보드</span>
+        </div>
+        <button class="tab-btn active" data-src="index.html" onclick="switchTab(this)">
+            <i class="fa-solid fa-chart-line"></i> KOSPI 마감시황
+        </button>
+        <button class="tab-btn" data-src="reits.html" onclick="switchTab(this)">
+            <i class="fa-solid fa-building-columns"></i> 상장리츠
+        </button>
+        <button class="tab-btn" data-src="us_market.html" onclick="switchTab(this)">
+            <i class="fa-solid fa-globe-americas"></i> 미국증시
+        </button>
+        <button class="tab-btn" data-src="seoul_estate.html" onclick="switchTab(this)">
+            <i class="fa-solid fa-city"></i> 서울 부동산
+        </button>
+    </nav>
+
+    <div class="frame-wrap">
+        <div class="loading" id="loadingIndicator">불러오는 중...</div>
+        <iframe id="dashboardFrame" src="index.html" title="dashboard"></iframe>
+    </div>
+
+    <script>
+        const frame = document.getElementById('dashboardFrame');
+        const loading = document.getElementById('loadingIndicator');
+
+        function switchTab(btn) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const target = btn.getAttribute('data-src');
+            if (frame.getAttribute('src') === target) return;
+            loading.classList.remove('hidden');
+            frame.src = target;
+        }
+
+        frame.addEventListener('load', () => loading.classList.add('hidden'));
+
+        // 새로고침 시 마지막으로 본 탭을 기억 (세션 내에서만, 저장소 미사용 - 새 창/새 세션에는 영향 없음)
+        window.addEventListener('DOMContentLoaded', () => {
+            const hash = window.location.hash.replace('#', '');
+            if (hash) {
+                const target = document.querySelector(`.tab-btn[data-src="${hash}"]`);
+                if (target) switchTab(target);
+            }
+        });
+
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                window.location.hash = btn.getAttribute('data-src');
+            });
+        });
+    </script>
+</body>
+</html>
