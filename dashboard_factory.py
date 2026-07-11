@@ -39,6 +39,7 @@ import logging
 import argparse
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
+from email.utils import parsedate_to_datetime
 
 import requests
 
@@ -287,8 +288,35 @@ def _resolve_trailing_dividend_yield(t, price):
         return None
 
 
-def yf_snapshot(ticker, want_dividend=False):
-    """최근 2거래일 종가 + 시가총액(+옵션: 배당수익률)을 반환. 실패 시 None."""
+def _resolve_52w_range(t):
+    """52주 최고/최저가 fallback 체인: fast_info -> info."""
+    try:
+        fi = t.fast_info
+        high, low = fi.get("year_high"), fi.get("year_low")
+        if high and low:
+            return float(high), float(low)
+    except Exception:
+        pass
+    try:
+        info = t.info
+        high, low = info.get("fiftyTwoWeekHigh"), info.get("fiftyTwoWeekLow")
+        if high and low:
+            return float(high), float(low)
+    except Exception:
+        pass
+    return None, None
+
+
+def _resolve_company_name(t):
+    try:
+        info = t.info
+        return info.get("shortName") or info.get("longName")
+    except Exception:
+        return None
+
+
+def yf_snapshot(ticker, want_dividend=False, want_52w=False, want_name=False):
+    """최근 2거래일 종가 + 시가총액(+옵션: 배당수익률/52주 최고저/종목명)을 반환. 실패 시 None."""
     if yf is None:
         log.error("yfinance가 설치되어 있지 않습니다 (pip install yfinance).")
         return None
@@ -307,9 +335,14 @@ def yf_snapshot(ticker, want_dividend=False):
             "date": hist.index[-1].strftime("%Y-%m-%d"),
             "market_cap": _resolve_market_cap(t, price),
             "dividend_yield": None,
+            "week52_high": None, "week52_low": None, "name": None,
         }
         if want_dividend:
             result["dividend_yield"] = _resolve_trailing_dividend_yield(t, price)
+        if want_52w:
+            result["week52_high"], result["week52_low"] = _resolve_52w_range(t)
+        if want_name:
+            result["name"] = _resolve_company_name(t)
         return result
     except Exception as e:
         log.warning(f"{ticker} 시세 조회 실패: {e}")
@@ -389,8 +422,8 @@ def fetch_naver_news(query, client_id, client_secret, display=4):
     전면 제거하고, 실제 검색 결과 기반 뉴스로 교체했습니다.
 
     필터링 순서: ① 검색어 핵심 키워드가 제목에 포함(관련성) + 저품질 제목 제외
-    → ② 그중 주요 언론사 + 네이버뉴스 게재본 있는 것 우선 → ③ 주요 언론사만 →
-    ④ 관련성 있는 것 전체. 관련성 없는 기사는 개수를 못 채우더라도 포함하지 않습니다
+    → ② 관련 기사 중 네이버뉴스 게재본(광고 적음) 우선, 그다음 주요 언론사 우선으로
+    정렬. 관련성 없는 기사는 개수를 못 채우더라도 포함하지 않습니다
     (있으나 마나 한 기사보다 없는 게 낫다는 원칙)."""
     if not client_id or not client_secret:
         return []
@@ -425,15 +458,11 @@ def fetch_naver_news(query, client_id, client_secret, display=4):
             r for r in all_results
             if _title_matches_query(r["title"], query) and not _is_low_quality_title(r["title"])
         ]
-        tier_best = [r for r in relevant if _is_major_press(r["_press_src"]) and r["_naver_hosted"]]
-        tier_press = [r for r in relevant if _is_major_press(r["_press_src"])]
-
-        if len(tier_best) >= display:
-            results = tier_best[:display]
-        elif len(tier_press) >= display:
-            results = tier_press[:display]
-        else:
-            results = relevant[:display]  # 관련성은 있지만 주요언론/네이버게재본은 부족 - 그래도 관련 없는 건 안 채움
+        # 네이버뉴스 게재본(광고 적음) 여부를 최우선 기준으로, 주요언론 여부를 다음 기준으로
+        # 정렬 - 이전엔 '주요언론 + 네이버게재본'을 동시에 만족해야만 우선시해서,
+        # 둘 중 하나만 있어도 순위가 뒤로 밀려 광고 많은 원문으로 자주 연결되던 문제를 고침.
+        relevant.sort(key=lambda r: (r["_naver_hosted"], _is_major_press(r["_press_src"])), reverse=True)
+        results = relevant[:display]  # 관련성 없는 기사로는 개수를 채우지 않음
 
         for r in results:
             r.pop("_press_src", None)
@@ -528,11 +557,15 @@ def build_kospi_data(naver_id=None, naver_secret=None):
             "name": name, "code": code, "price": f"{d['close']:,.0f}",
             "change": fmt_won_change(c), "pct": fmt_pct(p), "cap": fmt_cap_won(d["market_cap"]),
             "link": f"https://finance.naver.com/item/main.naver?code={code}",
+            "_cap_raw": d.get("market_cap") or 0,
         })
 
     if not stocks:
         log.error("KOSPI 종목 데이터를 하나도 가져오지 못했습니다.")
         return None
+    stocks.sort(key=lambda x: x["_cap_raw"], reverse=True)
+    for x in stocks:
+        x.pop("_cap_raw", None)
 
     news = fetch_naver_news_multi(
         ["코스피 마감 시황", "코스피 목표주가 투자의견"], naver_id, naver_secret, per_query=4, total_cap=5
@@ -591,11 +624,15 @@ def build_reits_data(dart_api_key, naver_id=None, naver_secret=None):
             "cap": fmt_cap_won(d["market_cap"]),
             "yield": f"{yld:.2f}%" if yld is not None else "N/A",
             "link": f"https://finance.naver.com/item/main.naver?code={code}",
+            "_cap_raw": d.get("market_cap") or 0,
         })
 
     if not assets:
         log.error("REITs 종목 데이터를 하나도 가져오지 못했습니다.")
         return None
+    assets.sort(key=lambda x: x["_cap_raw"], reverse=True)
+    for x in assets:
+        x.pop("_cap_raw", None)
 
     disclosures = fetch_dart_disclosures(dart_api_key, limit=30) if dart_api_key else []
     if not disclosures:
@@ -778,11 +815,33 @@ def translate_text(text, source="en", target="ko"):
         return None
 
 
+def _parse_rss_datetime(pub_date_str):
+    """RSS의 RFC822 형식 pubDate를 파싱. 실패 시 None (해당 항목은 최신성
+    판단 불가 처리 - 오래된 기사를 놓치지 않기 위해 배제하지 않고 포함)."""
+    try:
+        dt = parsedate_to_datetime(pub_date_str)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt
+    except Exception:
+        return None
+
+
 def build_foreign_market_news(limit_per_feed=2):
-    """WSJ·FT RSS에서 최신 기사 제목/요약을 가져오고, MyMemory로 한글 번역을 병기."""
+    """WSJ·FT RSS에서 최신 기사 제목/요약을 가져오고, MyMemory로 한글 번역을 병기.
+    뉴스는 최신성이 중요해서 1영업일 전 0시 ~ 현재 사이에 발행된 기사만 남깁니다."""
+    cutoff = _recent_business_day_start(1).replace(hour=0, minute=0, second=0, microsecond=0)
     results = []
     for feed in FOREIGN_NEWS_FEEDS:
-        for it in fetch_rss_feed(feed["url"], limit=limit_per_feed):
+        recent_items = []
+        for it in fetch_rss_feed(feed["url"], limit=10):  # 필터링 여유를 두기 위해 넉넉히 조회
+            dt = _parse_rss_datetime(it["pubDate"])
+            if dt is not None and dt < cutoff:
+                continue  # 1영업일보다 오래된 기사는 제외
+            recent_items.append(it)
+            if len(recent_items) >= limit_per_feed:
+                break
+        for it in recent_items:
             title_ko = translate_text(it["title"])
             summary_ko = translate_text(it["description"]) if it["description"] else None
             results.append({
@@ -792,16 +851,16 @@ def build_foreign_market_news(limit_per_feed=2):
             })
     if results:
         translated = sum(1 for r in results if r["title_ko"])
-        log.info(f"해외 저널(WSJ/FT) 조회 성공: {len(results)}건 (번역 성공 {translated}건)")
+        log.info(f"해외 저널(WSJ/FT) 조회 성공: {len(results)}건 (번역 성공 {translated}건, 1영업일 이내 기사만)")
     else:
-        log.warning("해외 저널(WSJ/FT) 조회 결과 0건")
+        log.warning("해외 저널(WSJ/FT) 조회 결과 0건 (1영업일 이내 발행된 관련 기사 없음)")
     return results
 
 
 def build_us_market_data(naver_id=None, naver_secret=None):
     macro = []
     for ticker, name in US_MACRO_TICKERS:
-        d = yf_last_two(ticker)
+        d = yf_last_two(ticker, want_52w=True)
         if d is None:
             log.warning(f"미국 지표 조회 실패(건너뜀): {name}")
             continue
@@ -810,24 +869,33 @@ def build_us_market_data(naver_id=None, naver_secret=None):
         is_rate = "금리" in name
         val = f"{d['close']:.3f}%" if is_rate else f"{d['close']:,.2f}"
         chg = f"{'+' if c>=0 else ''}{c:.3f}" if is_rate else f"{'+' if c>=0 else ''}{c:,.2f}"
+        low_fmt, high_fmt = "-", "-"
+        if d["week52_high"] and d["week52_low"]:
+            fmt = (lambda v: f"{v:.3f}%") if is_rate else (lambda v: f"{v:,.2f}")
+            low_fmt, high_fmt = fmt(d["week52_low"]), fmt(d["week52_high"])
         macro.append({
             "name": name, "val": val, "change": chg, "pct": fmt_pct(p),
-            "trend": "down" if c < 0 else "up",
+            "trend": "down" if c < 0 else "up", "low": low_fmt, "high": high_fmt,
         })
 
     top30 = []
     for ticker in US_TOP_TICKERS:
-        d = yf_last_two(ticker)
+        d = yf_last_two(ticker, want_name=True)
         if d is None:
             log.warning(f"미국 종목 조회 실패(건너뜀): {ticker}")
             continue
         c = d["close"] - d["prev_close"]
         p = (c / d["prev_close"] * 100) if d["prev_close"] else 0
         top30.append({
-            "ticker": ticker, "price": fmt_usd(d["close"]), "change": fmt_usd_change(c),
+            "ticker": ticker, "name": d.get("name") or ticker,
+            "price": fmt_usd(d["close"]), "change": fmt_usd_change(c),
             "pct": fmt_pct(p), "cap": fmt_cap_usd(d["market_cap"]),
             "link": f"https://finance.yahoo.com/quote/{ticker}",
+            "_cap_raw": d.get("market_cap") or 0,
         })
+    top30.sort(key=lambda x: x["_cap_raw"], reverse=True)
+    for x in top30:
+        x.pop("_cap_raw", None)
 
     if not macro and not top30:
         return None
@@ -1396,8 +1464,10 @@ CRE_NEWS_SOURCES = [
         "key": "dealbook",
         "name": "딜북뉴스",
         "list_url": "https://www.dealbook.co.kr/news/",
-        "pattern": re.compile(r'<a[^>]+href="(https://www\.dealbook\.co\.kr/([a-z0-9\-]+)/)"[^>]*>(.*?)</a>', re.DOTALL),
-        "base_url": "",
+        # 절대경로(https://...)만 매칭하도록 짰던 이전 패턴이 실제 페이지의 상대경로
+        # (href="/slug/") 링크를 못 잡아서 0건이 나왔던 것으로 추정 - 절대/상대 둘 다 매칭
+        "pattern": re.compile(r'<a[^>]+href="(?:https://www\.dealbook\.co\.kr)?(/([a-z0-9\-]+)/)"[^>]*>(.*?)</a>', re.DOTALL),
+        "base_url": "https://www.dealbook.co.kr",
         # 단일 세그먼트라 정규식은 통과하지만 실제 아티클이 아닌 메뉴/유틸 링크
         "exclude_ids": {"news", "introduction", "signin", "membership", "aboutmembership",
                          "tos", "privacy", "shop", "author"},
