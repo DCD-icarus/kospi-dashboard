@@ -1,4 +1,25 @@
 {
+  "spi:00592912957224288256": {
+    "title": "애플스토어 조기 퇴거 개런티 못 받은 페블스톤, 신논현역 ‘비제바노 빌딩’ 인수 무산",
+    "summary": "페블스톤의 신논현역 비제바노 빌딩 인수가 무산됐다. 애플스토어 명도 문제로 투자자 유치에 실패해 거래가 결렬됐다. 이제 코람코운용이 인수한다.",
+    "link": "https://seoulpi.io/article/00592912957224288256",
+    "source": "SPI",
+    "first_seen": "2026년 9월 6일 (일) "
+  },
+  "spi:00592861643995623424": {
+    "title": "미국 디벨로퍼의 사고법 ⑳지역 주민과 소통하기",
+    "summary": "미국 부동산 개발 인허가 필수 요소인 커뮤니티 아웃리치. 주민 의견 수렴과 신뢰 구축 전략이 인허가 성공의 열쇠이다.",
+    "link": "https://seoulpi.io/article/00592861643995623424",
+    "source": "SPI",
+    "first_seen": "2026년 9월 6일 (일) "
+  },
+  "spi:00592896963978231808": {
+    "title": "입찰 참가자 없었던 ‘태평로빌딩’, 고심 깊어진 ‘이지스밸류플러스리츠’",
+    "summary": "이지스밸류플러스리츠, 태평로빌딩 매각 입찰 무산. 높은 가격과 금리 상승으로 재무 계획에 차질이 생겼다.",
+    "link": "https://seoulpi.io/article/00592896963978231808",
+    "source": "SPI",
+    "first_seen": "2026년 9월 6일 (일) "
+  },
   "spi:00592509623551930368": {
     "title": "페블스톤, 케펠리츠가 보유한 서울역 T타워 평당 2,770만원에 인수 추진 .. NPS 블라인드펀드 첫 투자 가능성",
     "summary": "페블스톤이 케펠 리츠 서울역 T타워 인수를 추진, 공실 우려로 가격 조정해 MOU 체결했다. 국민연금 펀드로 가치 향상 노린다.",
@@ -187,26 +208,5 @@
     "link": "https://www.dealbook.co.kr/yeongamsamhopungryeog-yugbaegsanpungryeog-gaggag-jugwansa-seonjeong-naenyeon-co-geumyungjodal/",
     "source": "딜북뉴스",
     "first_seen": "2026년 9월 3일 (목) "
-  },
-  "dealbook:gugminyeongeum-sitikoeo-koramko-mugyodadong4jigu-deoigseuceinji-peuraim-opiseu-gaebal-tanryeog": {
-    "title": "국민연금·시티코어·코람코, 무교다동4지구(더익스체인지) 프라임 오피스 개발 탄력",
-    "summary": "무교다동4지구(더익스체인지) 프라임 오피스 재개발 조감도(사진&#x3D;서울시)&amp;nbsp;국민연금이 시티코어, 코람코자산운용과 손잡고 서울 도심권역(CBD)의 더익스체인지서울(TES)을 프라임 오피스로 탈바꿈시키는 무교다동구역 4지구 프로젝트가 본궤도에 올랐다. 서울시가 대상지의 도시정비형 재개발사업 정비계획안을 가결함에 따라 내년 중 인허가 완료와 PF금융 조달이 가능할 전망이다. 서울시는 28일 도시계획위원회를 열고 서울 중구 무교동",
-    "link": "https://www.dealbook.co.kr/gugminyeongeum-sitikoeo-koramko-mugyodadong4jigu-deoigseuceinji-peuraim-opiseu-gaebal-tanryeog/",
-    "source": "딜북뉴스",
-    "first_seen": "2026년 9월 3일 (목) "
-  },
-  "spi:00591764926563098624": {
-    "title": "개발 파이프라인 늘리는 CBRE IM, 남양주 이어 화성 덕절리 물류센터 개발 사업 추진",
-    "summary": "CBRE IM이 물류센터 개발 파이프라인 확보에 속도를 내고 있습니다. 상반기 경기도 남양주 화도읍에 물류센터 개발 부지를 인수한 데 이어 이번에는 화성에서 물류센터 개발 부지를 인수하고 있습니다. CBRE IM은 지난해 12월 로지스밸리 안산 물류센터를 와이드크릭자산운용에 5,123억원에 매각하면서 성공적으로 엑시트 했으며 현재 △용인국제 물류센터 △JK...",
-    "link": "https://seoulpi.io/article/00591764926563098624",
-    "source": "SPI",
-    "first_seen": "2026년 9월 2일 (수) "
-  },
-  "spi:00591747422847533056": {
-    "title": "EOD 후 정상화 모색하는 ‘부천 내동 물류센터’, 시행사 미래인 가압류로 돌발 변수 발생",
-    "summary": "부천 내동 물류센터, EOD 후 정상화 중 원 시행사 미래인의 가압류로 차질 발생. 경매 시 모든 채권자 손실 우려.",
-    "link": "https://seoulpi.io/article/00591747422847533056",
-    "source": "SPI",
-    "first_seen": "2026년 9월 2일 (수) "
   }
 }
